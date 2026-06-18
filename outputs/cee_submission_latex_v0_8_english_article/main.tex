@@ -1,0 +1,333 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{url}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+
+\captionsetup{font=small,labelfont=bf,labelsep=period}
+\setlength{\parskip}{0.25em}
+\setlength{\parindent}{1.5em}
+\setlength{\textfloatsep}{0.9em plus 0.2em minus 0.2em}
+\setlength{\floatsep}{0.9em plus 0.2em minus 0.2em}
+\setlength{\intextsep}{0.9em plus 0.2em minus 0.2em}
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.80}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{5}
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
+\emergencystretch=2em
+\raggedbottom
+\setstretch{1.20}
+
+\begin{document}
+\pagestyle{plain}
+
+\begin{center}
+{\LARGE\bfseries Long-period site residuals and response-spectrum hazard sensitivity in Japanese strong-motion records\par}
+\vspace{0.6em}
+{\large Haoyu Zhou\textsuperscript{1} and Qiang Ma\textsuperscript{1,*}\par}
+\vspace{0.3em}
+{\small \textsuperscript{1}Institute of Engineering Mechanics, China Earthquake Administration, Harbin, China\par}
+{\small \textsuperscript{*}Correspondence: maqiang@iem.ac.cn\par}
+{\small ORCID: Haoyu Zhou, 0009-0003-8817-1209; Qiang Ma, 0000-0002-9768-5223\par}
+\end{center}
+
+\vspace{0.8em}
+
+\noindent\textbf{Abstract}
+
+Official response-spectrum maps are central to hazard assessment for long-period structures and sedimentary basins. Regional ground-motion models describe average site response, so repeated station residuals can remain in the records. To evaluate long-period site residuals in Japanese strong-motion records and their influence on official spectra, we analyze 333,808 K-NET and KiK-net records from the J-SHIS/NIED strong-motion flatfile and compute MF2013 observed-minus-predicted residuals for PGA, SA(0.3 s), SA(1.0 s), and SA(3.0 s). MF2013 D1400/AVS30 site terms show their largest gains at 1--3 s; the SA(3.0 s) station-residual correlation with log10(D1400) decreases from 0.614 to -0.025. Held-out station models reduce spatial-block RMSE by 38.9\% and 44.3\% at SA(1.0 s) and SA(3.0 s). A model using basin depth, shallow velocity, borehole, and location variables reduces SA(3.0 s) RMSE by 34.7\%. Applying station multipliers to J-SHIS response-spectrum ordinates changes the 50-year 10\% median SA(3.0 s) value from 0.076 to 0.048 g. All-period propagation on 10,467 sampled meshes gives median multipliers of 1.045 at 0.3 s, 0.834 at 1.0 s, and 0.658 at 3.0--5.0 s. The results identify 1--3 s non-ergodic site response as a key signal for interpreting Japanese long-period official response spectra.
+
+\noindent\textbf{Keywords:} strong-motion records; ground-motion model; site effects; non-ergodic residuals; Japan
+
+\section{Introduction}
+
+Seismic-hazard analysis converts source activity, path effects, site conditions, and ground-motion models into hazard curves and response spectra used in engineering decisions. Regional ground-motion models describe average site response. Repeated recordings at the same station can stay above or below the regional prediction, leaving a persistent station term that affects spectra interpreted at a single station or 250 m mesh cell.
+
+Non-ergodic ground-motion modeling uses repeated observations to link station-specific terms with measurable site variables\textsuperscript{3-5}. The useful target band must come from the residuals. Shallow velocity controls short-period response; sedimentary thickness and basin geometry control intermediate- to long-period response. For Japanese basins and long-period structures, SA(1.0 s) and SA(3.0 s) are the periods where a station term should be most visible.
+
+Japan provides the data needed for this test. K-NET and KiK-net supply dense strong-motion observations, and the J-SHIS/NIED flatfile links records, source parameters, distances, and site metadata\textsuperscript{6,7}. MF2013 gives a Japan ground-motion backbone with explicit D1400 and AVS30 site terms\textsuperscript{1}. D1400 is the depth to the 1.4 km/s shear-wave velocity horizon, and AVS30 is the upper-30 m average shear-wave velocity. The paired basic and D1400/AVS30 predictions isolate the effect of official site terms on the same records.
+
+This study examines whether Japanese strong-motion records contain a 1--3 s non-ergodic station term that can be predicted from public site variables and that materially changes official long-period response-spectrum ordinates. We compute MF2013 residuals for PGA, SA(0.3 s), SA(1.0 s), and SA(3.0 s); measure D1400/AVS30 residual reduction; test stability across networks, source classes, magnitude and distance ranges, and a Zhao et al. model check\textsuperscript{2}; validate held-out station prediction; fit an interpretable site-variable model; and convert station terms into official J-SHIS response-spectrum ordinates across available periods.
+
+The evidence chain is public-data based. Strong-motion records and MF2013 define the residual benchmark. D1400, AVS30, VS20, Dbase, borehole profiles, GSI terrain, VS400 site amplification, and KiK-net surface/downhole transfer functions constrain the physical interpretation. J-SHIS response-spectrum products convert residual terms into official spectral ordinates. Public J-SHIS source-parameter checks define the boundary between the present sensitivity analysis and the official production PSHA calculation.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.98\linewidth]{figures/figure1.pdf}
+\caption{Study design, effect sizes, and public-data checks for the Japanese strong-motion station-residual analysis. A: Spatial distribution of K-NET/KiK-net stations and $M\geq 5$ sources in the J-SHIS/NIED flatfile. B: Evidence chain from residual benchmarking to station validation, spectrum sensitivity, and public-parameter PSHA checks. C: Error reductions from the MF2013 site term and held-out station model across oscillator periods. D: Sensitivity of official 50-year 10\% SA(3.0 s) spectrum-value quantiles to station correction. E: Five-point sigma sensitivity check on national stratified meshes. F: 10,467-mesh execution check and residual diagnostics for the public-parameter recomputation.}
+\label{fig:workflow}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.98\linewidth]{figures/figure5_spatial_evidence.pdf}
+\caption{Spatial evidence linking SA(3.0 s) station correction to public site proxies and official response-spectrum ordinates. A: Sampled-grid SA(3.0 s) correction surface on the 10,467-mesh public-parameter grid, with residual-tail meshes outlined. B: J-SHIS VS400 gridded AVS30 on the same sampled meshes, with residual-tail meshes outlined. C: Spatial-block held-out station validation for the site-and-location correction surface. D: Official J-SHIS 50-year 10\% SA(3.0 s) ordinates and station-corrected ordinates at matched station meshes. E: Residual-tail fraction by gridded AVS30 quartile. F: Sampled-grid multiplier medians and 5th--95th percentile ranges. The maps use sampled meshes and nearest-station public site proxies. This sensitivity surface covers the station-to-grid step; source recurrence, uncertainty, correlation, and logic-tree implementation remain those of the official J-SHIS product.}
+\label{fig:spatial_evidence}
+\end{figure}
+
+\section{Data and methods}
+
+\subsection{Data and intensity measures}
+
+The data come from the public \path{sub1-v2024} subset of the J-SHIS/NIED Strong Ground Motion Flat File 2024. This subset contains strong-motion records for moment magnitude at least 5 and shortest fault distance not exceeding 300 km. It provides record, source, and site tables. We join strong-motion amplitudes, moment magnitude, source type, distance, shallow velocity, and sedimentary-depth fields using record, source, and station identifiers. The complete analysis uses public tabular fields.
+
+Records enter the residual calculation when they have valid observed intensity measures, valid model inputs, positive distance, and an MF2013-supported source type. We refer to the MF2013 backbone without D1400/AVS30 as the basic model and the version with D1400/AVS30 as the site model. Both models use the same screening logic. Records missing D1400, AVS30, or required model fields are removed from paired comparisons, which keeps site-term effects tied to the same residual sample.
+
+The target intensity measures are RotD50 PGA and 5\%-damped RotD50 spectral acceleration at 0.3, 1.0, and 3.0 s. PGA describes peak acceleration, 0.3 s represents short-period structural response, and 1.0 and 3.0 s represent intermediate- to long-period structural and basin response. RotD50 is the median over rotated horizontal-component spectra and reduces dependence on component azimuth.
+
+Site variables follow the official flatfile definitions. VS denotes shear-wave velocity. VS10, VS20, and VS30 are average shear-wave velocities over the upper 10, 20, and 30 m. AVS30 is the official 30 m average shear-wave velocity field. D1100, D1400, D1700, and D2100 are depths to shear-wave velocity horizons of 1.1, 1.4, 1.7, and 2.1 km/s, and Dbase is the basement depth. Shallow-velocity fields describe near-surface stiffness; depth fields describe basin and deep sedimentary structure.
+
+D1400 and AVS30 are the official MF2013 site-term inputs and directly enter the site-model prediction. VS10, VS20, VS30, D1100, D1700, D2100, and Dbase are used for station-residual correlation analysis. This separation keeps the model inputs distinct from variables used to diagnose remaining residual structure.
+
+\subsection{Residual calculation}
+
+MF2013 coefficients are taken from the official J-SHIS/NIED coefficient table\textsuperscript{1,8}. The basic model contains moment magnitude, shortest fault distance, and source-type terms. The site model adds the official D1400 and AVS30 terms. Residuals are defined as
+\begin{equation}
+r=\log_{10}(Y_{\mathrm{obs}})-\log_{10}(Y_{\mathrm{pred}}),
+\end{equation}
+where $Y_{\mathrm{obs}}$ is the observed intensity measure and $Y_{\mathrm{pred}}$ is the MF2013 prediction. Positive residuals indicate observations above the model prediction, and negative residuals indicate observations below the model prediction. Basic and site residuals on the same record form paired comparisons.
+
+Site-term explanatory power is measured by the percent reduction in mean absolute residual:
+\begin{equation}
+R_{\mathrm{MAE}}=100\times
+\frac{\mathrm{MAE}_{\mathrm{basic}}-\mathrm{MAE}_{\mathrm{site}}}
+{\mathrm{MAE}_{\mathrm{basic}}}.
+\end{equation}
+We also report mean residual and root mean squared residual. Mean residual measures overall offset, mean absolute residual measures typical error amplitude, and root mean squared residual gives greater weight to large residuals.
+
+\subsection{Station correlations and stability checks}
+
+Station residuals are the mean residuals for each station, target intensity measure, and model. A station must have at least 20 records for the corresponding target and model to enter the correlation analysis. Positive site variables are log10 transformed, and Spearman rank correlations are computed between station-mean residuals and site parameters. We compute correlations for both basic and site residuals to measure which site structures are absorbed by official MF2013 site terms.
+
+Stability checks include five analyses: K-NET and KiK-net network subsets, crustal, interplate, and intraplate source-type subsets, magnitude bins, fault-distance bins, and MF2013 anomalous-intensity sensitivity. The external model check uses the Zhao et al. Japan ground-motion model\textsuperscript{2} implementation in OpenQuake hazardlib\textsuperscript{9}. It uses public distance and site fields as proxy inputs and tests whether the long-period basin-depth association remains visible under another Japan-compatible model family.
+
+\subsection{Held-out station-residual correction}
+
+We test whether remaining station residuals after official MF2013 site correction can be predicted for stations not used in model fitting. The target is the station-mean residual from the MF2013 site model. Stations must have at least 20 records for the target intensity measure. Predictors include log-transformed VS10, VS20, VS30, AVS30, D1100, D1400, D1700, D2100, Dbase, station longitude and latitude, elevation, sensor depth, volcanic-front distance fields, network label, and installation class.
+
+The candidate models are ridge regression with site variables, ridge regression with site and location variables, and gradient-boosted regression with site and location variables. Numeric predictors are median-imputed and standardized within each training fold, and categorical predictors are mode-imputed and one-hot encoded. Ridge regularization is selected with RidgeCV over 25 $\alpha$ values from $10^{-3}$ to $10^3$. The gradient-boosted model is a histogram gradient-boosting regressor with squared-error loss, learning rate 0.04, 400 iterations, 15 maximum leaf nodes, 35 minimum samples per leaf, L2 regularization of 0.1, and random seed 20260612. We evaluate five-fold random station holdout and five-fold spatial-block holdout. Spatial blocks are generated by standardizing station longitude and latitude and clustering stations into five $k$-means blocks with 20 initializations. The baseline is zero additional station correction after the MF2013 site model. Metrics are weighted station-residual MAE and RMSE, using the number of records per station as the weight. This experiment is a station-level test of predictive residual structure.
+
+We also fit an interpretable site-variable model for SA(3.0 s). The model is a ridge regression using D1400, Dbase, AVS30, VS20, D1400-derived basin period $4D1400/700$, public NIED borehole VS20 and upper-20 m softness proxies, volcanic-front distances, elevation, sensor depth, longitude, latitude, and broad Japanese region. It uses the same spatial-block folds and station weights as the held-out model. No station identifier enters this model. The test evaluates whether basin depth, shallow velocity, borehole information, and regional variables recover part of the long-period station term outside the gradient-boosted model.
+
+Additional diagnostics extend the held-out model. Spatial-block ablations separate D1400/AVS30, shallow velocity, basin depth, location, and full feature sets. A seven-region leave-out check holds out Hokkaido, Tohoku, Kanto, Chubu, Kinki, Chugoku--Shikoku, or Kyushu--Okinawa. Official-variable substitutions compare D1400/AVS30, D1400, AVS30, VS20/Dbase, and D1400/AVS30/VS20/Dbase. Grouped permutation importance evaluates shallow velocity, basin depth, location, volcanic-front distance, and station metadata. Network transfer trains on K-NET and tests on KiK-net, then reverses the direction. Engineering-scale examples convert SA(3.0 s) log10 station corrections into spectral-amplitude factors.
+
+We quantify the sensitivity of hazard curves and official response-spectrum ordinates to station correction in two steps. First, a station correction is treated as a spectral ordinate multiplier. If the correction is $c(T)$ in log10 spectral acceleration at period $T$, the multiplier is $f(T)=10^{c(T)}$. For a baseline annual exceedance curve $\lambda_0(S,T)$, this multiplier maps the curve to
+\begin{equation}
+\lambda_c(S,T)=\lambda_0(S/f(T),T).
+\end{equation}
+At an annual exceedance rate $\lambda^\ast$, the corrected ordinate is $S_c(\lambda^\ast,T)=f(T)S_0(\lambda^\ast,T)$. Second, station and sampled-grid multipliers are applied to official J-SHIS 2020 response-spectrum map ordinates at 0.1, 0.2, 0.3, 0.5, 1.0, 2.0, 3.0, and 5.0 s. These maps report 5\%-damped response spectra on engineering bedrock with $V_S=400$ m/s for 50-year exceedance probabilities of 2\%, 5\%, 10\%, and 39\%. Direct station-residual anchors are SA(0.3 s), SA(1.0 s), and SA(3.0 s). The 0.5 and 2.0 s corrections use log-period interpolation between adjacent anchors. The 0.1 and 0.2 s corrections use the 0.3 s anchor, and the 5.0 s correction uses the 3.0 s anchor. The J-SHIS hazard-curve API is used as a reference for local hazard-curve shape. Source recurrence, logic-tree weights, path terms, and model uncertainty remain those of the official products. The UHS lines plotted in Fig. \ref{fig:hazardimpact} retain the original SA(3.0 s)-focused display; the all-period official-map propagation is reported in Supplementary Fig. S14. Spatial-block fold summaries use the held-out folds from the station-residual model. Bootstrap intervals resample matched stations 2000 times and report 95\% intervals for the 5th, 50th, and 95th percentiles.
+
+We build sampled-grid correction-surface checks to test the transition from station multipliers to unobserved meshes. The primary surfaces use gradient-boosted station models with longitude, latitude, elevation, sensor depth, volcanic-front distances, shallow-velocity fields, and basin-depth fields at SA(0.3 s), SA(1.0 s), and SA(3.0 s). Validation leaves out the stored spatial station blocks and predicts the held-out station correction terms from the remaining blocks. Metrics use station record counts as weights and compare the surface with zero additional correction and with a single national mean correction. A nearest-station inverse-distance-weighted surface using 24 stations provides a spatial-smoothing baseline. On the 10,467-mesh public-parameter grid, coordinates are mesh centers and non-coordinate predictors are nearest-station public K-NET/KiK-net site proxies. This calculation closes an all-period official-response-spectrum propagation on the sampled grid. The tested quantity is the response-spectrum ordinate after an observed station term is applied.
+
+We add an independent terrain check using public Geospatial Information Authority of Japan (GSI) DEM PNG elevation tiles\textsuperscript{12}. The check samples mesh-center elevation at zoom level 10, computes local slope from adjacent pixels, and computes 1 km relief as the 95th minus 5th percentile elevation in a 9 by 9 pixel window. Lowland-flat meshes have elevation at or below 100 m, 1 km relief at or below 30 m, and local slope at or below 3 degrees. These terrain fields are external surface-geomorphic proxies and do not enter the MF2013 residual calculation, the station correction surface, or the J-SHIS public-parameter recomputation.
+
+We add a gridded site-amplification check using the public J-SHIS V4 VS400 surface-ground layer\textsuperscript{13}. The check joins the same 10,467 meshes to the 250 m \path{Z-V4-JAPAN-AMP-VS400_M250} table. This table supplies engineering geomorphology code, gridded AVS30, and peak-velocity amplification from engineering bedrock with $V_S=400$ m/s to the ground surface. The joined layer is independent of the MF2013 residual calculation and the PBV residual rows and remains a J-SHIS/NIED public site-amplification product. We compare residual-tail, northeast-Hokkaido, and D1400-window groups against gridded AVS30 and amplification-factor distributions.
+
+We add a paired KiK-net borehole/surface waveform check to test whether the period targeting is visible in waveform-scale site response. The check uses 460 event-station pairs from two KiK-net earthquakes: 288 converted miniSEED surface/downhole pairs and 172 original NIED ASCII pairs converted with header scale factors. Each trace is detrended and demeaned. The surface sensor is identified from station height in the ASCII headers. Horizontal amplitudes are computed from the two horizontal components, and surface/downhole spectral ratios are summarized in six frequency bands from 0.2 to 20 Hz. These ratios test frequency-band targeting and candidate-site behavior. Calibrated nonlinear site-response modeling is outside this waveform check.
+
+We also built a public-parameter check of the J-SHIS Y2024 PBV calculation to document the official-data connection. The check parses public PRM source files, the national 250 m MAP table, hazard-curve API responses, and ANNKI occurrence-pattern weights retrieved from the J-SHIS \texttt{fltinfo} API. It implements the public source-distance and background-frequency components needed to compare reconstructed PBV probabilities with official thresholds. The largest national check uses a deterministic stratified sample of 10,467 meshes spanning geographic bins, PBV quantiles, and geographic extremes, and it produces 41,868 official-threshold rows. A five-point sigma sensitivity check on 1,797 meshes evaluates log10 sigma values from 0.18 to 0.30.
+
+We checked the official J-SHIS 2024 PSHM parameter packages to define the source-model boundary. The check records the official source-parameter files and spatial layers, including source activity parameters, source geometries, occurrence-frequency grids, zoning polygons, interplate/intraplate ratios, attenuation-relation parameter codes, and Pacific/Philippine Sea plate geometry. The source-level production calculation remains the J-SHIS implementation; the public package does not expose every executable calculation switch, spatial-correlation treatment, or logic-tree aggregation step. This study uses the public files to document the source-parameter connection and uses official response-spectrum ordinates as the hazard quantities.
+
+Residual-tail checks use the same 10,467 meshes. We partition residuals by probability level, geographic band, official hazard level, and candidate-source load; link meshes to nearby K-NET/KiK-net stations and public NIED borehole profiles; evaluate D1400-derived 1--3 s basin-period proxies; and compare the residual-tail geography with GSI terrain and J-SHIS VS400 AVS30 and amplification fields. These checks support traceability of the official products used here. The main sensitivity calculation keeps the official response-spectrum ordinates as the baseline values.
+
+
+\section{Results}
+
+\subsection{Record scale and workflow}
+
+The public \path{sub1-v2024} subset contains 333,808 records, including 128,952 K-NET records and 204,856 KiK-net records. The joined tables contain 1,840 source identifiers and 2,581 station identifiers. MF2013 basic residuals retain 322,061 usable rows per target, and D1400/AVS30 site residuals retain 321,732 usable rows per target. The same record screening is used for PGA, SA(0.3 s), SA(1.0 s), and SA(3.0 s), which keeps the period comparison paired and direct.
+
+The workflow links record residuals, station-mean residuals, held-out station prediction, official response-spectrum sensitivity, and public-parameter PSHA checks (Fig. \ref{fig:workflow}). This chain keeps the central claim tied to public records, official site variables, and official J-SHIS spectrum products.
+
+\subsection{Long-period site-term gains}
+
+D1400/AVS30 site terms reduce residual error most strongly at long periods (Fig. \ref{fig:gain}). Mean absolute residual decreases by 1.6\%, 3.9\%, 16.1\%, and 21.2\% for PGA, SA(0.3 s), SA(1.0 s), and SA(3.0 s), respectively. The corresponding MAE values change from 0.4088 to 0.4022, 0.4156 to 0.3995, 0.3855 to 0.3235, and 0.3928 to 0.3096 log10 units.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.78\linewidth]{figures/figure2.pdf}
+\caption{Mean absolute residual reduction from official MF2013 D1400/AVS30 site terms. Values are percentage reductions relative to MF2013 basic. Error bars show event-cluster and station-cluster bootstrap intervals.}
+\label{fig:gain}
+\end{figure}
+
+Clustered uncertainty preserves this ordering. Event-cluster bootstrap 95\% intervals are 1.5--1.7\% for PGA, 3.7--4.1\% for SA(0.3 s), 15.5--16.6\% for SA(1.0 s), and 20.5--21.8\% for SA(3.0 s). Station-cluster intervals are wider but keep the same pattern: 0.9--2.3\%, 2.7--5.1\%, 14.4--17.7\%, and 19.4--22.9\%. The 1--3 s band is the main residual target in this dataset.
+
+\subsection{Station residuals identify site-structure proxies}
+
+Station-mean residuals show strong associations with official site parameters before site correction (Fig. \ref{fig:correlation}). The largest long-period association is SA(3.0 s) residuals versus log10(D1400), with Spearman $\rho=0.614$. SA(3.0 s) also correlates with log10(Dbase) at $\rho=0.552$. SA(1.0 s) correlates with log10(VS20) at $\rho=-0.571$.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.82\linewidth]{figures/figure3.pdf}
+\caption{Station residual correlations with official site parameters before and after MF2013 site correction. Values are Spearman correlations between station-mean residuals and log10-transformed site parameters.}
+\label{fig:correlation}
+\end{figure}
+
+After D1400/AVS30 correction, the main long-period basin-depth association is largely removed. The SA(3.0 s) residual correlation with log10(D1400) decreases from $\rho=0.614$ to $\rho=-0.025$, an absolute reduction of 0.589. Correlations with log10(D1100) and log10(Dbase) decrease by 0.515 and 0.447. These changes show that the official MF2013 site terms absorb much of the long-period basin-related station residual structure.
+
+\subsection{The period ordering is stable}
+
+The long-period gain appears in both networks and all source-type subsets (Fig. \ref{fig:subgroup}). K-NET reductions are 12.7\% for SA(1.0 s) and 15.9\% for SA(3.0 s). KiK-net reductions are 17.6\% and 23.6\%. Crustal, interplate, and intraplate subsets give SA(1.0 s) reductions of 16.6\%, 16.9\%, and 14.2\%, and SA(3.0 s) reductions of 25.7\%, 20.7\%, and 17.5\%.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.82\linewidth]{figures/figure4.pdf}
+\caption{Network and source-type stability of long-period site-term gains. Positive SA(1.0 s) and SA(3.0 s) gains occur in K-NET, KiK-net, crustal, interplate, and intraplate subsets.}
+\label{fig:subgroup}
+\end{figure}
+
+Magnitude and distance strata retain the same ordering. Magnitude-bin reductions are 15.56--17.25\% for SA(1.0 s) and 19.25--25.63\% for SA(3.0 s). Fault-distance-bin reductions are 14.81--16.48\% and 17.19--23.31\%. The Zhao et al. model check\textsuperscript{2} gives station residual correlations with log10(D1400) of $\rho=-0.028$, 0.063, 0.316, and 0.513 for PGA, SA(0.3 s), SA(1.0 s), and SA(3.0 s). A second Japan-compatible model family preserves the long-period basin-depth signal.
+
+\subsection{Remaining station residuals are predictable}
+
+The held-out station experiment tests the residual structure left after official MF2013 site correction. The gradient-boosted site-plus-location model gives the strongest performance (Fig. \ref{fig:station_model}). In random station holdouts, weighted RMSE reductions are 60.9\%, 54.1\%, 53.5\%, and 61.4\% for PGA, SA(0.3 s), SA(1.0 s), and SA(3.0 s). In spatial-block holdouts, the reductions are 45.6\%, 41.7\%, 38.9\%, and 44.3\%.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/figure6.pdf}
+\caption{Held-out prediction of remaining station residuals after MF2013 site correction. Bars show weighted station-residual RMSE reduction relative to zero additional station correction. Error bars show standard deviation across five folds.}
+\label{fig:station_model}
+\end{figure}
+
+Additional validation narrows the modeling target. A seven-region leave-out check gives a 47.8\% SA(3.0 s) reduction for the full site-and-location model and a 39.4\% reduction for the compact D1400/AVS30/VS20/Dbase set. Spatial-block ablations show that D1400/AVS30, shallow velocity, basin depth, and location each contribute at long periods; the full model reaches a 47.1\% SA(3.0 s) reduction. K-NET/KiK-net transfer remains positive for SA(3.0 s), with reductions of 36.7\% from K-NET to KiK-net and 19.1\% in the reverse direction. The independent interpretable site-variable model reduces spatial-block SA(3.0 s) RMSE by 34.7\% relative to zero correction and gives a held-out observed-predicted correlation of 0.294 (Supplementary Fig. S15). Its gain over a national-mean correction is small, 0.4\%, so the result serves as physical support for the stronger held-out station model.
+
+\subsection{Station multipliers affect official response spectra}
+
+Across 2261 held-out SA(3.0 s) stations, the 5th, 50th, and 95th percentile station multipliers are 0.414, 0.619, and 0.862, with a full range from 0.163 to 1.550. All 2261 stations match an official J-SHIS 250 m response-spectrum grid cell. At the 50-year 10\% exceedance level, official SA(3.0 s) ordinates have 5th, 50th, and 95th percentiles of 0.034, 0.076, and 0.202 g. Applying the station multiplier changes these values to 0.019, 0.048, and 0.130 g (Fig. \ref{fig:hazardimpact}). At the 50-year 2\% and 5\% levels, median ordinates change from 0.119 to 0.074 g and from 0.092 to 0.058 g. Positive corrections are uncommon: 24 of 2261 stations, or 1.1\%, have multipliers greater than 1.
+
+The public-parameter PBV check evaluates the official hazard-data interface. The 10,467-mesh national stratified run produces 41,868 official-threshold rows, all with status \texttt{ok}, no failed rows, no zero-probability rows, and no duplicate mesh-probability rows. Residual medians at the 50-year 2\%, 5\%, 10\%, and 39\% official PBV thresholds are 0.011, 0.011, -0.012, and -0.030 log10 units; the global RMSE is 0.380. A five-point sigma check selects 0.23 by global RMSE and shows probability-level dependence. The source-parameter closure check confirms the coverage of the official PRM files and shapefile layers used in this comparison.
+
+Residual-tail diagnostics identify where the public-parameter reconstruction residuals remain structured. Rows with $|\log_{10}$ residual$|\geq0.70$ account for 6.0\% of all rows, and 16.7\% of sampled meshes have at least one probability level above that threshold. The strongest coarse geographic tail occurs in northeast Hokkaido. Nearby-station, basin-period, tail-robustness, borehole-profile, GSI terrain, and VS400 site-amplification checks support proxy-level physical consistency: 92.8\% of meshes have a K-NET/KiK-net station within 50 km, 98.6\% link to public NIED borehole profiles, GSI terrain samples cover 95.1\%, and all 10,467 meshes join to VS400 AVS30 and amplification fields. Lowest-quartile gridded AVS30 meshes have a residual-tail risk ratio of 1.44.
+
+The sampled-grid correction-surface check tests the station-to-grid step at the response-spectrum periods used for official maps (Fig. \ref{fig:spatial_evidence}; Supplementary Fig. S14). In spatial-block held-out validation, the site-and-location surfaces reduce weighted RMSE by 62.4\%, 65.5\%, and 72.6\% relative to zero additional correction at SA(0.3 s), SA(1.0 s), and SA(3.0 s), respectively. The corresponding weighted RMSE values are 0.1200, 0.0785, and 0.0630 log10 units. On the 10,467 sampled meshes, the 50-year 10\% median multipliers are 1.045 at 0.1--0.3 s, 0.966 at 0.5 s, 0.834 at 1.0 s, 0.720 at 2.0 s, and 0.658 at 3.0--5.0 s. The official input-chain check links this calculation to the public J-SHIS source-model files. The propagated quantity remains the official response-spectrum ordinate, with source recurrence, path modeling, spatial correlation, and logic-tree aggregation kept in the official product.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/figure8a.pdf}
+\caption{Official response-spectrum sensitivity to SA(3.0 s) station multipliers. A: distribution of station multipliers for spatial-block held-out stations. B: official and station-corrected SA(3.0 s) ordinate quantiles at 50-year 2\%, 5\%, 10\%, and 39\% exceedance probabilities. C: matched 250 m station-mesh official and corrected SA(3.0 s) ordinates at the 50-year 10\% level. D: representative 50-year 10\% uniform-hazard spectra after adjusting the SA(3.0 s) ordinate; dashed lines show official spectra and solid lines show adjusted spectra.}
+\label{fig:hazardimpact}
+\end{figure}
+
+The multi-event KiK-net waveform check gives an independent frequency-domain test (Fig. \ref{fig:hazardphysical}; Supplementary Fig. S13). The 460 surface/borehole event-station pairs have a median horizontal PGA ratio of 1.46; 333 pairs exceed 1 and 138 exceed 2. The converted miniSEED event has a median horizontal PGA ratio of 1.11 and median surface/downhole spectral ratios of 2.38 and 1.15 in the 0.2--0.5 and 1--2 Hz bands. The NIED ASCII event has a median horizontal PGA ratio of 2.35 and corresponding spectral ratios of 1.05 and 1.52. The combined frequency-band medians are 1.8, 1.4, 1.3, 1.1, 0.85, and 1.1 from 0.2--0.5 to 10--20 Hz. These observed transfer functions support the low-frequency targeting and show event-dependent site response. Calibrated nonlinear site-response modeling remains outside the present scope.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/figure8b.pdf}
+\caption{Independent physical checks for the long-period station term. A: multi-event KiK-net surface/downhole spectral ratios from 460 event-station pairs. B: northeast-Hokkaido residual-tail case on the 10,467-mesh sampled grid.}
+\label{fig:hazardphysical}
+\end{figure}
+
+Representative engineering locations show the scale of the response-spectrum change (Fig. \ref{fig:engineering_cases}). We selected the matched K-NET/KiK-net station nearest to Tokyo, Osaka, Sapporo, and Sendai, plus the nearest matched station to the northeast-Hokkaido/Soya case area. The distances are 2.4, 3.6, 8.6, 5.0, and 45.4 km. At the 50-year 10\% level, SA(3.0 s) changes by -34.6\%, -42.4\%, -1.0\%, -37.2\%, and -16.8\%. The corresponding SA(1.0 s) changes are -19.3\%, -19.8\%, +16.2\%, -28.8\%, and +1.1\%. These examples show that the station term changes the long-period spectra used for site screening and engineering comparison.
+
+The uncertainty summaries keep the same interpretation. For SA(3.0 s), the bootstrap 95\% intervals for the 5th, 50th, and 95th percentile station-level percentage shifts are -59.6 to -57.4\%, -38.5 to -37.4\%, and -15.6 to -12.4\%. Under spatial-block folds, sampled-grid RMSE reductions span 36.8--76.4\%, 54.9--73.5\%, and 68.8--78.7\% at SA(0.3 s), SA(1.0 s), and SA(3.0 s). The uncertainty check supports a stable hazard-spectrum effect at the target periods.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.96\linewidth]{figures/figure9_engineering_cases_uncertainty.pdf}
+\caption{Representative city-nearest response spectra and uncertainty checks. A: official and station-corrected 50-year 10\% response spectra at the matched stations nearest to Tokyo, Osaka, Sapporo, Sendai, and the northeast-Hokkaido/Soya case area. Dashed lines show official spectra and solid lines show spectra after station correction. B: percentage changes at SA(1.0 s), SA(3.0 s), and SA(5.0 s). C: bootstrap 95\% intervals for the 5th, 50th, and 95th percentile station-level SA(3.0 s) percentage shifts. D: spatial-block fold ranges for correction-surface RMSE reduction at SA(0.3 s), SA(1.0 s), and SA(3.0 s).}
+\label{fig:engineering_cases}
+\end{figure}
+
+\section{Discussion}
+
+The results identify 1--3 s residuals as the clearest target for non-ergodic site terms in Japan. D1400/AVS30 site terms produce small PGA and SA(0.3 s) gains, then large SA(1.0 s) and SA(3.0 s) gains. Clustered resampling, network subsets, source-type subsets, magnitude and distance strata, and the Zhao model check preserve this ordering. Held-out station tests show that the remaining station term is predictable from public site and station variables, and the interpretable site-variable model recovers part of the same SA(3.0 s) structure with basin, velocity, borehole, and regional predictors.
+
+D1400 and Dbase are basin-depth proxies; AVS30, VS20, borehole VS20, and VS400 AVS30 describe shallow stiffness or surface amplification. The main long-period D1400 association disappears after official site correction, which shows that MF2013 captures a major part of the basin-related residual. Borehole, GSI, VS400, and multi-event KiK-net waveform checks add information outside the residual calculation. The KiK-net check shows low-frequency amplification in observed surface/downhole transfer functions and event-dependent response across bands. Three-dimensional basin-edge geometry, calibrated nonlinear response, and full-archive KiK-net transfer-function modeling remain mechanism-focused follow-up work.
+
+The public source-parameter check defines the boundary for the J-SHIS comparison. We use public source files and official threshold data for a sampled-grid consistency check, while the official production implementation remains the J-SHIS system. Remaining reconstruction tails depend on probability level, official hazard amplitude, source-candidate structure, and geography. Northeast Hokkaido is the clearest regional case. Its tail fraction is 45.5\%, compared with 7.3\% outside the band, and the nearest-station median D1400 is 212 m, compared with 75 m outside the band. Basin-period, borehole, terrain, VS400, and published low-frequency amplification evidence point to the same regional source-site-basin setting\textsuperscript{14}.
+
+The hazard result is the link between repeated station residuals and official response-spectrum ordinates. The SA(3.0 s) station multiplier changes the 3 s part of the official 50-year spectrum at matched station meshes, and the all-period propagation carries anchored and interpolated station terms through the official response-spectrum map periods on 10,467 sampled meshes. Representative city-nearest spectra show changes large enough to affect long-period engineering comparisons in Tokyo, Osaka, Sendai, and the northeast-Hokkaido/Soya case area. The calculation measures the direct effect of the observed station term on traceable official ordinates; source recurrence, path modeling, spatial correlation, and logic-tree aggregation remain in the official J-SHIS product.
+
+The sampled-grid correction surface extends the station term beyond observed stations. It outperforms zero correction and a national mean correction under spatial-block validation; a distance-weighted baseline falls below the national mean. The useful signal is tied to site, basin, and spatial information. The workflow transfers most directly to regions with dense repeated strong-motion records, station metadata, and public hazard spectra or hazard curves. A source-level non-ergodic PSHA update would place the station field inside a validated production calculation with period-dependent sigma, spatial correlation, and logic-tree treatment; this study supplies the observation-to-spectrum evidence for that step.
+
+\section{Conclusions}
+
+Public Japanese strong-motion records contain a stable long-period site-residual signal. MF2013 D1400/AVS30 terms reduce mean absolute residuals by 16.1\% at SA(1.0 s) and 21.2\% at SA(3.0 s), compared with 1.6\% for PGA and 3.9\% for SA(0.3 s). The SA(3.0 s) residual correlation with log10(D1400) decreases from 0.614 to -0.025 after site correction, showing that the official site terms absorb much of the long-period basin-depth structure.
+
+The remaining station residuals are predictable. Spatial-block held-out models reduce weighted RMSE by 38.9\% at SA(1.0 s) and 44.3\% at SA(3.0 s), and seven-region leave-out validation keeps the SA(3.0 s) reduction positive. An interpretable site-variable model recovers part of the SA(3.0 s) term, and a sampled-grid correction surface provides a 10,467-mesh multiplier field.
+
+Applying SA(3.0 s) station multipliers to official J-SHIS response-spectrum meshes changes the 50-year 10\% median ordinate from 0.076 to 0.048 g. The all-period sampled-grid propagation gives 50-year 10\% median multipliers of 1.045 at 0.3 s, 0.834 at 1.0 s, and 0.658 at 3.0--5.0 s. Public-parameter source, sigma, tail, borehole, KiK-net transfer-function, GSI terrain, and VS400 site-amplification checks make the calculation traceable and constrain the mechanism at proxy level. The supported target for Japan non-ergodic site-response modeling is the 1--3 s spectral band.
+
+\section*{Data availability}
+
+The primary strong-motion data are publicly available from the J-SHIS/NIED Strong Ground Motion Flat File under DOI \url{https://doi.org/10.17598/NIED.0032}; this study uses the public \path{sub1-v2024} subset. MF2013 coefficients are available from the J-SHIS/NIED MF2013 page. J-SHIS hazard-curve API outputs, 2020 response-spectrum map data, Y2024 MAP data, public PRM files, ANNKI pattern weights from the J-SHIS \texttt{fltinfo} API, and V4 VS400 surface-ground/site-amplification data are publicly available from J-SHIS. NIED Kyoshin station-information pages provide the K-NET/KiK-net borehole profile records used in the nearest-station profile check. GSI public DEM PNG elevation tiles provide the terrain geomorphic check. Raw flatfile records, raw KiK-net waveforms, full J-SHIS map archives, and cached GSI tiles are not redistributed in the manuscript package. Derived aggregate tables, figure source data, check files, release metadata, checksums, and command notes for this study are available in the project repository at \url{https://github.com/zhouhaoyiu/japan-strong-motion-site-terms}.
+
+\section*{Code availability}
+
+The code and derived-output release is available at \url{https://github.com/zhouhaoyiu/japan-strong-motion-site-terms}. The release contains the analysis scripts, environment file, and command notes used to generate the aggregate outputs and figures. It includes regional leave-out validation, official-variable substitution, positive-correction station checks, matching/missingness checks, OpenQuake/GEM Japan-model PSHA sensitivity, public J-SHIS PSHA check scripts, national tiled-run tooling, 10,467-mesh aggregation tooling, official PSHA input-chain check scripts, all-period official-response-spectrum propagation scripts, representative city-nearest spectra and uncertainty checks, sigma-sensitivity scripts, residual-root-cause diagnostics, near-station physical-check scripts, basin-period proxy scripts, tail-robustness case-profile scripts, nearest-station borehole-profile scripts, multi-event KiK-net transfer-function check scripts, sampled-grid continuous correction-surface scripts, GSI terrain geomorphic check scripts, VS400 site-amplification check scripts, and data-release metadata. The release excludes raw J-SHIS/NIED records and can be rerun after the public input files are obtained under the relevant data-use terms.
+
+\section*{Artificial intelligence use}
+
+AI-assisted tools were used only for manuscript-format checks and word-level language polishing. The authors are responsible for the final text, code, analyses, data interpretation, and compliance with journal and data-use policies.
+
+\section*{Author contributions}
+
+H.Z. designed the analysis, processed the public datasets, performed the computations, prepared the figures, and wrote the manuscript. Q.M. supervised the study and reviewed the manuscript.
+
+\section*{Funding}
+
+This research received no specific grant from any funding agency in the public, commercial, or not-for-profit sectors.
+
+\section*{Competing interests}
+
+The authors declare no competing interests.
+
+\section*{Acknowledgements}
+
+The authors thank the National Research Institute for Earth Science and Disaster Resilience and J-SHIS for making the K-NET/KiK-net strong-motion flatfile, MF2013 coefficient information, hazard-curve API, response-spectrum map products, and surface-ground site-amplification data publicly available. This study used public K-NET, KiK-net, and J-SHIS data products.
+
+\section*{References}
+\footnotesize
+\setstretch{0.96}
+\setlength{\parskip}{0.08em}
+\sloppy
+\raggedright
+
+\begin{enumerate}
+\setlength{\itemsep}{0.10em}
+
+\item Morikawa, N. \& Fujiwara, H. A New Ground Motion Prediction Equation for Japan Applicable up to M9 Mega-Earthquake. \textit{J. Disaster Res.} \textbf{8}, 878--888 (2013).
+
+\item Zhao, J. X. et al. Attenuation Relations of Strong Ground Motion in Japan Using Site Classification Based on Predominant Period. \textit{Bull. Seismol. Soc. Am.} \textbf{96}, 898--913 (2006).
+
+\item Stewart, J. P., Afshari, K. \& Goulet, C. A. Non-Ergodic Site Response in Seismic Hazard Analysis. \textit{Earthq. Spectra} \textbf{33}, 1385--1414 (2017).
+
+\item Lavrentiadis, G. et al. Overview and introduction to development of non-ergodic earthquake ground-motion models. \textit{Bull. Earthq. Eng.} \textbf{21}, 5121--5150 (2023).
+
+\item Lacour, M. Efficient non-ergodic ground-motion prediction for large datasets. \textit{Bull. Earthq. Eng.} \textbf{21}, 5209--5232 (2023).
+
+\item National Research Institute for Earth Science and Disaster Resilience. Strong Ground Motion Flat File. National Research Institute for Earth Science and Disaster Resilience \url{https://doi.org/10.17598/NIED.0032} (2025).
+
+\item Morikawa, N., Iwaki, A., Fujiwara, H. et al. Flat file of K-NET and KiK-net strong-motion records. In \textit{Proc. 18th World Conf. Earthq. Eng.}, Milan, Italy, 30 June--5 July (2024).
+
+\item J-SHIS/NIED. Ground Motion Prediction Equation based on Morikawa and Fujiwara (2013). \url{https://www.j-shis.bosai.go.jp/en/labs/mf2013/} (2023).
+
+\item Pagani, M. et al. OpenQuake Engine: An Open Hazard (and Risk) Software for the Global Earthquake Model. \textit{Seismol. Res. Lett.} \textbf{85}, 692--702 (2014).
+
+\item Parker, G. A. \& Stewart, J. P. Ergodic site response model for subduction zone regions. \textit{Earthq. Spectra} \textbf{38}, 841--864 (2022).
+
+\item de la Torre, C. A. et al. Analysis of site-response residuals from empirical ground-motion models to account for observed sedimentary basin effects in Wellington, New Zealand. \textit{Earthq. Spectra} \textbf{40}, 2475--2503 (2024).
+
+\item Geospatial Information Authority of Japan. GSI Maps elevation tile specification. \url{https://maps.gsi.go.jp/development/demtile.html} (accessed 15 June 2026).
+
+\item J-SHIS/NIED. J-SHIS WMS public surface-ground model fields. \url{https://www.j-shis.bosai.go.jp/map/wms/landshallows2020} (accessed 15 June 2026).
+
+\item Nozu, A. The region of large site amplification in Northern Hokkaido, Japan, extends to the eastern Soya Region. \textit{Earth Planets Space} \textbf{75}, 177 (2023). \url{https://doi.org/10.1186/s40623-023-01936-y}
+
+\end{enumerate}
+
+\end{document}

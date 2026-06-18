@@ -1,0 +1,7 @@
+check,status,rows,path
+Event-exclusion sensitivity,available,32,outputs/jshis_mf2013_event_exclusion_sensitivity.csv
+Station-exclusion sensitivity,available,28,outputs/jshis_mf2013_station_exclusion_sensitivity.csv
+Magnitude-bin sensitivity,available,20,outputs/jshis_mf2013_magnitude_bin_sensitivity.csv
+Distance-bin sensitivity,available,16,outputs/jshis_mf2013_distance_bin_sensitivity.csv
+Zhao et al. (2006) external GMPE overall metrics,available,4,outputs/jshis_zhao2006_external_gmpe_overall_metrics.csv
+Zhao et al. (2006) station-site correlations,available,32,outputs/jshis_zhao2006_external_gmpe_station_site_correlations.csv

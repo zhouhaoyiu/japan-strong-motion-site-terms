@@ -1,0 +1,4 @@
+asset,url,local_cache_path,size_bytes,redistributed,use_in_this_study
+P-Y2024-PRM.zip,https://www.j-shis.bosai.go.jp/map/JSHIS2/data/P/Y2024/P-Y2024-PRM.zip,work/jshis_full_psha_audit/downloaded/P-Y2024-PRM.zip,15861394,no,Local official parameter audit only; derived inventory tables are redistributed.
+P-Y2024-PRM-SHAPE.zip,https://www.j-shis.bosai.go.jp/map/JSHIS2/data/P/Y2024/PRM/P-Y2024-PRM-SHAPE.zip,work/jshis_full_psha_audit/downloaded/P-Y2024-PRM-SHAPE.zip,7242870,no,Local official geometry audit only; derived inventory tables are redistributed.
+J-SHIS file format specification,https://www.j-shis.bosai.go.jp/map/JSHIS2/data/DOC/DataFileRule/A-RULES_en.pdf,work/jshis_full_psha_audit/docs/A-RULES_en.pdf,,no,Field definitions and file naming rules.

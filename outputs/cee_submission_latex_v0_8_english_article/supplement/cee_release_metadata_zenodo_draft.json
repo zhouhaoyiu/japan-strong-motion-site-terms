@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "title": "Station residual correction checks for Japanese strong-motion records and official hazard spectra",
+    "upload_type": "dataset",
+    "description": "Derived station-level residual tables, official J-SHIS response-spectrum checks, official PSHA input-chain audit files, multi-event KiK-net transfer-function outputs, and scripts supporting the manuscript. Original J-SHIS/NIED products should be obtained from the official provider.",
+    "creators": [
+      {
+        "name": "Zhou, Haoyu",
+        "affiliation": "Institute of Engineering Mechanics, China Earthquake Administration",
+        "orcid": "0009-0003-8817-1209"
+      },
+      {
+        "name": "Ma, Qiang",
+        "affiliation": "Institute of Engineering Mechanics, China Earthquake Administration",
+        "orcid": "0000-0002-9768-5223"
+      }
+    ],
+    "keywords": [
+      "strong-motion records",
+      "station residuals",
+      "non-ergodic ground motion",
+      "Japan",
+      "J-SHIS",
+      "hazard spectra"
+    ],
+    "license": "cc-by-4.0",
+    "access_right": "open",
+    "related_identifiers": [
+      {
+        "identifier": "https://www.j-shis.bosai.go.jp/",
+        "relation": "isDerivedFrom",
+        "resource_type": "dataset"
+      },
+      {
+        "identifier": "https://doi.org/10.1785/0120120097",
+        "relation": "cites",
+        "resource_type": "publication-article"
+      },
+      {
+        "identifier": "https://doi.org/10.1785/0120050122",
+        "relation": "cites",
+        "resource_type": "publication-article"
+      }
+    ],
+    "notes": "Repository: https://github.com/zhouhaoyiu/japan-strong-motion-site-terms. No specific funding is declared for this manuscript package. Do not deposit raw J-SHIS/NIED flatfiles, extracted raw tables, waveform files, or cached GSI tiles."
+  }
+}
