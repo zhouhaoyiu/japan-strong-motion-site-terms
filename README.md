@@ -2,7 +2,7 @@
 
 This repository contains the reproducible analysis and manuscript package for **Repeatable station terms redistribute long-period response spectra across Japanese strong-motion sites**.
 
-The study starts from 333,808 public K-NET and KiK-net records and retains 222,664 ground-surface records at each of eight directly observed periods. The primary MF2013 calculation uses model-compatible RotD100 spectra. Residuals are decomposed into global, event and station components, then tested across held-out events, a Zhao 2006 calculation, spatial blocks, networks, fixed macroregions, influential-event deletions and path/source strata. Cross-validated station predictions and empirical prediction intervals are applied to matched J-SHIS response-spectrum ordinates after converting the official `Vs=400 m/s` reference to each station's AVS30 condition.
+The study starts from 333,808 public K-NET and KiK-net records. The archive contains 231,380 ground-surface records; requiring finite F-net moment magnitude and positive AVS30 leaves 222,664 records at each of eight directly observed periods. The primary MF2013 calculation uses model-compatible RotD100 spectra. Residuals are decomposed into global, event and station components, then tested across held-out events, a Zhao 2006 calculation, spatial blocks, networks, fixed macroregions, influential-event deletions and path/source strata. Cross-validated station predictions and empirical prediction intervals are applied to matched J-SHIS response-spectrum ordinates after converting the official `Vs=400 m/s` reference to each station's AVS30 condition.
 
 ## Main result
 

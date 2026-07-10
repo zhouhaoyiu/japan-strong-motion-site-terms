@@ -188,6 +188,24 @@ def align_component_terms(
     return pd.concat(paired_blocks, ignore_index=True) if paired_blocks else None
 
 
+def weighted_group_centered_correlation(
+    first: np.ndarray,
+    second: np.ndarray,
+    weights: np.ndarray,
+    groups: pd.Series,
+) -> float:
+    """Correlate values after removing an independent offset in each graph block."""
+    first_centered = np.empty_like(first, dtype=float)
+    second_centered = np.empty_like(second, dtype=float)
+    group_values = groups.to_numpy()
+    for group in pd.unique(group_values):
+        selected = group_values == group
+        group_weights = weights[selected]
+        first_centered[selected] = first[selected] - np.average(first[selected], weights=group_weights)
+        second_centered[selected] = second[selected] - np.average(second[selected], weights=group_weights)
+    return weighted_correlation(first_centered, second_centered, weights)
+
+
 def compare_stratum(
     subset: pd.DataFrame,
     full_terms: pd.DataFrame,
@@ -237,6 +255,12 @@ def compare_stratum(
             np.average(paired["reference_alignment_shift_log10"], weights=weights)
         ),
         "weighted_station_term_correlation": weighted_correlation(full_values, aligned, weights),
+        "weighted_within_component_correlation": weighted_group_centered_correlation(
+            full_values,
+            aligned,
+            weights,
+            paired["graph_component"],
+        ),
         "station_term_spearman": float(pd.Series(full_values).corr(pd.Series(aligned), method="spearman")),
         "weighted_rmse_difference_log10": core.weighted_rmse(full_values, aligned, weights),
         "weighted_mean_absolute_difference_log10": core.weighted_mae(full_values, aligned, weights),
@@ -375,19 +399,27 @@ def split_half_repeatability(
                             "stratum_n_records",
                             "full_station_effect_log10",
                             "aligned_stratum_station_effect_log10",
+                            "graph_component",
                         ]
                     ].rename(
                         columns={
                             "stratum_n_records": "half_a_n_records",
                             "aligned_stratum_station_effect_log10": "half_a_station_effect_log10",
+                            "graph_component": "half_a_graph_component",
                         }
                     )
                     half_b = aligned_halves[1][
-                        ["siteid2", "stratum_n_records", "aligned_stratum_station_effect_log10"]
+                        [
+                            "siteid2",
+                            "stratum_n_records",
+                            "aligned_stratum_station_effect_log10",
+                            "graph_component",
+                        ]
                     ].rename(
                         columns={
                             "stratum_n_records": "half_b_n_records",
                             "aligned_stratum_station_effect_log10": "half_b_station_effect_log10",
+                            "graph_component": "half_b_graph_component",
                         }
                     )
                     paired = half_a.merge(half_b, on="siteid2", how="inner", validate="one_to_one")
@@ -397,6 +429,11 @@ def split_half_repeatability(
                     full_values = paired["full_station_effect_log10"].to_numpy(float)
                     half_a_values = paired["half_a_station_effect_log10"].to_numpy(float)
                     half_b_values = paired["half_b_station_effect_log10"].to_numpy(float)
+                    component_pairs = (
+                        paired["half_a_graph_component"].astype(str)
+                        + ":"
+                        + paired["half_b_graph_component"].astype(str)
+                    )
                     rows.append(
                         {
                             "period_s": spec.period_s,
@@ -407,9 +444,18 @@ def split_half_repeatability(
                             "n_events_half_a": len(event_halves[0]),
                             "n_events_half_b": len(event_halves[1]),
                             "n_paired_stations": len(paired),
+                            "n_components_half_a_retained": paired["half_a_graph_component"].nunique(),
+                            "n_components_half_b_retained": paired["half_b_graph_component"].nunique(),
+                            "n_component_pairs": component_pairs.nunique(),
                             "paired_record_weight": int(weights.sum()),
                             "weighted_split_half_correlation": weighted_correlation(
                                 half_a_values, half_b_values, weights
+                            ),
+                            "weighted_split_half_correlation_within_component": weighted_group_centered_correlation(
+                                half_a_values,
+                                half_b_values,
+                                weights,
+                                component_pairs,
                             ),
                             "split_half_spearman": float(
                                 pd.Series(half_a_values).corr(pd.Series(half_b_values), method="spearman")
@@ -452,7 +498,7 @@ def save_figure(summary: pd.DataFrame, repeatability: pd.DataFrame) -> None:
     markers = ["o", "s", "^", "D"]
     repeatability_mean = (
         repeatability.groupby(["period_s", "stratification", "stratum"], as_index=False)
-        ["weighted_split_half_correlation"]
+        ["weighted_split_half_correlation_within_component"]
         .mean()
     )
     fig, axes = plt.subplots(1, 3, figsize=(7.4, 2.9), sharey=True, constrained_layout=True)
@@ -477,7 +523,7 @@ def save_figure(summary: pd.DataFrame, repeatability: pd.DataFrame) -> None:
             ].sort_values("period_s")
             ax.semilogx(
                 repeat["period_s"],
-                repeat["weighted_split_half_correlation"],
+                repeat["weighted_split_half_correlation_within_component"],
                 color=colors[index],
                 marker=markers[index],
                 linestyle="--",
@@ -514,7 +560,7 @@ def write_audit(
         "- The primary RotD100 residuals are re-estimated within four hypocentral-bearing sectors, four shortest-fault-distance bins and three J-SHIS source classes.",
         "- Each stratum is separated into connected station-event graph components and solved by sparse least squares. This preserves the primary additive event-station model without imposing offsets between disconnected components.",
         f"- A station requires at least {min_stratum_records} records within a stratum. A connected component requires at least {min_component_stations} supported stations. Each retained component is aligned to the full-sample field by its record-weighted mean difference before comparison.",
-        f"- Sampling reliability is evaluated with repeated disjoint event halves at 1, 2 and 3 s. Each station requires at least {min_half_records} records per half; component offsets are aligned to the full-sample reference before the halves are compared.",
+        f"- Sampling reliability is evaluated with repeated disjoint event halves at 1, 2 and 3 s. Each station requires at least {min_half_records} records per half. We report both the reference-aligned correlation and a correlation after removing an independent weighted offset from every intersecting component pair.",
         "",
         "## Results at 1-3 s",
         "",
@@ -535,7 +581,10 @@ def write_audit(
     repeatability_means = (
         repeatability.groupby(["period_s", "stratification", "stratum"], as_index=False)
         .agg(
-            mean_split_half_correlation=("weighted_split_half_correlation", "mean"),
+            mean_split_half_correlation=(
+                "weighted_split_half_correlation_within_component",
+                "mean",
+            ),
             minimum_paired_stations=("n_paired_stations", "min"),
         )
     )
@@ -547,10 +596,24 @@ def write_audit(
     ]:
         block = repeatability_means[repeatability_means["stratification"].eq(dimension)]
         lines.append(
-            f"- {label}: mean split-half correlations span "
+            f"- {label}: mean within-component split-half correlations span "
             f"{block['mean_split_half_correlation'].min():.3f}--{block['mean_split_half_correlation'].max():.3f}; "
             f"each split retains at least {int(block['minimum_paired_stations'].min()):,} paired stations."
         )
+    component_free = (
+        repeatability.groupby(["stratification", "stratum"], as_index=False)
+        .agg(
+            reference_aligned=("weighted_split_half_correlation", "mean"),
+            within_component=("weighted_split_half_correlation_within_component", "mean"),
+        )
+    )
+    component_free["alignment_effect"] = (
+        component_free["reference_aligned"] - component_free["within_component"]
+    ).abs()
+    lines.append(
+        "- Largest absolute change after removing component-pair offsets: "
+        f"{component_free['alignment_effect'].max():.3f}."
+    )
     lines.extend(
         [
             f"- Maximum relative normal-equation residual across all component solves: {summary['solver_max_relative_normal_residual'].max():.3e}.",
@@ -558,7 +621,7 @@ def write_audit(
             "",
             "## Interpretation boundary",
             "",
-            "The bearing is the initial great-circle direction from the event horizontal coordinates to the station; it is a reproducible directional proxy rather than a finite-fault ray path. Component-specific alignment removes offsets that are not identifiable in disconnected station-event graphs. Distance and source-class subsets contain fewer records per station, so their differences combine sampling uncertainty with any unresolved path dependence. This audit tests whether the station field is dominated by one path sector or source class. It does not identify a path-specific nonergodic term or fully separate site and path effects.",
+            "The bearing is the initial great-circle direction from the event horizontal coordinates to the station; it is a reproducible directional proxy rather than a finite-fault ray path. Component-specific alignment removes offsets that are not identifiable in disconnected station-event graphs. Reported split-half correlations are invariant to those offsets because each intersecting component pair is centred independently. Distance and source-class subsets contain fewer records per station, so their differences combine sampling uncertainty with any unresolved path dependence. This audit tests whether the station field is dominated by one path sector or source class. It does not identify a path-specific nonergodic term or fully separate site and path effects.",
         ]
     )
     OUT_AUDIT.write_text("\n".join(lines) + "\n", encoding="utf-8")

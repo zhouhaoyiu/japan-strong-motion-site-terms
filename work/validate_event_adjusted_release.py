@@ -42,12 +42,16 @@ def validate_files() -> None:
         ARTICLE / "supplementary_information.pdf",
         ARTICLE / "build_event_adjusted_supplement_figures.py",
         ROOT / "work" / "jshis_event_adjusted_station_model.py",
+        ROOT / "work" / "audit_jshis_flatfile_selection.py",
         ROOT / "work" / "jshis_independent_gmpe_replication.py",
         ROOT / "work" / "jshis_station_uncertainty_propagation.py",
+        ROOT / "work" / "jshis_spatial_model_complexity_audit.py",
         ROOT / "work" / "jshis_robustness_stress_tests.py",
         ROOT / "work" / "jshis_path_stratification_audit.py",
         ROOT / "work" / "jshis_balanced_station_model.py",
         ROOT / "work" / "verify_public_inputs.py",
+        ROOT / "work" / "build_cee_initial_submission_package.py",
+        ROOT / "work" / "validate_compact_peer_review_archive.py",
         ROOT / "environment.yml",
         ROOT / "public_inputs_manifest.tsv",
         ARTICLE / "figures" / "figure_ground_motion_model_sensitivity.pdf",
@@ -55,6 +59,10 @@ def validate_files() -> None:
         ARTICLE / "figures" / "supplementary_figure_robustness_stress_tests.pdf",
         ARTICLE / "figures" / "figure_path_stratification.pdf",
         ARTICLE / "figures" / "supplementary_figure_balanced_station_model.pdf",
+        SUPPLEMENT / "jshis_flatfile_selection_audit.csv",
+        SUPPLEMENT / "jshis_flatfile_selection_audit.md",
+        SUPPLEMENT / "jshis_spatial_model_complexity_sensitivity.csv",
+        SUPPLEMENT / "jshis_spatial_model_complexity_sensitivity.md",
     ]
     for path in required:
         require(path.is_file() and path.stat().st_size > 0, f"missing or empty {path.relative_to(ROOT)}")
@@ -89,6 +97,8 @@ def validate_manuscript() -> None:
     require("222,664" in abstract and "surface records" in abstract, "abstract lacks the surface-record sample")
     for claim in ["RotD100", "0.890", "0.770", "12.6", "0.280", "1.338"]:
         require(claim in abstract, f"abstract lacks key result: {claim}")
+    for claim in ["10.5\\%", "14.0\\%", "7.1\\%", "19.3\\%"]:
+        require(claim in text, f"manuscript lacks model-complexity result: {claim}")
 
     subheadings = re.findall(r"\\subsection\{([^}]*)\}", text)
     require(all(len(heading) < 60 for heading in subheadings), "a Results or Methods subheading has 60 or more characters")
@@ -115,6 +125,21 @@ def validate_manuscript() -> None:
     )
     require("No generative-AI image is included" in text, "generative-image status is not disclosed")
     require(
+        text.count("accompanying peer-review archive") >= 2,
+        "data or code availability does not provide the peer-review archive",
+    )
+    require(
+        "archived with a DOI before publication" in text,
+        "code availability lacks the planned public DOI release",
+    )
+    require(
+        "Analysis and figure-generation code is available at" not in text,
+        "private GitHub repository is incorrectly described as currently public",
+    )
+    require(r"M_{\mathrm{JMA}}\geq5" in text, "JMA magnitude threshold is not stated")
+    require("8,675 lack finite F-net $M_w$" in text, "finite-Mw sample loss is not stated")
+    require(r"moment magnitude $M_w\geq5$" not in text, "public subset is incorrectly labelled as Mw>=5")
+    require(
         "Each fold fits the two-way event-station decomposition separately" in text,
         "event holdout is not documented as separate two-way decompositions",
     )
@@ -123,11 +148,22 @@ def validate_manuscript() -> None:
     for stale in ["322,020", "2,267", "23.1\\%", "0.589", "1.449", "0.048 g", "10,467"]:
         require(stale not in text, f"stale claim remains: {stale}")
 
+    cover = (ARTICLE / "cover_letter_cee.md").read_text(encoding="utf-8")
+    for claim in [
+        "Repeatable station terms redistribute long-period response spectra across Japanese strong-motion sites",
+        "Institute of Engineering Mechanics, China Earthquake Administration",
+        "No. 29 Xuefu Road",
+        "Harbin 150080",
+        "maqiang@iem.ac.cn",
+        "peer-review archive",
+    ]:
+        require(claim in cover, f"cover letter lacks: {claim}")
+
 
 def validate_supplementary_order() -> None:
     main_text = (ARTICLE / "main.tex").read_text(encoding="utf-8")
     supplement_text = (ARTICLE / "supplementary_information.tex").read_text(encoding="utf-8")
-    for kind, expected in [("Fig", 7), ("Table", 12)]:
+    for kind, expected in [("Fig", 7), ("Table", 14)]:
         seen: list[int] = []
         for value in re.findall(rf"Supplementary {kind}\.?\s*(\d+)", main_text):
             number = int(value)
@@ -136,8 +172,8 @@ def validate_supplementary_order() -> None:
         require(seen == list(range(1, expected + 1)), f"Supplementary {kind} first-appearance order is {seen}")
 
     require(
-        len(re.findall(r"\\begin\{table\}", supplement_text)) == 12,
-        "Supplementary Information does not contain twelve tables",
+        len(re.findall(r"\\begin\{table\}", supplement_text)) == 14,
+        "Supplementary Information does not contain fourteen tables",
     )
     require(
         r"\renewcommand{\figurename}{Supplementary Figure}" in supplement_text
@@ -250,6 +286,93 @@ def validate_chinese_sync() -> None:
         "Chinese manuscript lacks the path-stratification figure",
     )
     require("补充表12" in chinese_text and "补充图7" in chinese_text, "Chinese supplementary numbering is incomplete")
+    require("补充表13" in chinese_text, "Chinese sample-flow and component table numbering is incomplete")
+    require("补充表14" in chinese_text, "Chinese complexity-sensitivity table is not cited")
+    require(r"M_{\mathrm{JMA}}\geq5" in chinese_text, "Chinese manuscript lacks the JMA magnitude threshold")
+    require("8,675条缺少有限的F-net $M_w$" in chinese_text, "Chinese manuscript lacks the finite-Mw sample loss")
+    require(chinese_text.count("随审稿档案提供") >= 2, "Chinese data or code availability is not synchronized")
+    for claim in ["10.5\\%--14.0\\%", "7.1\\%--19.3\\%"]:
+        require(claim in chinese_text, f"Chinese manuscript lacks model-complexity result: {claim}")
+
+
+def validate_sample_selection() -> None:
+    rows = read_csv("jshis_flatfile_selection_audit.csv")
+    expected = [
+        (1, "Public sub1-v2024 archive", 333_808, 0, 1_840, 2_581),
+        (2, "Ground-surface installation", 231_380, 102_428, 1_840, 1_882),
+        (3, "Finite F-net moment magnitude Mw", 222_705, 8_675, 1_737, 1_881),
+        (4, "Supported source class and positive distance", 222_705, 0, 1_737, 1_881),
+        (5, "Positive AVS30", 222_664, 41, 1_737, 1_880),
+        (6, "Finite RotD100 and MF2013 predictions at all eight periods", 222_664, 0, 1_737, 1_880),
+    ]
+    observed = [
+        (
+            int(row["stage_order"]),
+            row["stage"],
+            int(row["records"]),
+            int(row["excluded_at_stage"]),
+            int(row["earthquakes"]),
+            int(row["stations"]),
+        )
+        for row in rows
+    ]
+    require(observed == expected, f"flatfile sample flow differs from the audited release: {observed}")
+
+    report = (SUPPLEMENT / "jshis_flatfile_selection_audit.md").read_text(encoding="utf-8")
+    for claim in [
+        "JMA magnitude range: 5.0--9.0",
+        "Shortest-fault-distance range: 1.0001--299.9953 km",
+        "Surface records with nonpositive AVS30: 42",
+        "also lack finite Mw: 1",
+        "3 s: 222,664",
+    ]:
+        require(claim in report, f"flatfile selection report lacks: {claim}")
+
+
+def validate_model_complexity() -> None:
+    rows = read_csv("jshis_spatial_model_complexity_sensitivity.csv")
+    require(len(rows) == 288, f"unexpected model-complexity metric count: {len(rows)}")
+    require({int(row["spatial_seed"]) for row in rows} == {20_260_710}, "complexity audit seed changed")
+    settings = {
+        "primary",
+        "fewer_leaves",
+        "more_leaves",
+        "larger_minimum_leaf",
+        "stronger_l2",
+        "shorter_iteration_budget",
+    }
+    require({row["setting"] for row in rows} == settings, "model-complexity settings are incomplete")
+    overall = [row for row in rows if row["scope"] == "overall"]
+    require(len(overall) == 48 and float_periods(overall) == PERIODS, "complexity overall coverage mismatch")
+    gains = [float(row["rmse_reduction_vs_zero_pct"]) for row in overall]
+    require(7.0 < min(gains) < 7.2 and 19.2 < max(gains) < 19.4, "complexity gain range changed")
+    sa3 = [row for row in overall if float(row["period_s"]) == 3.0]
+    sa3_gains = [float(row["rmse_reduction_vs_zero_pct"]) for row in sa3]
+    require(10.4 < min(sa3_gains) < 10.5 and 13.9 < max(sa3_gains) < 14.1, "SA3 complexity range changed")
+
+    primary = {
+        (float(row["period_s"]), row["scope"], int(row["fold"])): row
+        for row in rows
+        if row["setting"] == "primary"
+    }
+    released = {
+        (float(row["period_s"]), row["scope"], int(row["fold"])): row
+        for row in read_csv("jshis_event_adjusted_station_model_metrics.csv")
+        if row["model"] == "physical_spatial_hgb"
+    }
+    require(primary.keys() == released.keys(), "complexity primary rows differ from released spatial metrics")
+    for key in primary:
+        for field in [
+            "weighted_rmse_log10",
+            "zero_baseline_rmse_log10",
+            "rmse_reduction_vs_zero_pct",
+            "observed_predicted_correlation",
+            "prediction_centering_shift_log10",
+        ]:
+            require(
+                abs(float(primary[key][field]) - float(released[key][field])) < 1e-9,
+                f"complexity primary does not reproduce released metric {key} {field}",
+            )
 
 
 def validate_decomposition() -> None:
@@ -435,6 +558,10 @@ def validate_path_stratification() -> None:
         max(float(row["solver_max_relative_normal_residual"]) for row in rows) < 1e-8,
         "path-stratum normal-equation residual is too large",
     )
+    require(
+        all("weighted_within_component_correlation" in row for row in rows),
+        "path-stratum component-invariant correlation is missing",
+    )
 
     sa3 = [row for row in rows if float(row["period_s"]) == 3.0]
     azimuth = [row for row in sa3 if row["stratification"] == "hypocentral_azimuth"]
@@ -452,6 +579,10 @@ def validate_path_stratification() -> None:
     split = read_csv("jshis_path_stratification_split_half_repeatability.csv")
     require(len(split) == 165, f"unexpected path split-half row count: {len(split)}")
     require(float_periods(split) == {1.0, 2.0, 3.0}, "path split-half period coverage mismatch")
+    require(
+        all("weighted_split_half_correlation_within_component" in row for row in split),
+        "component-invariant split-half correlation is missing",
+    )
     directional = [
         row
         for row in split
@@ -460,8 +591,40 @@ def validate_path_stratification() -> None:
         and row["stratum"] == "000-090 deg"
     ]
     require(len(directional) == 5, "directional split-half repeats are incomplete")
-    mean_directional = sum(float(row["weighted_split_half_correlation"]) for row in directional) / len(directional)
-    require(mean_directional > 0.85, "directional split-half repeatability degraded")
+    mean_directional = sum(
+        float(row["weighted_split_half_correlation_within_component"]) for row in directional
+    ) / len(directional)
+    require(0.88 < mean_directional < 0.89, "directional within-component repeatability changed")
+    sa3_azimuth = [
+        row
+        for row in split
+        if float(row["period_s"]) == 3.0 and row["stratification"] == "hypocentral_azimuth"
+    ]
+    grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for row in sa3_azimuth:
+        grouped[row["stratum"]].append(row)
+    within_means = {
+        stratum: sum(float(row["weighted_split_half_correlation_within_component"]) for row in block)
+        / len(block)
+        for stratum, block in grouped.items()
+    }
+    require(0.763 < min(within_means.values()) < 0.765, "unexpected minimum SA3 sector repeatability")
+    require(0.968 < max(within_means.values()) < 0.970, "unexpected maximum SA3 sector repeatability")
+    require(
+        max(
+            abs(
+                float(row["weighted_split_half_correlation"])
+                - float(row["weighted_split_half_correlation_within_component"])
+            )
+            for row in sa3_azimuth
+        )
+        < 0.04,
+        "SA3 directional repeatability is sensitive to component alignment",
+    )
+    require(
+        max(int(row["n_component_pairs"]) for row in split) > 1,
+        "split-half component-pair audit did not exercise disconnected cases",
+    )
 
     metrics = read_csv("jshis_balanced_station_model_metrics.csv")
     require(len(metrics) == 288 and float_periods(metrics) == PERIODS, "equal-stratum metric coverage mismatch")
@@ -569,8 +732,10 @@ def main() -> None:
     validate_supplementary_order()
     validate_references()
     validate_chinese_sync()
+    validate_sample_selection()
     validate_decomposition()
     validate_prediction()
+    validate_model_complexity()
     validate_hazard()
     validate_independent_gmpe()
     validate_response_component()

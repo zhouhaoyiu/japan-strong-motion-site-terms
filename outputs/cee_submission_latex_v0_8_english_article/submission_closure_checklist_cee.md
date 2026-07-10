@@ -20,6 +20,7 @@ Date: 11 July 2026
 ## Scientific checks
 
 - [x] Eight periods are calculated directly from flatfile columns.
+- [x] The `sub1-v2024` JMA-magnitude threshold and the later MF2013 finite-`Mw` screen are distinguished, with the full 333,808-to-222,664 record flow audited.
 - [x] Primary residual and spectrum analyses use official ground-surface installation records only.
 - [x] MF2013 uses model-compatible RotD100; Zhao 2006 uses RotD50 as the closest available orientation-independent coordinate to its geometric-mean target.
 - [x] RotD50--RotD100 station-field sensitivity is quantified on the same 222,664-record sample.
@@ -31,6 +32,7 @@ Date: 11 July 2026
 - [x] Path and source strata are solved by connected component, with solver residuals and event split-half repeatability reported.
 - [x] Equal-stratum prediction retains negative spatial-fold results and is labelled as a sensitivity analysis.
 - [x] Empirical station-model prediction intervals are calibrated outside each held spatial block.
+- [x] Six fixed spatial-model complexity settings retain positive overall gains at all eight periods and are reported as sensitivity tests without model reselection.
 - [x] Hazard propagation uses out-of-fold zero-centred predictions.
 - [x] Official `Vs=400 m/s` values are converted to station AVS30 conditions before station adjustment.
 - [x] No claim of a national directional spectrum shift remains.
@@ -40,17 +42,17 @@ Date: 11 July 2026
 
 - [x] `main.pdf` compiled and visually checked.
 - [x] `supplementary_information.pdf` compiled and visually checked.
-- [x] Supplementary Information contains seven figures and twelve tables in first-citation order.
+- [x] Supplementary Information contains seven figures and fourteen tables in first-citation order.
 - [x] Derived tables pass the updated `work/validate_event_adjusted_release.py`.
 - [x] Main and supplementary figures have source scripts.
 - [x] Historical figures and obsolete PBV audit tables are removed from the release package.
 - [x] `reference_traceability.md` records DOI or official-source checks and local full-text coverage.
+- [x] A compact peer-review archive provides code, the input manifest and derived summary tables with SHA-256 checksums.
 
 ## Author confirmations before upload
 
 - [ ] Confirm final author names, order, affiliation, email and ORCIDs.
 - [ ] Confirm all authors approve submission to *Communications Earth & Environment*.
-- [ ] Confirm the GitHub repository is public and contains the same release.
-- [ ] Mint and insert the Zenodo DOI if the authors choose to archive before first submission.
+- [ ] Make the reviewed GitHub release public and archive it with a DOI before publication.
 - [ ] Confirm the final data, code and AI-use statements in the submission system.
 - [ ] Select article type, subject terms, reviewers and exclusions in the portal.

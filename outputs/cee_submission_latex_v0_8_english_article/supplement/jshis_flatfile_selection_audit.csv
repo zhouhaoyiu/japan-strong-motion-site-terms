@@ -1,0 +1,7 @@
+stage_order,stage,records,excluded_at_stage,earthquakes,stations
+1,Public sub1-v2024 archive,333808,0,1840,2581
+2,Ground-surface installation,231380,102428,1840,1882
+3,Finite F-net moment magnitude Mw,222705,8675,1737,1881
+4,Supported source class and positive distance,222705,0,1737,1881
+5,Positive AVS30,222664,41,1737,1880
+6,Finite RotD100 and MF2013 predictions at all eight periods,222664,0,1737,1880

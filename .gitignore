@@ -28,10 +28,14 @@ outputs/cee_submission_latex_v0_8_english_article/references_pdfs/
 outputs/cee_submission_latex_v0_8_english_article/predictable-long-period-site-residuals-cee-*.pdf
 !/work/
 !/work/jshis_event_adjusted_station_model.py
+!/work/audit_jshis_flatfile_selection.py
 !/work/jshis_independent_gmpe_replication.py
 !/work/jshis_station_uncertainty_propagation.py
+!/work/jshis_spatial_model_complexity_audit.py
 !/work/jshis_robustness_stress_tests.py
 !/work/jshis_path_stratification_audit.py
 !/work/jshis_balanced_station_model.py
 !/work/validate_event_adjusted_release.py
 !/work/verify_public_inputs.py
+!/work/build_cee_initial_submission_package.py
+!/work/validate_compact_peer_review_archive.py

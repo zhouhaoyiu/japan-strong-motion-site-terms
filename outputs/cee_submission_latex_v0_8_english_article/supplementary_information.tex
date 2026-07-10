@@ -33,7 +33,9 @@
 
 \subsection*{Record selection and direct periods}
 
-The public J-SHIS/NIED \path{sub1-v2024} flatfile contains 333,808 K-NET and KiK-net records with moment magnitude at least 5 and shortest fault distance no greater than 300 km\cite{niedflatfile,flatfilepage}. Its site table codes ground-surface installations as 1 and borehole installations as 2. We retain code 1 for the residual model and response-spectrum propagation. MF2013 uses the maximum norm of two horizontal oscillator responses, equivalent to RotD100\cite{dohi2024}. RotD100 spectral acceleration is read directly at 0.1, 0.2, 0.3, 0.5, 1.0, 2.0, 3.0 and 5.0 s. The residual sample also requires positive spectral acceleration, distance and AVS30; finite magnitude and model inputs; and a crustal, interplate or intraplate MF2013 source class. This screen retains 222,664 surface records at every period. No response coordinate is copied or interpolated.
+The public J-SHIS/NIED \path{sub1-v2024} flatfile contains 333,808 K-NET and KiK-net records\cite{niedflatfile,flatfilepage}. The download page defines the subset by magnitude of at least 5 and shortest fault distance no greater than 300 km. All records in the archive have JMA magnitude $M_{\mathrm{JMA}}\geq5$; F-net $M_w$ is stored separately. Its site table codes ground-surface installations as 1 and borehole installations as 2. We retain code 1 for the residual model and response-spectrum propagation. Of 231,380 surface records, 8,675 lack finite F-net $M_w$ and 41 additional records have nonpositive AVS30. The remaining 222,664 records have positive distance, supported MF2013 source classes and finite model predictions at all eight periods.
+
+MF2013 uses RotD100, the maximum norm of two horizontal oscillator responses\cite{dohi2024}. RotD100 spectral acceleration is read directly at 0.1, 0.2, 0.3, 0.5, 1.0, 2.0, 3.0 and 5.0 s. Every retained record has a positive value at each period, so the final count remains 222,664 throughout. No response coordinate is copied or interpolated.
 
 RotD50 residuals are decomposed on the identical sample as a response-component sensitivity. The RotD50 and RotD100 fields are compared station by station, and record-level RotD50/RotD100 ratios quantify the change in absolute coordinate. Zhao 2006 uses RotD50 because OpenQuake defines the model for the geometric mean of two horizontal components and the flatfile does not provide that exact response coordinate.
 
@@ -55,7 +57,7 @@ The 1,737 usable earthquakes are assigned to five groups with a fixed random see
 
 \subsection*{Spatial prediction}
 
-Five spatial blocks are produced by $k$-means clustering of standardised longitude and latitude. The site-only model uses shallow-velocity averages, sedimentary-depth variables, elevation, sensor depth and network. The site-and-location model adds station coordinates and two volcanic-front distances. Both histogram gradient-boosting models use fixed hyperparameters: learning rate 0.04, 400 iterations, 15 maximum leaf nodes, 35 minimum samples per leaf and L2 regularisation 0.1. Numeric variables are median-imputed within training folds; network is mode-imputed and one-hot encoded. Predictions are generated only for the held-out block and are centred to a record-weighted zero mean before spectrum propagation.
+Five spatial blocks are produced by $k$-means clustering of standardised longitude and latitude. The site-only model uses shallow-velocity averages, sedimentary-depth variables, elevation, sensor depth and network. The site-and-location model adds station coordinates and two volcanic-front distances. Both histogram gradient-boosting models use fixed hyperparameters: learning rate 0.04, 400 iterations, 15 maximum leaf nodes, 35 minimum samples per leaf and L2 regularisation 0.1. Numeric variables are median-imputed within training folds; network is mode-imputed and one-hot encoded. Predictions are generated only for the held-out block and are centred to a record-weighted zero mean before spectrum propagation. A separate complexity sensitivity changes maximum leaf nodes to 7 or 31, minimum samples per leaf to 70, L2 regularisation to 1.0, or the iteration budget to 200. Each setting retains the same folds, preprocessing, weights and random seed, and no alternative is selected as a replacement for the primary model.
 
 \subsection*{Alternative ground-motion-model calculation}
 
@@ -69,7 +71,7 @@ Cross-network tests train on K-NET and evaluate KiK-net, then reverse the direct
 
 Records are grouped into four hypocentral-bearing sectors, four shortest-fault-distance bins and three source classes. Bearing is the initial great-circle direction from the source horizontal coordinates to the station. Stratification can disconnect the bipartite station-event graph, especially within 50 km. Each graph component is solved separately by sparse least squares. Stations require ten records within a stratum, retained components require ten supported stations, and every component is aligned to the full station field by its record-weighted mean difference. Across all 88 period-stratum fits, the maximum relative normal-equation residual is $1.90\times10^{-9}$ and every solver returns an accepted convergence code.
 
-Five random, disjoint event-half comparisons at 1.0, 2.0 and 3.0 s measure sampling reliability within each stratum. A station requires five records in each half. Both half-fields are component-aligned to the full-field reference before comparison. Equal-stratum sensitivity targets are formed by averaging the aligned station terms across at least two available strata, with equal weight per stratum. The primary spatial-validation procedure is then repeated for azimuth-, distance- and source-class-balanced targets; prediction errors retain station record-count weights.
+Five random, disjoint event-half comparisons at 1.0, 2.0 and 3.0 s measure sampling reliability within each stratum. A station requires five records in each half. Both half-fields are component-aligned for storage and for constructing equal-stratum targets. The reported split-half correlation removes the weighted mean from every intersecting component pair before pooling stations, making the statistic invariant to unidentifiable component offsets. Equal-stratum sensitivity targets are formed by averaging the aligned station terms across at least two available strata, with equal weight per stratum. The primary spatial-validation procedure is then repeated for azimuth-, distance- and source-class-balanced targets; prediction errors retain station record-count weights.
 
 \subsection*{Empirical prediction intervals}
 
@@ -267,18 +269,19 @@ Period & Station-term & Weighted 95th-percentile \\
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{llrrrr}
 \toprule
-Stratification & Stratum & Paired stations & Full-field correlation & Split-half correlation & 95th percentile difference \\
+Stratification & Stratum & Paired stations & Full-field & Within-component & 95th percentile \\
+& & & correlation & split-half correlation & difference \\
 \midrule
-Hypocentral azimuth & 000--090$^\circ$ & 938 & 0.280 & 0.877 & 0.474 \\
-Hypocentral azimuth & 090--180$^\circ$ & 448 & 0.678 & 0.762 & 0.236 \\
-Hypocentral azimuth & 180--270$^\circ$ & 1,089 & 0.777 & 0.967 & 0.317 \\
+Hypocentral azimuth & 000--090$^\circ$ & 938 & 0.280 & 0.884 & 0.474 \\
+Hypocentral azimuth & 090--180$^\circ$ & 448 & 0.678 & 0.764 & 0.236 \\
+Hypocentral azimuth & 180--270$^\circ$ & 1,089 & 0.777 & 0.969 & 0.317 \\
 Hypocentral azimuth & 270--360$^\circ$ & 1,345 & 0.886 & 0.945 & 0.168 \\
-Fault distance & 0--50 km & 138 & 0.644 & 0.563 & 0.289 \\
-Fault distance & 50--100 km & 680 & 0.496 & 0.604 & 0.427 \\
+Fault distance & 0--50 km & 138 & 0.644 & 0.631 & 0.289 \\
+Fault distance & 50--100 km & 680 & 0.496 & 0.793 & 0.427 \\
 Fault distance & 100--200 km & 1,515 & 0.974 & 0.951 & 0.080 \\
 Fault distance & 200--300 km & 1,213 & 0.963 & 0.968 & 0.092 \\
 Source type & Crustal & 1,494 & 0.942 & 0.905 & 0.120 \\
-Source type & Interplate & 960 & 0.934 & 0.947 & 0.073 \\
+Source type & Interplate & 960 & 0.934 & 0.958 & 0.073 \\
 Source type & Intraplate & 1,379 & 0.924 & 0.902 & 0.131 \\
 \bottomrule
 \end{tabular}}
@@ -370,6 +373,24 @@ Fukuoka & FKOH03 & 14.1 & 0.748 & -25.2 & 0.035 & 0.026 \\
 
 \begin{table}[H]
 \centering
+\caption{Sequential record selection}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Stage & Records & Excluded & Earthquakes & Stations \\
+\midrule
+Public \path{sub1-v2024} archive & 333,808 & 0 & 1,840 & 2,581 \\
+Ground-surface installation & 231,380 & 102,428 & 1,840 & 1,882 \\
+Finite F-net $M_w$ & 222,705 & 8,675 & 1,737 & 1,881 \\
+Supported source class and positive distance & 222,705 & 0 & 1,737 & 1,881 \\
+Positive AVS30 & 222,664 & 41 & 1,737 & 1,880 \\
+Finite RotD100 and MF2013 predictions at all periods & 222,664 & 0 & 1,737 & 1,880 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
 \caption{Response-component sensitivity}
 \small
 \begin{tabular}{rrrrr}
@@ -385,6 +406,24 @@ Period & Station-field & Weighted difference & 95th percentile & Median record \
 2.0 & 0.9988 & 0.0074 & 0.0194 & 0.820 \\
 3.0 & 0.9986 & 0.0071 & 0.0180 & 0.819 \\
 5.0 & 0.9983 & 0.0064 & 0.0177 & 0.820 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{SA(3.0 s) spatial-model complexity sensitivity}
+\small
+\begin{tabular}{llrr}
+\toprule
+Setting & Changed parameter & RMSE gain (\%) & Correlation \\
+\midrule
+Primary & None & 12.56 & 0.500 \\
+Fewer leaves & Maximum leaf nodes = 7 & 13.98 & 0.512 \\
+More leaves & Maximum leaf nodes = 31 & 10.45 & 0.467 \\
+Larger minimum leaf & Minimum samples per leaf = 70 & 10.71 & 0.483 \\
+Stronger regularisation & L2 regularisation = 1.0 & 12.29 & 0.496 \\
+Shorter iteration budget & Maximum iterations = 200 & 12.85 & 0.497 \\
 \bottomrule
 \end{tabular}
 \end{table}

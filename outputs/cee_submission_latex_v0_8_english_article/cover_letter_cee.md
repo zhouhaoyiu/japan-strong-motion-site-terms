@@ -12,9 +12,9 @@ The manuscript links a traceable station-field validation to a public hazard pro
 
 The analysis is relevant to *Communications Earth & Environment* because it combines national strong-motion coverage, reproducible validation and direct application to seismic-hazard representation. The matched-station calculation preserves the published J-SHIS source recurrence and logic tree. Its interpretation is limited to the average source-path distribution sampled by the strong-motion archive.
 
-The manuscript is original, is not under consideration elsewhere, and has been approved by all authors. Public data sources, redistribution limits, code, derived tables, funding, competing interests, author contributions and acknowledgements are stated in the manuscript.
+The manuscript is original, is not under consideration elsewhere, and has been approved by all authors. Public data sources, redistribution limits, code, derived tables, funding, competing interests, author contributions and acknowledgements are stated in the manuscript. The submission includes a peer-review archive containing the analysis code and derived summary tables needed to verify the reported results. The same release will be made public on GitHub and archived with a DOI before publication.
 
-Correspondence should be addressed to Qiang Ma, maqiang@iem.ac.cn.
+Correspondence should be addressed to Qiang Ma, Institute of Engineering Mechanics, China Earthquake Administration, No. 29 Xuefu Road, Nangang District, Harbin 150080, China; maqiang@iem.ac.cn.
 
 Sincerely,
 
