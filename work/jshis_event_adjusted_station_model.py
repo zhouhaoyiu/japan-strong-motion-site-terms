@@ -562,13 +562,14 @@ def event_holdout_repeatability(
     min_train_records: int = 15,
     min_test_records: int = 5,
 ) -> pd.DataFrame:
-    """Measure whether station terms estimated from one event set recur in another."""
+    """Measure whether two-way station effects recur in disjoint event sets."""
 
     rows = []
     for spec in PERIODS:
         frame = records[spec.period_s][["siteid2", "eq_source_id", "residual_site"]].copy()
         events = np.sort(frame["eq_source_id"].dropna().unique())
-        rng = np.random.default_rng(seed + int(round(spec.period_s * 1000)))
+        # The same event partition is used at every period and for each backbone.
+        rng = np.random.default_rng(seed)
         shuffled = rng.permutation(events)
         event_folds = {event_id: index % n_splits for index, event_id in enumerate(shuffled)}
         fold_ids = frame["eq_source_id"].map(event_folds).to_numpy(int)
@@ -576,15 +577,19 @@ def event_holdout_repeatability(
         for fold in range(n_splits):
             train = frame.loc[fold_ids != fold].copy()
             test = frame.loc[fold_ids == fold].copy()
-            train["event_demeaned"] = train["residual_site"] - train.groupby("eq_source_id")["residual_site"].transform("mean")
-            test["event_demeaned"] = test["residual_site"] - test.groupby("eq_source_id")["residual_site"].transform("mean")
-            train_terms = train.groupby("siteid2", as_index=False).agg(
-                train_station_term=("event_demeaned", "mean"),
-                n_train_records=("event_demeaned", "size"),
+            train_terms, _, train_fit = two_way_decomposition(train, "residual_site")
+            test_terms, _, test_fit = two_way_decomposition(test, "residual_site")
+            train_terms = train_terms.rename(
+                columns={
+                    "station_effect_log10": "train_station_term",
+                    "n_records": "n_train_records",
+                }
             )
-            test_terms = test.groupby("siteid2", as_index=False).agg(
-                test_station_term=("event_demeaned", "mean"),
-                n_test_records=("event_demeaned", "size"),
+            test_terms = test_terms.rename(
+                columns={
+                    "station_effect_log10": "test_station_term",
+                    "n_records": "n_test_records",
+                }
             )
             paired = train_terms.merge(test_terms, on="siteid2", how="inner", validate="one_to_one")
             paired = paired[
@@ -603,10 +608,16 @@ def event_holdout_repeatability(
                 "period_code": spec.code,
                 "scope": "fold",
                 "fold": fold,
+                "decomposition_method": "two_way_fixed_effects",
+                "event_split_seed": seed,
                 "n_train_events": int(train["eq_source_id"].nunique()),
                 "n_test_events": int(test["eq_source_id"].nunique()),
                 "n_paired_stations": len(paired),
                 "test_record_weight": int(weights.sum()),
+                "train_iterations": int(train_fit["iterations"]),
+                "test_iterations": int(test_fit["iterations"]),
+                "train_max_parameter_change": float(train_fit["max_parameter_change"]),
+                "test_max_parameter_change": float(test_fit["max_parameter_change"]),
                 "train_test_station_correlation": float(np.corrcoef(train_values, test_values)[0, 1]),
                 "zero_baseline_rmse_log10": baseline_rmse,
                 "train_term_prediction_rmse_log10": prediction_rmse,
@@ -621,10 +632,16 @@ def event_holdout_repeatability(
                 "period_code": spec.code,
                 "scope": "fold_mean",
                 "fold": -1,
+                "decomposition_method": "two_way_fixed_effects",
+                "event_split_seed": seed,
                 "n_train_events": float(period_frame["n_train_events"].mean()),
                 "n_test_events": float(period_frame["n_test_events"].mean()),
                 "n_paired_stations": float(period_frame["n_paired_stations"].mean()),
                 "test_record_weight": float(period_frame["test_record_weight"].sum()),
+                "train_iterations": int(period_frame["train_iterations"].max()),
+                "test_iterations": int(period_frame["test_iterations"].max()),
+                "train_max_parameter_change": float(period_frame["train_max_parameter_change"].max()),
+                "test_max_parameter_change": float(period_frame["test_max_parameter_change"].max()),
                 "train_test_station_correlation": float(period_frame["train_test_station_correlation"].mean()),
                 "zero_baseline_rmse_log10": float(period_frame["zero_baseline_rmse_log10"].mean()),
                 "train_term_prediction_rmse_log10": float(period_frame["train_term_prediction_rmse_log10"].mean()),

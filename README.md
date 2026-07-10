@@ -6,7 +6,7 @@ The study starts from 333,808 public K-NET and KiK-net records and retains 222,6
 
 ## Main result
 
-At 3.0 s, station terms estimated from disjoint event groups correlate at `0.921`, and MF2013 and Zhao 2006 station terms correlate at `0.770`. Site and location variables reduce spatial-block RMSE by `12.6%` across 1,628 surface stations. Directional-sector correlations with the full station field range from `0.280` to `0.886`, showing path-conditioned transfer. Cross-validated multipliers have 5th and 95th percentiles of `0.624` and `1.338`. The matched-station median 50-year 10% surface spectrum changes from `0.081 g` to `0.075 g`; the nominal 90% empirical station-model interval attains `89.0%` station coverage.
+At 3.0 s, station terms from separate two-way decompositions of disjoint event groups correlate at `0.890`, and MF2013 and Zhao 2006 station terms correlate at `0.770`. Site and location variables reduce spatial-block RMSE by `12.6%` across 1,628 surface stations. Directional-sector correlations with the full station field range from `0.280` to `0.886`, showing path-conditioned transfer. Cross-validated multipliers have 5th and 95th percentiles of `0.624` and `1.338`. The matched-station median 50-year 10% surface spectrum changes from `0.081 g` to `0.075 g`; the nominal 90% empirical station-model interval attains `89.0%` station coverage.
 
 ## Repository layout
 
@@ -38,10 +38,17 @@ Sources:
 
 Raw third-party data are not redistributed.
 
+`public_inputs_manifest.tsv` records the exact file sizes, SHA-256 hashes, source pages and required archive members used for this release. Verify downloaded inputs before running the analysis:
+
+```bash
+conda run -n japan-station-terms python work/verify_public_inputs.py
+```
+
 ## Reproduction
 
 ```bash
 conda env create -f environment.yml
+conda run -n japan-station-terms python work/verify_public_inputs.py
 conda run -n japan-station-terms python work/jshis_event_adjusted_station_model.py
 conda run -n japan-station-terms python work/jshis_independent_gmpe_replication.py
 conda run -n japan-station-terms python work/jshis_station_uncertainty_propagation.py

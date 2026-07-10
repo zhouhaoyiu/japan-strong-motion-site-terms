@@ -39,7 +39,7 @@ RotD50 residuals are decomposed on the identical sample as a response-component 
 
 \subsection*{Residual model boundary}
 
-The primary prediction contains the MF2013 magnitude-distance backbone and the published D1400 and AVS30 terms\cite{morikawa2013,morikawa2023}. D1400 is the depth to the 1.4 km s$^{-1}$ shear-wave velocity horizon. AVS30 is the average shear-wave velocity in the upper 30 m. The anomalous-intensity sensitivity uses the public northeastern and southwestern geographic and depth rules\cite{morikawa2006}. It remains a sensitivity calculation because an explicit plate-membership field is unavailable for every flatfile event. The Philippine Sea Plate term is constant across stations for a qualifying event at a given period and is absorbed by the event fixed effect. We do not interpret the fitted global intercept as an official MF2013 calibration error.
+The primary prediction contains the MF2013 magnitude-distance backbone and the published D1400 and AVS30 terms\cite{morikawa2013,morikawa2023}. D1400 is the depth to the 1.4 km s$^{-1}$ shear-wave velocity horizon. AVS30 is the average shear-wave velocity in the upper 30 m. The anomalous-intensity sensitivity uses the public northeastern and southwestern geographic and depth rules\cite{morikawa2006}. Incomplete plate-membership metadata restrict this term to a sensitivity calculation. The Philippine Sea Plate term is constant across stations for a qualifying event at a given period and is absorbed by the event fixed effect. The fitted global intercept is retained as a model offset; formal assessment of MF2013 calibration lies outside this design.
 
 \subsection*{Fixed effect decomposition}
 
@@ -51,11 +51,11 @@ Alternating grouped least squares estimates $\delta E_j$ and $\delta S_i$. Recor
 
 \subsection*{Event group repeatability}
 
-The 1,737 usable earthquakes are assigned to five groups with a fixed random seed. Each fold estimates station terms from four groups after subtracting each event mean. Test station means are calculated independently after removing each held-out event mean. A station requires at least 15 training records and five test records. The comparison uses the train-test station correlation and the test-record-weighted root mean squared error relative to a zero station term. Each fold contains 347 or 348 test events.
+The 1,737 usable earthquakes are assigned to five groups with a fixed random seed. The same partition is used at every period and for both ground-motion backbones. Each fold fits the two-way event-station decomposition separately to four training groups and the held-out group. Paired train and test station vectors are centred with their respective record counts. A station requires at least 15 training records and five test records. The comparison uses the train-test station correlation and the test-record-weighted root mean squared error relative to a zero station term. Each fold contains 347 or 348 test events, and every training and test decomposition converges below $10^{-10}$ log$_{10}$ units.
 
 \subsection*{Spatial prediction}
 
-Five spatial blocks are produced by $k$-means clustering of standardised longitude and latitude. The physical model uses shallow-velocity averages, sedimentary-depth variables, elevation, sensor depth and network. The site-and-location model adds station coordinates and two volcanic-front distances. Both histogram gradient-boosting models use fixed hyperparameters: learning rate 0.04, 400 iterations, 15 maximum leaf nodes, 35 minimum samples per leaf and L2 regularisation 0.1. Numeric variables are median-imputed within training folds; network is mode-imputed and one-hot encoded. Predictions are generated only for the held-out block and are centred to a record-weighted zero mean before spectrum propagation.
+Five spatial blocks are produced by $k$-means clustering of standardised longitude and latitude. The site-only model uses shallow-velocity averages, sedimentary-depth variables, elevation, sensor depth and network. The site-and-location model adds station coordinates and two volcanic-front distances. Both histogram gradient-boosting models use fixed hyperparameters: learning rate 0.04, 400 iterations, 15 maximum leaf nodes, 35 minimum samples per leaf and L2 regularisation 0.1. Numeric variables are median-imputed within training folds; network is mode-imputed and one-hot encoded. Predictions are generated only for the held-out block and are centred to a record-weighted zero mean before spectrum propagation.
 
 \subsection*{Alternative ground-motion-model calculation}
 
@@ -81,7 +81,7 @@ J-SHIS response-spectrum maps provide ordinates on engineering bedrock with $V_S
 \begin{equation}
 F_{\mathrm{surf},i}(T)=10^{G_s(AVS30_i,T)-G_s(400,T)}.
 \end{equation}
-The cross-validated station factor $10^{\widehat{\delta S}_i(T)}$ is applied after this conversion. All eight period coordinates and four 50-year exceedance probabilities are read from the official map files. The calculation uses matched station cells and does not interpolate a station field to unobserved national grid cells.
+The cross-validated station factor $10^{\widehat{\delta S}_i(T)}$ is applied after this conversion. All eight period coordinates and four 50-year exceedance probabilities are read from the official map files. The calculation is restricted to matched station cells; national-grid interpolation lies outside this analysis.
 
 \subsection*{KiK-net waveform check}
 
@@ -98,7 +98,7 @@ The waveform check uses 460 paired surface and downhole records from two KiK-net
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.68\linewidth]{figures/supplementary_figure_spatial_validation.pdf}
-\caption{\textbf{Spatial validation of SA(3.0 s) station prediction.} \textbf{a}, five station blocks used for cross-validation. \textbf{b}, root mean squared error reduction in each held-out block for the physical and site-plus-location models. \textbf{c}, observed event-adjusted station terms and out-of-fold site-plus-location predictions. \textbf{d}, prediction-error distributions by spatial fold; boxes show interquartile ranges and whiskers extend to 1.5 times the interquartile range.}
+\caption{\textbf{Spatial validation of SA(3.0 s) station prediction.} \textbf{a}, five station blocks used for cross-validation. \textbf{b}, root mean squared error reduction in each held-out block for the site-only and site-plus-location models. \textbf{c}, observed event-adjusted station terms and out-of-fold site-plus-location predictions. \textbf{d}, prediction-error distributions by spatial fold; boxes show interquartile ranges and whiskers extend to 1.5 times the interquartile range.}
 \end{figure}
 
 \begin{figure}[!htbp]
@@ -165,14 +165,14 @@ Period & Records & Global offset & Event SD & Station SD & Remainder RMSE \\
 Period & Train-test & Test RMSE & Mean paired & Mean test \\
 (s) & correlation & reduction (\%) & stations & events \\
 \midrule
-0.1 & 0.940 & 78.1 & 1,498 & 347.4 \\
-0.2 & 0.956 & 81.6 & 1,485 & 347.4 \\
-0.3 & 0.958 & 81.6 & 1,455 & 347.4 \\
-0.5 & 0.948 & 79.3 & 1,468 & 347.4 \\
-1.0 & 0.945 & 78.3 & 1,473 & 347.4 \\
-2.0 & 0.933 & 76.0 & 1,481 & 347.4 \\
-3.0 & 0.921 & 74.5 & 1,487 & 347.4 \\
-5.0 & 0.916 & 72.4 & 1,482 & 347.4 \\
+0.1 & 0.916 & 71.9 & 1,481 & 347.4 \\
+0.2 & 0.917 & 73.5 & 1,481 & 347.4 \\
+0.3 & 0.886 & 68.9 & 1,481 & 347.4 \\
+0.5 & 0.876 & 66.9 & 1,481 & 347.4 \\
+1.0 & 0.871 & 65.6 & 1,481 & 347.4 \\
+2.0 & 0.893 & 68.7 & 1,481 & 347.4 \\
+3.0 & 0.890 & 67.7 & 1,481 & 347.4 \\
+5.0 & 0.889 & 67.2 & 1,481 & 347.4 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -186,14 +186,14 @@ Period & Train-test & Test RMSE & Mean paired & Mean test \\
 Period & MF2013--Zhao & Median absolute & Zhao event & Zhao spatial \\
 (s) & correlation & difference (log$_{10}$) & correlation & RMSE gain (\%) \\
 \midrule
-0.1 & 0.953 & 0.064 & 0.952 & 16.9 \\
-0.2 & 0.921 & 0.093 & 0.960 & 20.8 \\
-0.3 & 0.919 & 0.081 & 0.961 & 18.9 \\
-0.5 & 0.923 & 0.073 & 0.956 & 20.8 \\
-1.0 & 0.889 & 0.094 & 0.962 & 22.9 \\
-2.0 & 0.801 & 0.144 & 0.966 & 32.1 \\
-3.0 & 0.770 & 0.151 & 0.961 & 37.7 \\
-5.0 & 0.697 & 0.125 & 0.959 & 39.2 \\
+0.1 & 0.953 & 0.064 & 0.940 & 16.9 \\
+0.2 & 0.921 & 0.093 & 0.941 & 20.8 \\
+0.3 & 0.919 & 0.081 & 0.913 & 18.9 \\
+0.5 & 0.923 & 0.073 & 0.909 & 20.8 \\
+1.0 & 0.889 & 0.094 & 0.915 & 22.9 \\
+2.0 & 0.801 & 0.144 & 0.948 & 32.1 \\
+3.0 & 0.770 & 0.151 & 0.950 & 37.7 \\
+5.0 & 0.697 & 0.125 & 0.946 & 39.2 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -204,7 +204,7 @@ Period & MF2013--Zhao & Median absolute & Zhao event & Zhao spatial \\
 \small
 \begin{tabular}{rrrr}
 \toprule
-Period & Physical model & Site and location & Observed-predicted \\
+Period & Site-only model & Site and location & Observed-predicted \\
 (s) & RMSE gain (\%) & RMSE gain (\%) & correlation \\
 \midrule
 0.1 & -5.2 & 11.7 & 0.513 \\
@@ -394,7 +394,7 @@ Period & Station-field & Weighted difference & 95th percentile & Median record \
 \begin{thebibliography}{99}
 \bibitem{niedflatfile} National Research Institute for Earth Science and Disaster Resilience. Strong Ground Motion Flat File. NIED, \url{https://doi.org/10.17598/NIED.0032} (2025).
 \bibitem{flatfilepage} National Research Institute for Earth Science and Disaster Resilience. Flat file of K-NET and KiK-net strong-motion records. \url{https://www.j-shis.bosai.go.jp/en/labs/ground-motion-flatfile/} (2024).
-\bibitem{dohi2024} Dohi, Y., Shigeno, N., Morikawa, N., Fujiwara, H., Nojima, N. \& Iwata, T. Probabilistic seismic hazard analysis of response spectra: toward advanced national seismic hazard maps for Japan. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{24}, 124--147 (2024). \url{https://doi.org/10.5610/jaee.24.1_124}.
+\bibitem{dohi2024} Dohi, Y., Shigeno, N., Morikawa, N., Fujiwara, H., Nojima, N. \& Iwata, T. Probabilistic seismic hazard analysis of response spectra: toward advanced national seismic hazard maps for Japan. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{24}, 1\_124--1\_147 (2024). \url{https://doi.org/10.5610/jaee.24.1_124}.
 \bibitem{morikawa2013} Morikawa, N. \& Fujiwara, H. A new ground motion prediction equation for Japan applicable up to M9 mega-earthquake. \textit{J. Disaster Res.} \textbf{8}, 878--888 (2013). \url{https://doi.org/10.20965/jdr.2013.p0878}.
 \bibitem{morikawa2023} Morikawa, N. \& Fujiwara, H. Ground motion prediction equation based on Morikawa and Fujiwara 2013. J-SHIS/NIED, \url{https://www.j-shis.bosai.go.jp/labs/mf2013/en/} (2023).
 \bibitem{morikawa2006} Morikawa, N. et al. New additional correction terms for attenuation relations corresponding to anomalous seismic intensity in northeastern Japan. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{6}, 23--41 (2006). \url{https://doi.org/10.5610/jaee.6.23}.

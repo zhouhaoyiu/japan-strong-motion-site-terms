@@ -24,7 +24,7 @@ OpenQuake engine version: 3.25.1.
 
 - MF2013-Zhao station-term Pearson correlation: 0.770.
 - MF2013-Zhao station-term Spearman correlation: 0.775.
-- Event-holdout station correlation: 0.961.
+- Event-holdout station correlation: 0.950.
 - Spatial-block RMSE reduction: 37.7%.
 
 ## Boundary

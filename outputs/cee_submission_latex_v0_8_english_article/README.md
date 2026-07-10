@@ -6,6 +6,7 @@
 - `supplementary_information.tex` and `supplementary_information.pdf`: Supplementary Information.
 - `cover_letter_cee.md`: cover-letter draft.
 - `advisor_summary_cn.md`: Chinese project summary for advisor review.
+- `reference_traceability.md`: reference metadata and local full-text audit.
 
 ## Current figures
 
@@ -25,6 +26,7 @@ The Supplementary Information uses seven figures: event repeatability, spatial v
 The `supplement/` directory contains the primary MF2013 results, the RotD50--RotD100 component audit, Zhao 2006 model sensitivity, station-model prediction intervals, transfer tests, influential-event deletion results, path/source stratification and equal-stratum sensitivity. Rebuild the analyses in this order:
 
 ```bash
+conda run -n japan-station-terms python ../../work/verify_public_inputs.py
 conda run -n japan-station-terms python ../../work/jshis_event_adjusted_station_model.py
 conda run -n japan-station-terms python ../../work/jshis_independent_gmpe_replication.py
 conda run -n japan-station-terms python ../../work/jshis_station_uncertainty_propagation.py

@@ -1,11 +1,11 @@
 # CEE submission checklist
 
-Date: 10 July 2026
+Date: 11 July 2026
 
 ## Manuscript checks
 
 - [x] Title has 13 words and no punctuation.
-- [x] Abstract has 150 words, contains no citations and follows the journal's background-to-"Here we present" structure.
+- [x] Abstract has 140 words, contains no citations and follows the journal's background-to-"Here we present" structure.
 - [x] Section order is Introduction, Results, Discussion and Methods.
 - [x] Introduction and Discussion contain no subheadings.
 - [x] Main text is below the 5,000-word limit.
@@ -14,6 +14,8 @@ Date: 10 July 2026
 - [x] Full postal address, correspondence email and ORCIDs are present.
 - [x] Funding, competing interests, author contributions and acknowledgements are present.
 - [x] Generative-AI assistance is disclosed in Methods and no generated image is included.
+- [x] All 33 main references and 11 Supplementary Information references have a DOI or official HTTPS source and appear in first-citation order.
+- [x] English and Chinese reference lists use the same 33 records in the same order.
 
 ## Scientific checks
 
@@ -23,7 +25,7 @@ Date: 10 July 2026
 - [x] RotD50--RotD100 station-field sensitivity is quantified on the same 222,664-record sample.
 - [x] Event and station terms are separated and constrained to weighted zero means.
 - [x] All decompositions converge below `1e-10` log10 units.
-- [x] Event-group repeatability uses independent earthquake groups.
+- [x] Event-group repeatability uses separate converged two-way fixed-effect fits on disjoint earthquake groups and a common event partition across periods and backbones.
 - [x] Zhao 2006 repeats the decomposition, event holdout and spatial validation on the same surface observations.
 - [x] Cross-network, fixed-macroregion and top-event deletion tests are reported with adverse results retained.
 - [x] Path and source strata are solved by connected component, with solver residuals and event split-half repeatability reported.
@@ -42,6 +44,7 @@ Date: 10 July 2026
 - [x] Derived tables pass the updated `work/validate_event_adjusted_release.py`.
 - [x] Main and supplementary figures have source scripts.
 - [x] Historical figures and obsolete PBV audit tables are removed from the release package.
+- [x] `reference_traceability.md` records DOI or official-source checks and local full-text coverage.
 
 ## Author confirmations before upload
 

@@ -12,7 +12,7 @@
 - Supported stations: 1,628.
 - Spatial-block RMSE reduction versus a zero station term: 12.6%.
 - Observed-predicted station-term correlation: 0.500.
-- Across held-out event groups, the mean train-test station-term correlation is 0.921 and the mean test RMSE reduction is 74.5%.
+- Across held-out event groups, the mean train-test station-term correlation is 0.890 and the mean test RMSE reduction is 67.7%.
 - Cross-validated station multiplier q05/q50/q95: 0.624 / 0.886 / 1.338.
 - Matched-station 50-year 10% official Vs400 median: 0.078 g.
 - MF2013 surface-reference median: 0.081 g.

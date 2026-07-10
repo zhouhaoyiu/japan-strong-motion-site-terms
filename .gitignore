@@ -7,6 +7,7 @@
 !README.md
 !LICENSE
 !environment.yml
+!public_inputs_manifest.tsv
 !/.github/
 !/.github/**
 
@@ -33,3 +34,4 @@ outputs/cee_submission_latex_v0_8_english_article/predictable-long-period-site-r
 !/work/jshis_path_stratification_audit.py
 !/work/jshis_balanced_station_model.py
 !/work/validate_event_adjusted_release.py
+!/work/verify_public_inputs.py

@@ -47,7 +47,9 @@ def validate_files() -> None:
         ROOT / "work" / "jshis_robustness_stress_tests.py",
         ROOT / "work" / "jshis_path_stratification_audit.py",
         ROOT / "work" / "jshis_balanced_station_model.py",
+        ROOT / "work" / "verify_public_inputs.py",
         ROOT / "environment.yml",
+        ROOT / "public_inputs_manifest.tsv",
         ARTICLE / "figures" / "figure_ground_motion_model_sensitivity.pdf",
         ARTICLE / "figures" / "supplementary_figure_station_uncertainty.pdf",
         ARTICLE / "figures" / "supplementary_figure_robustness_stress_tests.pdf",
@@ -56,6 +58,16 @@ def validate_files() -> None:
     ]
     for path in required:
         require(path.is_file() and path.stat().st_size > 0, f"missing or empty {path.relative_to(ROOT)}")
+
+    with (ROOT / "public_inputs_manifest.tsv").open(newline="", encoding="utf-8") as handle:
+        inputs = list(csv.DictReader(handle, delimiter="\t"))
+    require(
+        {row["role"] for row in inputs}
+        == {"strong_motion_flatfile", "mf2013_coefficients", "jshis_response_spectra"},
+        "public input manifest roles are incomplete",
+    )
+    require(all(re.fullmatch(r"[0-9a-f]{64}", row["sha256"]) for row in inputs), "invalid input SHA-256")
+    require(all(row["source_url"].startswith("https://") for row in inputs), "input source URL is not HTTPS")
 
 
 def validate_manuscript() -> None:
@@ -75,7 +87,7 @@ def validate_manuscript() -> None:
     abstract_words = re.findall(r"[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*", abstract)
     require(len(abstract_words) <= 150, f"abstract has {len(abstract_words)} words")
     require("222,664" in abstract and "surface records" in abstract, "abstract lacks the surface-record sample")
-    for claim in ["RotD100", "0.921", "0.770", "12.6", "0.280", "1.338"]:
+    for claim in ["RotD100", "0.890", "0.770", "12.6", "0.280", "1.338"]:
         require(claim in abstract, f"abstract lacks key result: {claim}")
 
     subheadings = re.findall(r"\\subsection\{([^}]*)\}", text)
@@ -95,13 +107,17 @@ def validate_manuscript() -> None:
     introduction_words = re.findall(r"[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*", introduction)
     require(len(introduction_words) < 1_000, f"Introduction has {len(introduction_words)} words")
     last_introduction_paragraph = [paragraph for paragraph in introduction.split("\n\n") if paragraph.strip()][-1]
-    for phrase in ["event groups", "path-stratified residuals", "average-path station sensitivity"]:
+    for phrase in ["Event holdout", "path-stratified analyses", "average-path station adjustment"]:
         require(phrase in last_introduction_paragraph, f"Introduction scope paragraph lacks: {phrase}")
     require(
-        "The manuscript and code were written by the authors. ChatGPT was used to assist language and formatting revision and code review" in text,
+        "The manuscript and code were written by the authors. ChatGPT was used only for language and formatting revision and code verification" in text,
         "generative-AI assistance statement is not in the approved wording",
     )
     require("No generative-AI image is included" in text, "generative-image status is not disclosed")
+    require(
+        "Each fold fits the two-way event-station decomposition separately" in text,
+        "event holdout is not documented as separate two-way decompositions",
+    )
     require("used only for manuscript-format checks" not in text, "obsolete AI-use statement remains")
     require(r"\section*{References}" not in text, "manual References heading duplicates the bibliography heading")
     for stale in ["322,020", "2,267", "23.1\\%", "0.589", "1.449", "0.048 g", "10,467"]:
@@ -179,6 +195,16 @@ def validate_references() -> None:
         bibliography_entries(shared) == bibliography_entries(main_text),
         "Chinese shared-reference content differs from the English manuscript",
     )
+    main_entries = bibliography_entries(main_text)
+    require(
+        all("https://" in entry for entry in main_entries.values()),
+        "a main reference lacks a DOI or official HTTPS source",
+    )
+    supplement_entries = bibliography_entries(supplement_text)
+    require(
+        all("https://" in entry for entry in supplement_entries.values()),
+        "a supplementary reference lacks a DOI or official HTTPS source",
+    )
 
 
 def validate_chinese_sync() -> None:
@@ -216,8 +242,9 @@ def validate_chinese_sync() -> None:
 
     for stale in ["0.928", "0.780", "0.625", "1.366", "0.074 g", "1,153"]:
         require(stale not in chinese_text, f"stale Chinese claim remains: {stale}")
-    for current in ["RotD100", "0.921", "0.770", "12.6\\%", "0.624", "1.338", "0.075 g"]:
+    for current in ["RotD100", "0.890", "0.770", "12.6\\%", "0.624", "1.338", "0.075 g"]:
         require(current in chinese_text, f"Chinese manuscript lacks current result: {current}")
+    require("分别对4组训练事件和1组检验事件拟合完整的事件--台站双向固定效应模型" in chinese_text, "Chinese event-holdout method is stale")
     require(
         r"figure_path_stratification.pdf" in chinese_text,
         "Chinese manuscript lacks the path-stratification figure",
@@ -271,9 +298,17 @@ def validate_prediction() -> None:
     require(min(float(row["rmse_reduction_vs_zero_pct"]) for row in folds) > 0, "a SA3 spatial fold does not improve")
 
     repeat = read_csv("jshis_event_holdout_station_repeatability.csv")
+    require(len(repeat) == 48, f"unexpected event-holdout row count: {len(repeat)}")
+    require({row["decomposition_method"] for row in repeat} == {"two_way_fixed_effects"}, "event holdout is not two-way")
+    require({int(float(row["event_split_seed"])) for row in repeat} == {20_260_710}, "event split seed changed")
+    require(
+        max(float(row["train_max_parameter_change"]) for row in repeat) <= 1.01e-10
+        and max(float(row["test_max_parameter_change"]) for row in repeat) <= 1.01e-10,
+        "an event-holdout fixed-effect fit did not converge",
+    )
     repeat3 = next(row for row in repeat if row["scope"] == "fold_mean" and float(row["period_s"]) == 3.0)
-    require(0.91 < float(repeat3["train_test_station_correlation"]) < 0.93, "unexpected event-holdout correlation")
-    require(74.0 < float(repeat3["rmse_reduction_vs_zero_pct"]) < 75.0, "unexpected event-holdout gain")
+    require(0.88 < float(repeat3["train_test_station_correlation"]) < 0.90, "unexpected event-holdout correlation")
+    require(67.0 < float(repeat3["rmse_reduction_vs_zero_pct"]) < 68.5, "unexpected event-holdout gain")
 
 
 def validate_hazard() -> None:
@@ -319,8 +354,41 @@ def validate_independent_gmpe() -> None:
     require(int(float(sa3["n_paired_stations"])) == 1_628, "unexpected Zhao paired-station count")
 
     repeat = read_csv("jshis_zhao2006_event_holdout_repeatability.csv")
+    require(len(repeat) == 48, f"unexpected Zhao event-holdout row count: {len(repeat)}")
+    require({row["decomposition_method"] for row in repeat} == {"two_way_fixed_effects"}, "Zhao event holdout is not two-way")
+    require({int(float(row["event_split_seed"])) for row in repeat} == {20_260_710}, "Zhao event split seed changed")
+    require(
+        max(float(row["train_max_parameter_change"]) for row in repeat) <= 1.01e-10
+        and max(float(row["test_max_parameter_change"]) for row in repeat) <= 1.01e-10,
+        "a Zhao event-holdout fixed-effect fit did not converge",
+    )
     repeat3 = next(row for row in repeat if row["scope"] == "fold_mean" and float(row["period_s"]) == 3.0)
-    require(0.95 < float(repeat3["train_test_station_correlation"]) < 0.97, "unexpected Zhao event repeatability")
+    require(0.94 < float(repeat3["train_test_station_correlation"]) < 0.96, "unexpected Zhao event repeatability")
+
+    primary_repeat = read_csv("jshis_event_holdout_station_repeatability.csv")
+    primary_folds = {
+        (float(row["period_s"]), int(float(row["fold"]))): (
+            int(float(row["event_split_seed"])),
+            int(float(row["n_train_events"])),
+            int(float(row["n_test_events"])),
+            int(float(row["n_paired_stations"])),
+            int(float(row["test_record_weight"])),
+        )
+        for row in primary_repeat
+        if row["scope"] == "fold"
+    }
+    zhao_folds = {
+        (float(row["period_s"]), int(float(row["fold"]))): (
+            int(float(row["event_split_seed"])),
+            int(float(row["n_train_events"])),
+            int(float(row["n_test_events"])),
+            int(float(row["n_paired_stations"])),
+            int(float(row["test_record_weight"])),
+        )
+        for row in repeat
+        if row["scope"] == "fold"
+    }
+    require(primary_folds == zhao_folds, "MF2013 and Zhao event-holdout folds differ")
     metrics = read_csv("jshis_zhao2006_station_model_metrics.csv")
     model3 = next(
         row
