@@ -1,8 +1,0 @@
-item,value,status
-official PRM source files inventoried,421,closed
-official shapefile layers inventoried,200,closed
-national sampled meshes checked,10467,closed
-official threshold rows checked,41868,closed
-failed or zero-probability rows,0,closed
-official spatial correlation and logic-tree implementation,not public in executable form,open
-validated official GMPE switch parity,not public in executable form,open

@@ -5,11 +5,12 @@ on:
   pull_request:
 
 jobs:
-  syntax:
+  release-validation:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-      - run: python -m compileall work outputs
+          python-version: "3.12"
+      - run: python -m compileall work/jshis_event_adjusted_station_model.py work/jshis_independent_gmpe_replication.py work/jshis_station_uncertainty_propagation.py work/jshis_robustness_stress_tests.py work/jshis_path_stratification_audit.py work/jshis_balanced_station_model.py work/validate_event_adjusted_release.py outputs/cee_submission_latex_v0_8_english_article/build_event_adjusted_supplement_figures.py outputs/cee_submission_latex_v0_8_english_article/supplement/kiknet_multievent_transfer_function_audit.py
+      - run: python work/validate_event_adjusted_release.py

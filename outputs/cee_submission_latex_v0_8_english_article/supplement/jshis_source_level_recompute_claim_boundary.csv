@@ -1,5 +1,0 @@
-claim_class,statement
-Can be claimed,"Public J-SHIS source-input inventory and sampled-grid public-parameter checks on 10,467 meshes."
-Can be claimed,All-period official response-spectrum ordinate propagation using observed station terms.
-Open boundary,Completed official J-SHIS national production PSHA rerun.
-Reason,"The public packages lack a validated executable implementation of every official calculation switch, spatial correlation, and logic-tree aggregation step."

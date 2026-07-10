@@ -1,173 +1,408 @@
-\documentclass[11pt]{article}
+\documentclass[10pt]{article}
 
-\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage[a4paper,margin=2.2cm]{geometry}
 \usepackage{graphicx}
-\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{amsmath}
 \usepackage{setspace}
+\usepackage{caption}
 \usepackage{float}
+\usepackage{placeins}
+\usepackage{url}
 \usepackage[hidelinks]{hyperref}
 
 \captionsetup{font=small,labelfont=bf,labelsep=period}
-\renewcommand{\thefigure}{S\arabic{figure}}
-\setstretch{1.15}
+\setlength{\parindent}{1.4em}
 \setlength{\parskip}{0.25em}
-\setlength{\parindent}{0pt}
+\setstretch{1.12}
+\raggedbottom
 
 \begin{document}
+\renewcommand{\figurename}{Supplementary Figure}
+\renewcommand{\tablename}{Supplementary Table}
 
 \begin{center}
 {\Large\bfseries Supplementary Information\par}
-\vspace{0.6em}
-{\large Long-period site residuals and response-spectrum hazard sensitivity in Japanese strong-motion records\par}
+\vspace{0.5em}
+{\large Repeatable station terms redistribute long-period response spectra across Japanese strong-motion sites\par}
+\vspace{0.5em}
+{Haoyu Zhou and Qiang Ma\par}
 \end{center}
+
+\section*{Supplementary Methods}
+
+\subsection*{Record selection and direct periods}
+
+The public J-SHIS/NIED \path{sub1-v2024} flatfile contains 333,808 K-NET and KiK-net records with moment magnitude at least 5 and shortest fault distance no greater than 300 km\cite{niedflatfile,flatfilepage}. Its site table codes ground-surface installations as 1 and borehole installations as 2. We retain code 1 for the residual model and response-spectrum propagation. MF2013 uses the maximum norm of two horizontal oscillator responses, equivalent to RotD100\cite{dohi2024}. RotD100 spectral acceleration is read directly at 0.1, 0.2, 0.3, 0.5, 1.0, 2.0, 3.0 and 5.0 s. The residual sample also requires positive spectral acceleration, distance and AVS30; finite magnitude and model inputs; and a crustal, interplate or intraplate MF2013 source class. This screen retains 222,664 surface records at every period. No response coordinate is copied or interpolated.
+
+RotD50 residuals are decomposed on the identical sample as a response-component sensitivity. The RotD50 and RotD100 fields are compared station by station, and record-level RotD50/RotD100 ratios quantify the change in absolute coordinate. Zhao 2006 uses RotD50 because OpenQuake defines the model for the geometric mean of two horizontal components and the flatfile does not provide that exact response coordinate.
+
+\subsection*{Residual model boundary}
+
+The primary prediction contains the MF2013 magnitude-distance backbone and the published D1400 and AVS30 terms\cite{morikawa2013,morikawa2023}. D1400 is the depth to the 1.4 km s$^{-1}$ shear-wave velocity horizon. AVS30 is the average shear-wave velocity in the upper 30 m. The anomalous-intensity sensitivity uses the public northeastern and southwestern geographic and depth rules\cite{morikawa2006}. It remains a sensitivity calculation because an explicit plate-membership field is unavailable for every flatfile event. The Philippine Sea Plate term is constant across stations for a qualifying event at a given period and is absorbed by the event fixed effect. We do not interpret the fitted global intercept as an official MF2013 calibration error.
+
+\subsection*{Fixed effect decomposition}
+
+For residual $r_{ij}$ at station $i$ during event $j$, the additive model is
+\begin{equation}
+r_{ij}=\mu+\delta E_j+\delta S_i+\epsilon_{ij}.
+\end{equation}
+Alternating grouped least squares estimates $\delta E_j$ and $\delta S_i$. Record-count-weighted event and station means are constrained to zero, so $\mu$ contains the global offset. Iteration stops when the largest parameter change falls below $10^{-10}$ log$_{10}$ units. All 24 period-model combinations converge; the largest final change is $9.99\times10^{-11}$ and the largest iteration count is 1,161.
+
+\subsection*{Event group repeatability}
+
+The 1,737 usable earthquakes are assigned to five groups with a fixed random seed. Each fold estimates station terms from four groups after subtracting each event mean. Test station means are calculated independently after removing each held-out event mean. A station requires at least 15 training records and five test records. The comparison uses the train-test station correlation and the test-record-weighted root mean squared error relative to a zero station term. Each fold contains 347 or 348 test events.
+
+\subsection*{Spatial prediction}
+
+Five spatial blocks are produced by $k$-means clustering of standardised longitude and latitude. The physical model uses shallow-velocity averages, sedimentary-depth variables, elevation, sensor depth and network. The site-and-location model adds station coordinates and two volcanic-front distances. Both histogram gradient-boosting models use fixed hyperparameters: learning rate 0.04, 400 iterations, 15 maximum leaf nodes, 35 minimum samples per leaf and L2 regularisation 0.1. Numeric variables are median-imputed within training folds; network is mode-imputed and one-hot encoded. Predictions are generated only for the held-out block and are centred to a record-weighted zero mean before spectrum propagation.
+
+\subsection*{Alternative ground-motion-model calculation}
+
+We evaluate the Zhao et al. 2006 active-crustal, interface and intraslab equations with OpenQuake Engine 3.25.1\cite{zhao2006,pagani2014}. The flatfile source class selects the equation branch. Moment magnitude, hypocentral depth and crustal rake are read from the source table; documented shortest fault distance is supplied as rupture distance, and AVS30 is supplied as VS30. RotD50 is used as the closest orientation-independent coordinate to the model's geometric-mean target. The same surface observations, periods, station threshold, event folds and spatial folds are used for the MF2013 and Zhao calculations. This changes the ground-motion backbone while retaining the data and validation design.
+
+\subsection*{Transfer and event-influence tests}
+
+Cross-network tests train on K-NET and evaluate KiK-net, then reverse the direction. A common-feature model removes VS20, VS30 and network identity because these fields have different completeness in the two networks. It retains VS10, AVS30, sedimentary depths, elevation, sensor depth, coordinates and volcanic-front distances. Fixed macroregions are defined by reproducible latitude and longitude boundaries. Event influence is measured after deleting each of the ten events with the largest 3.0 s record count and after deleting all ten at every period. A record-weighted mean shift aligns each perturbed station field with the full field before comparison.
+
+\subsection*{Path and source stratification}
+
+Records are grouped into four hypocentral-bearing sectors, four shortest-fault-distance bins and three source classes. Bearing is the initial great-circle direction from the source horizontal coordinates to the station. Stratification can disconnect the bipartite station-event graph, especially within 50 km. Each graph component is solved separately by sparse least squares. Stations require ten records within a stratum, retained components require ten supported stations, and every component is aligned to the full station field by its record-weighted mean difference. Across all 88 period-stratum fits, the maximum relative normal-equation residual is $1.90\times10^{-9}$ and every solver returns an accepted convergence code.
+
+Five random, disjoint event-half comparisons at 1.0, 2.0 and 3.0 s measure sampling reliability within each stratum. A station requires five records in each half. Both half-fields are component-aligned to the full-field reference before comparison. Equal-stratum sensitivity targets are formed by averaging the aligned station terms across at least two available strata, with equal weight per stratum. The primary spatial-validation procedure is then repeated for azimuth-, distance- and source-class-balanced targets; prediction errors retain station record-count weights.
+
+\subsection*{Empirical prediction intervals}
+
+For each held spatial block, signed prediction errors from the other four blocks provide record-weighted 5th and 95th percentiles. These quantiles are added to the held-block point prediction. Coverage is computed without using the held-block station terms for interval calibration. Lower and upper station terms are converted to multipliers and propagated to the matched response spectra. The resulting interval describes station-model prediction error under this spatial split. Source, ground-motion-model and J-SHIS logic-tree uncertainties are outside its scope.
+
+\subsection*{Reference condition conversion}
+
+J-SHIS response-spectrum maps provide ordinates on engineering bedrock with $V_S=400$ m s$^{-1}$\cite{jshisapi,responsemap}. The station-surface factor replaces the MF2013 shallow-soil term for 400 m s$^{-1}$ with the term evaluated at the station AVS30:
+\begin{equation}
+F_{\mathrm{surf},i}(T)=10^{G_s(AVS30_i,T)-G_s(400,T)}.
+\end{equation}
+The cross-validated station factor $10^{\widehat{\delta S}_i(T)}$ is applied after this conversion. All eight period coordinates and four 50-year exceedance probabilities are read from the official map files. The calculation uses matched station cells and does not interpolate a station field to unobserved national grid cells.
+
+\subsection*{KiK-net waveform check}
+
+The waveform check uses 460 paired surface and downhole records from two KiK-net earthquakes\cite{aoi2004}. The first set contains 288 converted miniSEED pairs and the second contains 172 original NIED ASCII pairs converted with the scale factors in their headers. Each trace is demeaned and detrended. Horizontal peak amplitude is calculated from the two horizontal components. Surface-to-downhole Fourier amplitude ratios are evaluated from 0.2 to 20 Hz. This check is independent of the station residual model.
 
 \section*{Supplementary Figures}
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.90\linewidth]{figures/figure5.pdf}
-\caption{External Zhao et al. OpenQuake sensitivity check. PGA shows weak association with D1400; SA(3.0 s) retains a strong basin-depth association. The check uses distance and site proxy inputs.}
-\label{fig:s1}
+\includegraphics[width=0.68\linewidth]{figures/supplementary_figure_event_repeatability.pdf}
+\caption{\textbf{Station term repeatability across held-out events.} \textbf{a}, train-test station correlations for five event folds; grey lines show individual folds and the blue line shows their mean. \textbf{b}, test root mean squared error reduction relative to a zero station term. \textbf{c}, mean number of stations meeting train and test record thresholds. \textbf{d}, event, station and record-remainder amplitudes from the primary MF2013 site residual decomposition.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.96\linewidth]{figures/figure7.pdf}
-\caption{Ablation, interpretability, network-transfer validation, and engineering-scale examples for the station-residual model. A: spatial-block feature-set ablation for SA(1.0 s) and SA(3.0 s). B: grouped permutation importance. C: K-NET/KiK-net transfer. D: held-out SA(3.0 s) station correction factors.}
-\label{fig:s2}
+\includegraphics[width=0.68\linewidth]{figures/supplementary_figure_spatial_validation.pdf}
+\caption{\textbf{Spatial validation of SA(3.0 s) station prediction.} \textbf{a}, five station blocks used for cross-validation. \textbf{b}, root mean squared error reduction in each held-out block for the physical and site-plus-location models. \textbf{c}, observed event-adjusted station terms and out-of-fold site-plus-location predictions. \textbf{d}, prediction-error distributions by spatial fold; boxes show interquartile ranges and whiskers extend to 1.5 times the interquartile range.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.96\linewidth]{figures/figure9.pdf}
-\caption{Spatial stability and uncertainty of the official SA(3.0 s) response-spectrum check. A: station multiplier map for matched held-out stations. B: spatial-block fold medians, with vertical lines showing 5th--95th percentile ranges. C: distribution shift from official to station-corrected 50-year 10\% SA(3.0 s). D: station-bootstrap 95\% intervals for the 5th, 50th, and 95th percentiles.}
-\label{fig:s3}
+\includegraphics[width=0.68\linewidth]{figures/supplementary_figure_robustness_stress_tests.pdf}
+\caption{\textbf{Network, geographic and event-influence stress tests.} \textbf{a}, common-feature transfer between K-NET and KiK-net. \textbf{b}, common-feature root mean squared error gain when each fixed macroregion is held out. \textbf{c}, SA(3.0 s) station-term correlation after deleting each of the ten highest-count events; the dashed line shows their joint deletion. \textbf{d}, station-term correlation and weighted 95th-percentile absolute change after jointly deleting the ten events at every period.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.96\linewidth]{figures/openquake_jpn_station_psha_sensitivity.pdf}
-\caption{Independent OpenQuake/GEM Japan-model PSHA sensitivity check for representative stations. A: mean SA(3.0 s) hazard curves from the OpenQuake baseline calculation, with dashed lines showing baseline curves and solid lines showing deterministic SA(3.0 s) station-multiplier shifts. B: 50-year 10\% uniform-hazard spectra for the same representative stations, with only the SA(3.0 s) ordinate shifted. This supplementary calculation provides an engine-level sensitivity check using packaged OpenQuake Japan mosaic inputs.}
-\label{fig:s4}
+\includegraphics[width=0.82\linewidth]{figures/supplementary_figure_balanced_station_model.pdf}
+\caption{\textbf{Prediction of equal-stratum station fields.} \textbf{a}, overall spatial-block root mean squared error gain relative to zero. \textbf{b}, observed-predicted correlation. Vertical bars span the five held-block results; circles show pooled results. The full-sample target is included for reference.}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.86\linewidth]{figures/figure10_sigma_sensitivity.png}
-\caption{Five-point sigma sensitivity audit for the public-parameter J-SHIS PBV recomputation. The same 1,797 national stratified meshes are evaluated at log10 sigma values of 0.18, 0.20, 0.23, 0.26, and 0.30. The global RMSE minimum occurs at sigma 0.23; probability-level optima vary across exceedance levels.}
-\label{fig:s5}
+\includegraphics[width=0.68\linewidth]{figures/supplementary_figure_response_spectra.pdf}
+\caption{\textbf{Matched-station response-spectrum sensitivity.} \textbf{a}, cross-validated station multiplier distributions at the eight direct periods. \textbf{b}, median and 5th--95th percentile multiplier range. \textbf{c}, median SA(3.0 s) ordinates at four 50-year exceedance probabilities for the official $V_S=400$ m s$^{-1}$ map, the MF2013 surface projection and the station-adjusted surface projection. \textbf{d}, paired MF2013 surface and station-adjusted SA(3.0 s) values at the 50-year 10\% level; colour denotes the station multiplier.}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.96\linewidth]{figures/figure11_residual_root_cause.png}
-\caption{Residual-tail diagnostics for the 5,322-mesh public-parameter audit. A: RMSE by official probability level. B: site-level tail amplitude by coarse geographic band. C: site-level tail amplitude by official PBV decile. D: RMSE by candidate-source-count decile. These diagnostics identify structured public-parameter mismatch and confirm valid numerical execution.}
-\label{fig:s6}
+\includegraphics[width=0.68\linewidth]{figures/supplementary_figure_station_uncertainty.pdf}
+\caption{\textbf{Spatial-block station-model uncertainty.} \textbf{a}, empirical coverage of the nominal 90\% interval by period. \textbf{b}, median interval factor span and its range across the five held blocks. \textbf{c}, point multipliers and empirical intervals for 35 ordered SA(3.0 s) stations. \textbf{d}, surface-reference and station-adjusted spectra with the station-model interval at the Tokyo-nearest matched station. The interval excludes source, backbone and J-SHIS logic-tree uncertainty.}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.99\linewidth]{figures/figure12_basin_period_proxy.png}
-\caption{Basin-period proxy audit for the 10,467-mesh public-parameter residual-tail structure. A: residual-tail fraction by basin long-period proxy quartile. B: maximum absolute log10 residual against the D1400-derived period proxy 4D1400/700, with the 1--3 s window shaded. C: median D1400-derived period proxy for northeast-Hokkaido, outside-northeast-Hokkaido, residual-tail, and non-tail meshes. D: nearby-station MF2013 site-corrected residual period profiles for all meshes, northeast-Hokkaido meshes, residual-tail meshes, and high-PBV tail meshes.}
-\label{fig:s7}
+\includegraphics[width=0.68\linewidth]{figures/figure16_kiknet_multievent_transfer_function.png}
+\caption{\textbf{KiK-net surface and downhole waveform comparison.} \textbf{a}, horizontal surface-to-downhole peak acceleration ratios by earthquake. \textbf{b}, frequency-band Fourier amplitude ratios. \textbf{c}, median transfer functions for the two event sets. \textbf{d}, horizontal peak acceleration ratio against the downhole input-motion proxy. Ratios are shown in log$_{10}$ units in panels \textbf{a} and \textbf{b}.}
 \end{figure}
 
-\begin{figure}[H]
+\FloatBarrier
+\clearpage
+\section*{Supplementary Tables}
+
+\begin{table}[H]
 \centering
-\includegraphics[width=0.99\linewidth]{figures/figure13_tail_robustness_cases.png}
-\caption{Tail-robustness and matched-case audit for the 10,467-mesh public-parameter residual-tail structure. A: residual-tail fraction in northeast-Hokkaido and outside-northeast-Hokkaido meshes within station-distance bins. B: adjusted odds ratios from a logistic tail model with official PBV, candidate-source count, station distance, station residual contrast, northeast-Hokkaido membership, and the D1400-derived 1--3 s proxy window. C: tail-risk ratios for the D1400-derived 1--3 s proxy window across all meshes, the nearest-station $\leq$50 km subset, and middle official-PBV deciles q3--q8. D: maximum absolute log10 residuals for matched tail and non-tail mesh profiles.}
-\label{fig:s8}
-\end{figure}
+\caption{Primary residual decomposition}
+\small
+\begin{tabular}{rrrrrr}
+\toprule
+Period & Records & Global offset & Event SD & Station SD & Remainder RMSE \\
+(s) & & \multicolumn{4}{c}{log$_{10}$ units} \\
+\midrule
+0.1 & 222,664 & 0.284 & 0.268 & 0.284 & 0.246 \\
+0.2 & 222,664 & 0.215 & 0.241 & 0.296 & 0.238 \\
+0.3 & 222,664 & 0.172 & 0.220 & 0.275 & 0.234 \\
+0.5 & 222,664 & 0.106 & 0.199 & 0.246 & 0.223 \\
+1.0 & 222,664 & 0.017 & 0.188 & 0.219 & 0.205 \\
+2.0 & 222,664 & -0.039 & 0.181 & 0.188 & 0.196 \\
+3.0 & 222,664 & -0.085 & 0.175 & 0.167 & 0.188 \\
+5.0 & 222,664 & -0.134 & 0.174 & 0.144 & 0.186 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\begin{figure}[H]
+\begin{table}[H]
 \centering
-\includegraphics[width=0.96\linewidth]{figures/figure14_nearest_station_borehole_audit.png}
-\caption{Nearest-station official borehole-profile audit for the 10,467-mesh public-parameter residual-tail structure. A: maximum absolute log10 residual against the public NIED borehole VS20 proxy for the nearest K-NET/KiK-net station, with residual-tail meshes highlighted. B: median borehole VS20 proxy for tail, non-tail, northeast-Hokkaido, and outside-northeast-Hokkaido groups. C: median upper-20 m thickness with VS $\leq$300 m/s. D: median depth to VS $\geq$500 m/s. The audit provides a nearest-station profile check for proxy-level interpretation.}
-\label{fig:s9}
-\end{figure}
+\caption{Event group station repeatability}
+\small
+\begin{tabular}{rrrrr}
+\toprule
+Period & Train-test & Test RMSE & Mean paired & Mean test \\
+(s) & correlation & reduction (\%) & stations & events \\
+\midrule
+0.1 & 0.940 & 78.1 & 1,498 & 347.4 \\
+0.2 & 0.956 & 81.6 & 1,485 & 347.4 \\
+0.3 & 0.958 & 81.6 & 1,455 & 347.4 \\
+0.5 & 0.948 & 79.3 & 1,468 & 347.4 \\
+1.0 & 0.945 & 78.3 & 1,473 & 347.4 \\
+2.0 & 0.933 & 76.0 & 1,481 & 347.4 \\
+3.0 & 0.921 & 74.5 & 1,487 & 347.4 \\
+5.0 & 0.916 & 72.4 & 1,482 & 347.4 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\begin{figure}[H]
+\begin{table}[H]
 \centering
-\includegraphics[width=0.96\linewidth]{figures/figure15_sa3_continuous_surface.png}
-\caption{Sampled-grid SA(3.0 s) continuous correction-surface audit. A: site-and-location gradient-boosted correction surface on the 10,467-mesh public-parameter audit grid, with station locations shown for reference. B: sampled-grid multiplier distribution. C: spatial-block held-out station validation for the site-and-location surface. D: group median multipliers with 5th--95th percentile ranges. The sampled-grid values use nearest-station public site proxies and test the station-to-grid continuity step.}
-\label{fig:s10}
-\end{figure}
+\caption{Zhao 2006 ground-motion-model sensitivity}
+\small
+\begin{tabular}{rrrrr}
+\toprule
+Period & MF2013--Zhao & Median absolute & Zhao event & Zhao spatial \\
+(s) & correlation & difference (log$_{10}$) & correlation & RMSE gain (\%) \\
+\midrule
+0.1 & 0.953 & 0.064 & 0.952 & 16.9 \\
+0.2 & 0.921 & 0.093 & 0.960 & 20.8 \\
+0.3 & 0.919 & 0.081 & 0.961 & 18.9 \\
+0.5 & 0.923 & 0.073 & 0.956 & 20.8 \\
+1.0 & 0.889 & 0.094 & 0.962 & 22.9 \\
+2.0 & 0.801 & 0.144 & 0.966 & 32.1 \\
+3.0 & 0.770 & 0.151 & 0.961 & 37.7 \\
+5.0 & 0.697 & 0.125 & 0.959 & 39.2 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\begin{figure}[H]
+\begin{table}[H]
 \centering
-\includegraphics[width=0.96\linewidth]{figures/figure16_gsi_terrain_geomorphic_audit.png}
-\caption{Independent GSI terrain geomorphic proxy audit for the 10,467-mesh public-parameter residual-tail structure. A: GSI elevation sampled from public DEM PNG tiles, with residual-tail meshes outlined. B: group elevation medians with interquartile ranges. C: residual-tail fraction by 1 km relief quartile. D: lowland-flat terrain and residual-tail contrasts. The audit tests external surface-geomorphic consistency; shear-wave velocity and three-dimensional basin geometry require separate data.}
-\label{fig:s11}
-\end{figure}
+\caption{Spatially held-out station prediction}
+\small
+\begin{tabular}{rrrr}
+\toprule
+Period & Physical model & Site and location & Observed-predicted \\
+(s) & RMSE gain (\%) & RMSE gain (\%) & correlation \\
+\midrule
+0.1 & -5.2 & 11.7 & 0.513 \\
+0.2 & 4.3 & 12.8 & 0.516 \\
+0.3 & 10.3 & 15.0 & 0.521 \\
+0.5 & 9.0 & 17.7 & 0.547 \\
+1.0 & 4.6 & 10.1 & 0.503 \\
+2.0 & 0.0 & 10.3 & 0.483 \\
+3.0 & -2.3 & 12.6 & 0.500 \\
+5.0 & -3.5 & 12.0 & 0.517 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\begin{figure}[H]
+\begin{table}[H]
 \centering
-\includegraphics[width=0.96\linewidth]{figures/figure17_zamp_vs400_site_amplification_audit.png}
-\caption{J-SHIS VS400 site-amplification layer audit for the 10,467-mesh public-parameter residual-tail structure. A: gridded AVS30 from the public 250 m surface-ground layer, with residual-tail meshes outlined. B: group AVS30 medians with interquartile ranges. C: residual-tail fraction by gridded AVS30 quartile. D: soft-ground and residual-tail contrasts. The audit supplies gridded shallow-velocity and surface-amplification context for the residual-tail interpretation.}
-\label{fig:s12}
-\end{figure}
+\caption{SA(3.0 s) network and fixed-macroregion transfer}
+\small
+\begin{tabular}{lrrr}
+\toprule
+Held group & Full-model & Common-feature & Common-feature \\
+& RMSE gain (\%) & RMSE gain (\%) & correlation \\
+\midrule
+K-NET & 4.1 & 8.7 & 0.469 \\
+KiK-net & 21.2 & 20.5 & 0.607 \\
+Hokkaido & 7.2 & 6.9 & 0.284 \\
+Northern Honshu & 5.4 & 6.8 & 0.304 \\
+Central-Eastern Japan & 6.2 & -5.2 & 0.402 \\
+Western Honshu--Shikoku & 28.9 & 27.5 & 0.386 \\
+Kyushu--Ryukyu & 13.4 & 13.8 & 0.372 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\begin{figure}[H]
+\begin{table}[H]
 \centering
-\includegraphics[width=0.96\linewidth]{figures/figure16_kiknet_multievent_transfer_function.png}
-\caption{Multi-event KiK-net surface/downhole transfer-function audit. A: horizontal PGA ratio by event. B: frequency-band transfer-ratio distributions for 460 event-station pairs. C: event-wise median transfer functions. D: horizontal PGA ratio against downhole input-motion proxy. The audit combines 288 converted miniSEED surface/downhole pairs and 172 NIED ASCII pairs converted with header scale factors.}
-\label{fig:s13}
-\end{figure}
+\caption{Joint deletion of the ten highest-count events}
+\small
+\begin{tabular}{rrr}
+\toprule
+Period & Station-term & Weighted 95th-percentile \\
+(s) & correlation & absolute change (log$_{10}$) \\
+\midrule
+0.1 & 0.99965 & 0.0148 \\
+0.2 & 0.99976 & 0.0131 \\
+0.3 & 0.99978 & 0.0114 \\
+0.5 & 0.99981 & 0.0085 \\
+1.0 & 0.99975 & 0.0087 \\
+2.0 & 0.99937 & 0.0118 \\
+3.0 & 0.99937 & 0.0115 \\
+5.0 & 0.99892 & 0.0145 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\begin{figure}[H]
+\begin{table}[H]
 \centering
-\includegraphics[width=0.96\linewidth]{figures/figure17_multiperiod_nonergodic_psha.png}
-\caption{All-period official-response-spectrum non-ergodic propagation audit. A: spatial-block held-out station validation for SA(0.3 s), SA(1.0 s), and SA(3.0 s) correction surfaces. B: sampled-grid 50-year 10\% multiplier spectrum on 10,467 meshes. C: matched-station official-UHS percent changes. D: residual-tail and non-tail sampled-grid median changes by period. The calculation propagates station terms through official J-SHIS response-spectrum map ordinates and keeps the official source model and uncertainty settings fixed.}
-\label{fig:s14}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.96\linewidth]{figures/figure18_sa3_physical_proxy_model.pdf}
-\caption{Interpretable SA(3.0 s) site-variable model. A: spatial-block held-out observed and predicted MF2013 site-corrected station residuals. B: largest standardized ridge-regression coefficients. Predictors include basin-depth proxies, shallow-velocity proxies, public borehole-profile proxies, volcanic-front distances, elevation, sensor depth, coordinates, and broad Japanese region.}
-\label{fig:s15}
-\end{figure}
-
-\section*{Supplementary Tables and Audit Files}
-
-The accompanying \path{supplement/} directory contains machine-readable CSV and Markdown audit files for the additional validation checks.
-
-\begingroup
+\caption{SA(3.0 s) path and source stratification}
 \scriptsize
-\sloppy
-\setlength{\emergencystretch}{2em}
-\begin{itemize}
-\setlength{\itemsep}{0.05em}
-\setlength{\parsep}{0pt}
-\setlength{\parskip}{0pt}
-\item Supplementary Table S1: \path{jshis_station_matching_missingness_audit.csv}. This file documents 333,808 public flatfile records, 2,581 record station identifiers, 2,607 site-schema rows, complete record-to-site matching, and site-variable availability.
-\item Supplementary Table S2: \path{jshis_station_region_leaveout_summary.csv} and \path{jshis_station_region_leaveout_fold_metrics.csv}. These files report seven-region geographic leave-out validation for the station-residual model.
-\item Supplementary Table S3: \path{jshis_station_variable_substitution_summary.csv}, \path{jshis_station_site_variable_collinearity_pairs.csv}, and \path{jshis_station_site_variable_vif.csv}. These files report official-variable substitutions and collinearity checks for D1400, AVS30, VS20, and Dbase.
-\item Supplementary Table S4: \path{jshis_official_hazard_response_summary.csv}. This file reports official and SA(3.0 s)-corrected response-spectrum ordinates at 50-year 2\%, 5\%, 10\%, and 39\% exceedance probabilities.
-\item Supplementary Table S5: \path{jshis_positive_sa3_station_correction_summary.csv} and \path{jshis_positive_sa3_station_correction_audit.csv}. These files identify the 24 matched stations with positive SA(3.0 s) correction factors and list their site-level values.
-\item Supplementary Table S6: \path{jshis_official_data_provenance_2026-06-14.csv}, \path{cee_code_data_release_manifest_2026-06-14.md}, and \path{cee_release_metadata_zenodo_draft.json}. These files provide data-source provenance, redistribution boundaries, and DOI-deposition metadata for release preparation.
-\item Supplementary Table S7: \path{jshis_existing_sensitivity_inventory.csv} and \path{jshis_existing_influence_and_external_model_sensitivity.md}. These files inventory the existing event-exclusion, station-exclusion, magnitude-bin, distance-bin, and Zhao et al. external-model sensitivity outputs.
-\item Supplementary Table S8: \path{openquake_jpn_station_psha_summary.csv}, \path{openquake_jpn_station_psha_uhs.csv}, \path{openquake_jpn_station_psha_hazard_curves.csv}, and \path{openquake_jpn_station_psha_sensitivity.md}. These files report the independent OpenQuake/GEM Japan-model PSHA sensitivity calculation for five representative stations.
-\item Supplementary Table S9: \path{jshis_public_psha_national_stratified5322_arrays12_recompute_audit.md} and \path{jshis_public_psha_national_stratified5322_arrays12_run_summary.csv}. These files report the 5,322-mesh national stratified public-parameter audit.
-\item Supplementary Table S10: \path{jshis_public_psha_sigma_sensitivity1797_audit.md}, \path{jshis_public_psha_sigma_sensitivity1797_metrics.csv}, and \path{jshis_public_psha_sigma_sensitivity1797_best.csv}. These files report the five-point sigma sensitivity audit.
-\item Supplementary Table S11: \path{jshis_public_psha_residual_root_cause5322_audit.md}, \path{jshis_public_psha_residual_root_cause5322_by_probability.csv}, \path{jshis_public_psha_residual_root_cause5322_by_coarse_geo.csv}, \path{jshis_public_psha_residual_root_cause5322_by_official_bv_quantile.csv}, \path{jshis_public_psha_residual_root_cause5322_by_candidate_quantile.csv}, and \path{jshis_public_psha_residual_root_cause5322_spearman.csv}. These files report residual-tail diagnostics for the 5,322-mesh audit.
-\item Supplementary Table S12: \path{jshis_public_psha_national_stratified10467_arrays8_recompute_audit.md}, \path{jshis_public_psha_national_stratified10467_arrays8_recompute_run_summary.csv}, \path{jshis_public_psha_national_stratified10467_arrays8_recompute_by_probability.csv}, \path{jshis_public_psha_national_stratified10467_arrays8_recompute_by_coarse_geo.csv}, \path{jshis_public_psha_national_stratified10467_arrays8_recompute_by_official_bv_quantile.csv}, \path{jshis_public_psha_national_stratified10467_arrays8_recompute_by_candidate_quantile.csv}, and \path{jshis_public_psha_national_stratified10467_arrays8_recompute_spearman.csv}. These files report the 10,467-mesh national stratified public-parameter execution and residual-stratification audit.
-\item Supplementary Table S13: \path{jshis_public_psha_10467_near_station_physical_audit.md}, \path{jshis_public_psha_10467_near_station_physical_summary.csv}, and \path{jshis_public_psha_10467_near_station_physical_link.csv}. These files link the 10,467 sampled meshes to nearby K-NET/KiK-net stations with SA(3.0 s) site residuals and official site fields, and summarize the basin-proxy contrasts for residual-tail and northeast-Hokkaido meshes.
-\item Supplementary Table S14: \path{jshis_public_psha_10467_basin_period_proxy_audit.md}, \path{jshis_public_psha_10467_basin_period_proxy_summary.csv}, \path{jshis_public_psha_10467_basin_period_proxy_associations.csv}, \path{jshis_public_psha_10467_basin_period_proxy_tail_risk.csv}, and \path{jshis_public_psha_10467_basin_period_proxy_link.csv}. These files report the D1400-derived basin-period proxy audit and mesh-level links used for Supplementary Fig. S7.
-\item Supplementary Table S15: \path{jshis_public_psha_10467_tail_robustness_cases_audit.md}, \path{jshis_public_psha_10467_tail_robustness_distance_bins.csv}, \path{jshis_public_psha_10467_tail_robustness_stratified.csv}, \path{jshis_public_psha_10467_tail_threshold_sensitivity.csv}, \path{jshis_public_psha_10467_tail_robustness_logistic.csv}, \path{jshis_public_psha_10467_tail_case_profiles.csv}, and \path{jshis_public_psha_10467_tail_case_probability_rows.csv}. These files report the tail-robustness stratification, tail-threshold sensitivity, adjusted logistic tail model, matched tail/non-tail case profiles, and probability-level residual rows used for Supplementary Fig. S8.
-\item Supplementary Table S16: \path{jshis_public_psha_10467_nearest_station_borehole_audit.md}, \path{jshis_public_psha_10467_nearest_station_borehole_summary.csv}, \path{jshis_public_psha_10467_nearest_station_borehole_profiles.csv}, and \path{jshis_public_psha_10467_nearest_station_borehole_mesh_link.csv}. These files report the public NIED nearest-station borehole-profile audit used for Supplementary Fig. S9.
-\item Supplementary Table S17: \path{jshis_sa3_continuous_correction_surface_audit.md}, \path{jshis_sa3_continuous_correction_surface_summary.csv}, \path{jshis_sa3_continuous_correction_surface_station_validation.csv}, and \path{jshis_sa3_continuous_correction_surface_mesh.csv}. These files report the sampled-grid SA(3.0 s) continuous correction-surface audit used for Supplementary Fig. S10.
-\item Supplementary Table S18: \path{jshis_gsi_terrain_geomorphic_audit.md}, \path{jshis_gsi_terrain_geomorphic_summary.csv}, \path{jshis_gsi_terrain_geomorphic_associations.csv}, and \path{jshis_gsi_terrain_geomorphic_mesh.csv}. These files report the independent GSI terrain geomorphic proxy audit used for Supplementary Fig. S11.
-\item Supplementary Table S19: \path{jshis_zamp_vs400_site_amplification_audit.md}, \path{jshis_zamp_vs400_site_amplification_summary.csv}, \path{jshis_zamp_vs400_site_amplification_associations.csv}, \path{jshis_zamp_vs400_site_amplification_jcode.csv}, and \path{jshis_zamp_vs400_site_amplification_mesh.csv}. These files report the public J-SHIS VS400 site-amplification audit used for Supplementary Fig. S12.
-\item Supplementary Table S20: \path{cee_claim_evidence_traceability.md} and \path{cee_claim_evidence_traceability.csv}. These files map the manuscript's main claims to the figures, derived tables, audit files, numerical anchors, interpretation boundaries, and release status that support them.
-\item Supplementary Table S21: \path{kiknet_surface_downhole_audit.md}, \path{kiknet_surface_downhole_ratios.csv}, and \path{kiknet_surface_downhole_audit.py}. These files report the earlier paired KiK-net surface/downhole waveform proxy audit retained for comparison with the expanded transfer-function audit.
-\item Supplementary Table S22: \path{kiknet_multievent_transfer_function_audit.md}, \path{kiknet_multievent_transfer_functions.csv}, \path{kiknet_multievent_transfer_function_bins.csv}, \path{kiknet_multievent_transfer_function_event_summary.csv}, \path{kiknet_multievent_transfer_function_station_summary.csv}, and \path{kiknet_multievent_transfer_function_audit.py}. These files report and reproduce the two-event KiK-net transfer-function audit used in Fig. 8A and Supplementary Fig. S13.
-\item Supplementary Table S23: \path{jshis_multiperiod_nonergodic_psha_audit.md}, \path{jshis_multiperiod_station_corrections.csv}, \path{jshis_multiperiod_station_surface_validation.csv}, \path{jshis_multiperiod_station_surface_validation_summary.csv}, \path{jshis_multiperiod_continuous_correction_surface_mesh.csv}, \path{jshis_multiperiod_official_response_station_values.csv}, \path{jshis_multiperiod_official_response_mesh_values.csv}, \path{jshis_multiperiod_nonergodic_psha_summary.csv}, and \path{jshis_multiperiod_nonergodic_psha_audit.py}. These files report and reproduce the all-period official-response-spectrum propagation audit used in Supplementary Fig. S14.
-\item Supplementary Table S24: \path{jshis_official_psha_input_chain_audit.md}, \path{jshis_official_psha_input_audit_summary.csv}, \path{jshis_official_psha_input_file_inventory.csv}, \path{jshis_official_psha_input_shape_inventory.csv}, \path{jshis_official_psha_input_download_manifest.csv}, and \path{jshis_official_psha_input_audit.py}. These files document and reproduce the official J-SHIS 2024 PSHM input-chain audit used to define the source-model boundary for the official-map propagation calculation.
-\item Supplementary Table S25: \path{jshis_representative_city_spectrum_cases.csv}, \path{jshis_representative_uncertainty_summary.csv}, and \path{build_figure9_en.py}. These files document and reproduce the representative city-nearest spectra and uncertainty checks shown in the main text.
-\item Supplementary Table S26: \path{jshis_source_level_recompute_closure_audit.md}, \path{jshis_source_level_recompute_closure_audit.csv}, and \path{jshis_source_level_recompute_claim_boundary.csv}. These files document public source-parameter checks, sampled-grid consistency tests, and the official-production claim boundary.
-\item Supplementary Table S27: \path{jshis_sa3_physical_proxy_model.md}, \path{jshis_sa3_physical_proxy_model_metrics.csv}, \path{jshis_sa3_physical_proxy_model_predictions.csv}, and \path{jshis_sa3_physical_proxy_model_coefficients.csv}. These files report the interpretable site-variable model for MF2013 site-corrected SA(3.0 s) station residuals.
-\end{itemize}
-\endgroup
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llrrrr}
+\toprule
+Stratification & Stratum & Paired stations & Full-field correlation & Split-half correlation & 95th percentile difference \\
+\midrule
+Hypocentral azimuth & 000--090$^\circ$ & 938 & 0.280 & 0.877 & 0.474 \\
+Hypocentral azimuth & 090--180$^\circ$ & 448 & 0.678 & 0.762 & 0.236 \\
+Hypocentral azimuth & 180--270$^\circ$ & 1,089 & 0.777 & 0.967 & 0.317 \\
+Hypocentral azimuth & 270--360$^\circ$ & 1,345 & 0.886 & 0.945 & 0.168 \\
+Fault distance & 0--50 km & 138 & 0.644 & 0.563 & 0.289 \\
+Fault distance & 50--100 km & 680 & 0.496 & 0.604 & 0.427 \\
+Fault distance & 100--200 km & 1,515 & 0.974 & 0.951 & 0.080 \\
+Fault distance & 200--300 km & 1,213 & 0.963 & 0.968 & 0.092 \\
+Source type & Crustal & 1,494 & 0.942 & 0.905 & 0.120 \\
+Source type & Interplate & 960 & 0.934 & 0.947 & 0.073 \\
+Source type & Intraplate & 1,379 & 0.924 & 0.902 & 0.131 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Equal-stratum spatial prediction sensitivity}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Target field & Period & Stations & Overall RMSE & Overall & Minimum fold \\
+& (s) & & reduction (\%) & correlation & reduction (\%) \\
+\midrule
+Azimuth balanced & 1.0 & 1,220 & 6.4 & 0.406 & -20.8 \\
+Azimuth balanced & 2.0 & 1,220 & 5.8 & 0.322 & -26.2 \\
+Azimuth balanced & 3.0 & 1,220 & 3.2 & 0.306 & -66.4 \\
+Distance balanced & 1.0 & 1,285 & 7.3 & 0.446 & 1.7 \\
+Distance balanced & 2.0 & 1,285 & 3.7 & 0.379 & -1.0 \\
+Distance balanced & 3.0 & 1,285 & 2.5 & 0.347 & -9.6 \\
+Source balanced & 1.0 & 1,369 & 9.6 & 0.509 & 2.2 \\
+Source balanced & 2.0 & 1,369 & 5.0 & 0.422 & 0.3 \\
+Source balanced & 3.0 & 1,369 & 9.0 & 0.447 & -24.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Matched-station 50-year 10 percent response spectra}
+\scriptsize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{rrrrrrr}
+\toprule
+Period & \multicolumn{3}{c}{Station multiplier} & Official $V_S400$ & MF2013 surface & Station adjusted \\
+(s) & 5th & Median & 95th & \multicolumn{3}{c}{median spectral acceleration (g)} \\
+\midrule
+0.1 & 0.386 & 0.781 & 1.650 & 0.946 & 0.978 & 0.817 \\
+0.2 & 0.368 & 0.802 & 1.830 & 1.068 & 1.154 & 0.936 \\
+0.3 & 0.407 & 0.876 & 1.797 & 0.914 & 1.022 & 0.891 \\
+0.5 & 0.458 & 0.924 & 1.597 & 0.652 & 0.737 & 0.668 \\
+1.0 & 0.498 & 0.881 & 1.544 & 0.315 & 0.341 & 0.308 \\
+2.0 & 0.602 & 0.904 & 1.395 & 0.132 & 0.140 & 0.130 \\
+3.0 & 0.624 & 0.886 & 1.338 & 0.078 & 0.081 & 0.075 \\
+5.0 & 0.651 & 0.877 & 1.318 & 0.030 & 0.031 & 0.028 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Empirical station-model prediction intervals}
+\small
+\begin{tabular}{rrrr}
+\toprule
+Period & Station & Record-weighted & Median upper/lower \\
+(s) & coverage (\%) & coverage (\%) & multiplier factor \\
+\midrule
+0.1 & 89.9 & 87.4 & 6.72 \\
+0.2 & 89.3 & 87.0 & 6.79 \\
+0.3 & 87.0 & 85.5 & 5.40 \\
+0.5 & 86.7 & 88.2 & 4.43 \\
+1.0 & 87.8 & 85.9 & 4.32 \\
+2.0 & 88.3 & 86.8 & 3.49 \\
+3.0 & 89.0 & 88.8 & 3.00 \\
+5.0 & 87.5 & 86.4 & 2.48 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{City-nearest SA(3.0 s) station cases}
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llrrrrr}
+\toprule
+City & Station & Distance & Multiplier & Change & Surface SA & Adjusted SA \\
+& & (km) & & (\%) & \multicolumn{2}{c}{(g)} \\
+\midrule
+Tokyo & TKY007 & 2.4 & 0.975 & -2.5 & 0.196 & 0.192 \\
+Osaka & OSK005 & 3.6 & 0.885 & -11.5 & 0.223 & 0.197 \\
+Sapporo & HKD180 & 8.6 & 1.312 & +31.2 & 0.124 & 0.163 \\
+Sendai & MYG013 & 5.0 & 0.890 & -11.0 & 0.131 & 0.116 \\
+Fukuoka & FKOH03 & 14.1 & 0.748 & -25.2 & 0.035 & 0.026 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Response-component sensitivity}
+\small
+\begin{tabular}{rrrrr}
+\toprule
+Period & Station-field & Weighted difference & 95th percentile & Median record \\
+(s) & correlation & RMSE & absolute difference & RotD50/RotD100 \\
+\midrule
+0.1 & 0.9995 & 0.0076 & 0.0179 & 0.853 \\
+0.2 & 0.9995 & 0.0081 & 0.0183 & 0.839 \\
+0.3 & 0.9994 & 0.0079 & 0.0176 & 0.834 \\
+0.5 & 0.9993 & 0.0073 & 0.0177 & 0.831 \\
+1.0 & 0.9990 & 0.0077 & 0.0197 & 0.826 \\
+2.0 & 0.9988 & 0.0074 & 0.0194 & 0.820 \\
+3.0 & 0.9986 & 0.0071 & 0.0180 & 0.819 \\
+5.0 & 0.9983 & 0.0064 & 0.0177 & 0.820 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\renewcommand{\refname}{Supplementary References}
+\small
+\begin{thebibliography}{99}
+\bibitem{niedflatfile} National Research Institute for Earth Science and Disaster Resilience. Strong Ground Motion Flat File. NIED, \url{https://doi.org/10.17598/NIED.0032} (2025).
+\bibitem{flatfilepage} National Research Institute for Earth Science and Disaster Resilience. Flat file of K-NET and KiK-net strong-motion records. \url{https://www.j-shis.bosai.go.jp/en/labs/ground-motion-flatfile/} (2024).
+\bibitem{dohi2024} Dohi, Y., Shigeno, N., Morikawa, N., Fujiwara, H., Nojima, N. \& Iwata, T. Probabilistic seismic hazard analysis of response spectra: toward advanced national seismic hazard maps for Japan. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{24}, 124--147 (2024). \url{https://doi.org/10.5610/jaee.24.1_124}.
+\bibitem{morikawa2013} Morikawa, N. \& Fujiwara, H. A new ground motion prediction equation for Japan applicable up to M9 mega-earthquake. \textit{J. Disaster Res.} \textbf{8}, 878--888 (2013). \url{https://doi.org/10.20965/jdr.2013.p0878}.
+\bibitem{morikawa2023} Morikawa, N. \& Fujiwara, H. Ground motion prediction equation based on Morikawa and Fujiwara 2013. J-SHIS/NIED, \url{https://www.j-shis.bosai.go.jp/labs/mf2013/en/} (2023).
+\bibitem{morikawa2006} Morikawa, N. et al. New additional correction terms for attenuation relations corresponding to anomalous seismic intensity in northeastern Japan. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{6}, 23--41 (2006). \url{https://doi.org/10.5610/jaee.6.23}.
+\bibitem{zhao2006} Zhao, J. X. et al. Attenuation relations of strong ground motion in Japan using site classification based on predominant period. \textit{Bull. Seismol. Soc. Am.} \textbf{96}, 898--913 (2006). \url{https://doi.org/10.1785/0120050122}.
+\bibitem{pagani2014} Pagani, M. et al. OpenQuake Engine: an open hazard and risk software for the Global Earthquake Model. \textit{Seismol. Res. Lett.} \textbf{85}, 692--702 (2014). \url{https://doi.org/10.1785/0220130087}.
+\bibitem{jshisapi} Azuma, H., Kawai, S. \& Fujiwara, H. Development of J-SHIS and applications using API. \textit{J. Disaster Res.} \textbf{8}, 869--877 (2013). \url{https://doi.org/10.20965/jdr.2013.p0869}.
+\bibitem{responsemap} Earthquake Research Committee. Probabilistic seismic hazard analysis of response spectra provisional edition. \url{https://www.jishin.go.jp/evaluation/seismic_hazard_map/sh_response_spectrum/} (2022).
+\bibitem{aoi2004} Aoi, S., Kunugi, T. \& Fujiwara, H. Strong-motion seismograph network operated by NIED K-NET and KiK-net. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{4}, 65--74 (2004). \url{https://doi.org/10.5610/jaee.4.3_65}.
+\end{thebibliography}
 
 \end{document}

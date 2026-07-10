@@ -1,2 +1,0 @@
-target_label,n_stations,weighted_rmse_zero,weighted_rmse_national_mean,weighted_rmse_physical_proxy,rmse_reduction_vs_zero_pct,rmse_reduction_vs_mean_pct,pearson_observed_predicted
-SA(3.0s) RotD50,2261,0.2931431311230775,0.19221718964399198,0.19149382085451733,34.67565822849939,0.3763288761085337,0.29350449570434695

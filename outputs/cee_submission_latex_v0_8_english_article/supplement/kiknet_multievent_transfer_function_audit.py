@@ -34,7 +34,7 @@ from scipy.signal import detrend
 from scipy.signal.windows import tukey
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 OUTPUT_DIR = ROOT / "outputs"
 ARTICLE_DIR = OUTPUT_DIR / "cee_submission_latex_v0_8_english_article"
 SUPPLEMENT_DIR = ARTICLE_DIR / "supplement"
