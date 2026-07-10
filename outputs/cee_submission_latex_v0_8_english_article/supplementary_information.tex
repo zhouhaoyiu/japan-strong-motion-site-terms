@@ -59,6 +59,10 @@ The 1,737 usable earthquakes are assigned to five groups with a fixed random see
 
 Five spatial blocks are produced by $k$-means clustering of standardised longitude and latitude. The site-only model uses shallow-velocity averages, sedimentary-depth variables, elevation, sensor depth and network. The site-and-location model adds station coordinates and two volcanic-front distances. Both histogram gradient-boosting models use fixed hyperparameters: learning rate 0.04, 400 iterations, 15 maximum leaf nodes, 35 minimum samples per leaf and L2 regularisation 0.1. Numeric variables are median-imputed within training folds; network is mode-imputed and one-hot encoded. Predictions are generated only for the held-out block and are centred to a record-weighted zero mean before spectrum propagation. A separate complexity sensitivity changes maximum leaf nodes to 7 or 31, minimum samples per leaf to 70, L2 regularisation to 1.0, or the iteration budget to 200. Each setting retains the same folds, preprocessing, weights and random seed, and no alternative is selected as a replacement for the primary model.
 
+\subsection*{MF2013 applicability sensitivity}
+
+The MF2013 regression analysis selected $M_w\geq5.5$ ground-surface records with two horizontal components, at least five triggered stations per event and source distance below 200 km\cite{morikawa2013}. It also truncated data at the magnitude-dependent distance where the Kanno et al. equation predicted PGA below 10 cm s$^{-2}$. Our sensitivity imposes the published magnitude, distance and event-station screens on the primary flatfile sample, then repeats the residual decomposition, event holdout, spatial prediction and spectrum propagation. It contains 53,517 records from 488 earthquakes, including 772 stations with at least 20 records. The Kanno-PGA truncation is not reconstructed; the calculation tests the implemented screens and is not a reconstruction of the original regression sample.
+
 \subsection*{Alternative ground-motion-model calculation}
 
 We evaluate the Zhao et al. 2006 active-crustal, interface and intraslab equations with OpenQuake Engine 3.25.1\cite{zhao2006,pagani2014}. The flatfile source class selects the equation branch. Moment magnitude, hypocentral depth and crustal rake are read from the source table; documented shortest fault distance is supplied as rupture distance, and AVS30 is supplied as VS30. RotD50 is used as the closest orientation-independent coordinate to the model's geometric-mean target. The same surface observations, periods, station threshold, event folds and spatial folds are used for the MF2013 and Zhao calculations. This changes the ground-motion backbone while retaining the data and validation design.
@@ -311,7 +315,7 @@ Source balanced & 3.0 & 1,369 & 9.0 & 0.447 & -24.5 \\
 
 \begin{table}[H]
 \centering
-\caption{Matched-station 50-year 10 percent response spectra}
+\caption{Primary full-sample matched-station 50-year 10 percent response spectra}
 \scriptsize
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{rrrrrrr}
@@ -428,12 +432,34 @@ Shorter iteration budget & Maximum iterations = 200 & 12.85 & 0.497 \\
 \end{tabular}
 \end{table}
 
+\begin{table}[H]
+\centering
+\caption{MF2013 magnitude, distance and event-station sensitivity}
+\scriptsize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{rrrrrrr}
+\toprule
+Period & Station-field & 95th-percentile & Event-group & Spatial RMSE & OOF-prediction & Restricted multiplier \\
+(s) & correlation & difference (log$_{10}$) & correlation & gain (\%) & correlation & 5th--95th percentile \\
+\midrule
+0.1 & 0.977 & 0.120 & 0.940 & -2.6 & 0.780 & 0.443--1.936 \\
+0.2 & 0.981 & 0.117 & 0.946 & 12.4 & 0.849 & 0.419--1.868 \\
+0.3 & 0.981 & 0.112 & 0.939 & 17.5 & 0.778 & 0.471--1.956 \\
+0.5 & 0.981 & 0.097 & 0.931 & 20.2 & 0.819 & 0.493--1.773 \\
+1.0 & 0.976 & 0.098 & 0.927 & 12.1 & 0.662 & 0.543--1.656 \\
+2.0 & 0.970 & 0.089 & 0.897 & 10.6 & 0.664 & 0.612--1.561 \\
+3.0 & 0.959 & 0.083 & 0.895 & 9.9 & 0.770 & 0.649--1.445 \\
+5.0 & 0.921 & 0.103 & 0.834 & 9.2 & 0.753 & 0.674--1.381 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \renewcommand{\refname}{Supplementary References}
 \small
 \begin{thebibliography}{99}
 \bibitem{niedflatfile} National Research Institute for Earth Science and Disaster Resilience. Strong Ground Motion Flat File. NIED, \url{https://doi.org/10.17598/NIED.0032} (2025).
 \bibitem{flatfilepage} National Research Institute for Earth Science and Disaster Resilience. Flat file of K-NET and KiK-net strong-motion records. \url{https://www.j-shis.bosai.go.jp/en/labs/ground-motion-flatfile/} (2024).
-\bibitem{dohi2024} Dohi, Y., Shigeno, N., Morikawa, N., Fujiwara, H., Nojima, N. \& Iwata, T. Probabilistic seismic hazard analysis of response spectra: toward advanced national seismic hazard maps for Japan. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{24}, 1\_124--1\_147 (2024). \url{https://doi.org/10.5610/jaee.24.1_124}.
+\bibitem{dohi2024} Dohi, Y. et al. Probabilistic seismic hazard analysis of response spectra: toward advanced national seismic hazard maps for Japan. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{24}, 1\_124--1\_147 (2024). \url{https://doi.org/10.5610/jaee.24.1_124}.
 \bibitem{morikawa2013} Morikawa, N. \& Fujiwara, H. A new ground motion prediction equation for Japan applicable up to M9 mega-earthquake. \textit{J. Disaster Res.} \textbf{8}, 878--888 (2013). \url{https://doi.org/10.20965/jdr.2013.p0878}.
 \bibitem{morikawa2023} Morikawa, N. \& Fujiwara, H. Ground motion prediction equation based on Morikawa and Fujiwara 2013. J-SHIS/NIED, \url{https://www.j-shis.bosai.go.jp/labs/mf2013/en/} (2023).
 \bibitem{morikawa2006} Morikawa, N. et al. New additional correction terms for attenuation relations corresponding to anomalous seismic intensity in northeastern Japan. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{6}, 23--41 (2006). \url{https://doi.org/10.5610/jaee.6.23}.

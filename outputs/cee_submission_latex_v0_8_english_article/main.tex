@@ -47,7 +47,7 @@
 
 \noindent\textbf{Abstract}
 
-Regional hazard products average ground motion, yet repeatable station departures can alter local spectra. Applying them requires tests across event samples, ground-motion models and paths. Here we present an analysis of 222,664 K-NET and KiK-net surface records at eight MF2013-compatible RotD100 periods from 0.1 to 5.0 s. At 3.0 s, station terms from disjoint event groups correlate at 0.890; MF2013 and Zhao 2006 fields correlate at 0.770. Site and location variables reduce spatial-block root mean squared error by 12.6\% across 1,628 stations. Source-class fields match the full field, whereas directional-sector correlations of 0.280--0.886 indicate path conditioning. Cross-validated multipliers span 0.624--1.338 and shift the median matched-station surface spectrum from 0.081 to 0.075 g. The repeatable average station field changes published spectra; source-specific corrections require path-conditioned validation.
+Regional hazard products average ground motion, yet repeatable station departures can alter local spectra. Applying them requires tests across event samples, ground-motion models and paths. Here we analyse 222,664 K-NET and KiK-net surface records at eight MF2013-compatible RotD100 periods from 0.1 to 5.0 s. At 3.0 s, station terms from disjoint event groups correlate at 0.890; MF2013 and Zhao 2006 fields correlate at 0.770. Site and location variables reduce spatial-block root mean squared error by 12.6\% across 1,628 stations. Source-class fields match the full field, while directional-sector correlations of 0.280--0.886 show path conditioning. Cross-validated multipliers span 0.624--1.338 and change local spectra in both directions. Applying the published MF2013 magnitude, distance and event-station screens gives a 0.959 correlation with the primary field and a 9.9\% spatial-block error reduction at 3.0 s.
 
 \noindent\textbf{Keywords:} strong-motion records; station terms; path effects; response spectra; Japan
 
@@ -136,10 +136,12 @@ The site-and-location model improves on the zero baseline at every direct period
 
 Across six fixed model-complexity settings, the 3.0 s error reduction remains between 10.5\% and 14.0\%. Every setting improves on zero at all eight periods, with gains from 7.1\% to 19.3\%. The alternatives are used only to test sensitivity and do not replace the primary model.
 
+The primary analysis uses the full domain of the public flatfile. Applying the published MF2013 magnitude, distance and event-station screens leaves 53,517 records from 488 earthquakes. At 3.0 s, station fields estimated from the restricted and primary samples correlate at 0.959. Within the restricted sample, disjoint event groups correlate at 0.895, and the site-and-location model reduces spatial-block error by 9.9\%. The gain is positive from 0.2 to 5.0 s and is $-2.6\%$ at 0.1 s.
+
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\linewidth]{figures/figure_event_adjusted_multiperiod.pdf}
-\caption{Prediction and response-spectrum propagation. \textbf{a}, event-adjusted SA(3.0 s) station terms at stations with at least 20 records. \textbf{b}, spatial-block root mean squared error reduction for models using site variables and site plus location variables. \textbf{c}, median and 5th--95th percentile range of zero-centred cross-validated station multipliers. \textbf{d}, matched-station median 50-year 10\% response spectra on official $V_S=400$ m s$^{-1}$ engineering bedrock, after projection to the station surface condition, and after the station adjustment. All periods are calculated directly.}
+\caption{Primary full-sample prediction and response-spectrum propagation. \textbf{a}, event-adjusted SA(3.0 s) station terms at stations with at least 20 records. \textbf{b}, spatial-block root mean squared error reduction for models using site variables and site plus location variables. \textbf{c}, median and 5th--95th percentile range of zero-centred cross-validated station multipliers. \textbf{d}, matched-station median 50-year 10\% response spectra on official $V_S=400$ m s$^{-1}$ engineering bedrock, after projection to the station surface condition, and after the station adjustment. All periods are calculated directly.}
 \label{fig:hazard}
 \end{figure}
 
@@ -158,9 +160,11 @@ Equal weighting across available path strata retains a weaker persistent compone
 
 \subsection{Local spectra change in both directions}
 
-The predicted station terms are centred to zero in log space before propagation. At 3.0 s, their multipliers have 5th, 50th and 95th percentiles of 0.624, 0.886 and 1.338 (Fig. \ref{fig:hazard}c). The corresponding local changes are $-37.6\%$, $-11.4\%$ and $+33.8\%$. At 5.0 s, the 5th and 95th percentiles are 0.651 and 1.318.
+The primary full-sample station predictions are centred to zero in log space before propagation. At 3.0 s, their multipliers have 5th, 50th and 95th percentiles of 0.624, 0.886 and 1.338 (Fig. \ref{fig:hazard}c). The corresponding local changes are $-37.6\%$, $-11.4\%$ and $+33.8\%$. At 5.0 s, the 5th and 95th percentiles are 0.651 and 1.318.
 
-Official J-SHIS response-spectrum ordinates are defined on engineering bedrock with $V_S=400$ m s$^{-1}$. At each matched station, we replace the MF2013 shallow-soil factor for 400 m s$^{-1}$ with the factor for the station AVS30. For the 50-year 10\% probability level at 3.0 s, the median official ordinate is 0.078 g and the median surface-reference ordinate is 0.081 g. Applying the cross-validated station multiplier changes the median to 0.075 g (Fig. \ref{fig:hazard}d; Supplementary Fig. 5; Supplementary Table 9). The global MF2013 residual offset is excluded from this station correction.
+Official J-SHIS response-spectrum ordinates are defined on engineering bedrock with $V_S=400$ m s$^{-1}$. At each matched station, we replace the MF2013 shallow-soil factor for 400 m s$^{-1}$ with the factor for the station AVS30. In the primary full sample, the median official ordinate at the 50-year 10\% probability level and 3.0 s is 0.078 g, and the median surface-reference ordinate is 0.081 g. Applying the cross-validated station multiplier changes the median to 0.075 g (Fig. \ref{fig:hazard}d; Supplementary Fig. 5; Supplementary Table 9). The global MF2013 residual offset is excluded from this station correction.
+
+The screened-sample 3.0 s multipliers span 0.649--1.445 between their 5th and 95th percentiles. On the same 772 stations, the primary prediction changes the surface-spectrum median from 0.089 to 0.091 g, while the restricted prediction changes it to 0.088 g. Local upward and downward changes persist; the direction of the aggregate median depends on the record domain and station set.
 
 Spatial-block errors provide a separate empirical prediction interval for each held block. At 3.0 s, the nominal 90\% interval covers 89.0\% of stations and 88.8\% after record-count weighting; its median upper-to-lower multiplier span is 3.00 (Supplementary Fig. 6; Supplementary Table 10). These intervals quantify station-model error under the spatial validation design. Source recurrence, ground-motion-model uncertainty and the J-SHIS logic tree remain those of the published hazard product.
 
@@ -184,9 +188,9 @@ Random event holdout measures repeatability under each station's broad observed 
 
 Public site and location variables recover part of that average field. The 3.0 s spatial-block gain is 12.6\%, all five primary folds improve, and the common-feature model transfers in both directions between K-NET and KiK-net. Equal-stratum fields remain predictable in aggregate, with 1--3 s gains of 2.5\%--9.6\%. Several individual spatial folds deteriorate. The model supports interpolation within well-sampled parts of the existing network. New regions and source-path distributions require local records or an explicit path model.
 
-The spectrum calculation keeps the official $V_S=400$ m s$^{-1}$ ordinate, the MF2013 surface projection and the zero-centred station adjustment as separate quantities. At 3.0 s, the central 90\% of point multipliers spans 0.624--1.338; the empirical station-model interval has a median upper-to-lower factor of 3.00. The matched-mesh calculation retains source recurrence, aleatory variability and logic-tree aggregation from the published J-SHIS product\cite{abrahamson2019,cornell1968,mcguire1995,azuma2013,fujiwara2013,fujiwara2023,erc2022}. The resulting values quantify average-path sensitivity. Source-specific use requires hazard deaggregation and path-conditioned terms inside the hazard integral.
+The spectrum calculation keeps the official $V_S=400$ m s$^{-1}$ ordinate, the MF2013 surface projection and the zero-centred station adjustment as separate quantities. At 3.0 s, the primary point multipliers span 0.624--1.338 across their central 90\%; the restricted calculation gives 0.649--1.445. Both redistribute local ordinates upward and downward. Their aggregate medians differ in direction on the same 772 stations, so a national median shift is not a transferable result. The empirical station-model interval has a median upper-to-lower factor of 3.00. The matched-mesh calculation retains source recurrence, aleatory variability and logic-tree aggregation from the published J-SHIS product\cite{abrahamson2019,cornell1968,mcguire1995,azuma2013,fujiwara2013,fujiwara2023,erc2022}. The resulting values quantify average-path sensitivity. Source-specific use requires hazard deaggregation and path-conditioned terms inside the hazard integral.
 
-The public subset covers events with JMA magnitude $M_{\mathrm{JMA}}\geq5$ and fault distance no greater than 300 km; the MF2013 sample further requires finite F-net $M_w$. Incomplete plate-membership metadata restrict the anomalous-intensity term to a rule-based sensitivity analysis. Zhao receives shortest fault distance as rupture distance and AVS30 as VS30, and RotD50 serves as the closest available orientation-independent coordinate to its geometric-mean target. The two-event KiK-net waveform analysis verifies frequency-dependent surface-to-borehole response (Supplementary Fig. 7). Calibrating a nonlinear transfer model would require a larger event and input-motion range.
+The public subset covers events with JMA magnitude $M_{\mathrm{JMA}}\geq5$ and fault distance no greater than 300 km; the primary MF2013 calculation further requires finite F-net $M_w$. The magnitude--distance sensitivity applies the published $M_w\geq5.5$, distance below 200 km and five-station event screens, but does not reconstruct the original Kanno-PGA distance truncation. Its 3.0 s field correlation of 0.959 and spatial gain of 9.9\% support the long-period station pattern within that narrower envelope. The adverse 0.1 s spatial result limits this conclusion to periods of 0.2 s and longer. Incomplete plate-membership metadata restrict the anomalous-intensity term to a rule-based sensitivity analysis. Zhao receives shortest fault distance as rupture distance and AVS30 as VS30, and RotD50 serves as the closest available orientation-independent coordinate to its geometric-mean target. The two-event KiK-net waveform analysis verifies frequency-dependent surface-to-borehole response (Supplementary Fig. 7). Calibrating a nonlinear transfer model would require a larger event and input-motion range.
 
 Across eight direct periods, the Japanese surface-record archive contains a repeatable station-associated field that changes matched long-period response spectra in both directions. Its average component is partly predictable from public site and location variables. Directional and short-distance tests identify the missing path dependence and define the additional information required before source-specific hazard application.
 
@@ -229,6 +233,10 @@ The Zhao et al. 2006 active-crustal, interface and intraslab equations are evalu
 Two histogram gradient-boosting regressors predict the event-adjusted station term. The site-only model uses log-transformed VS10, VS20, VS30, AVS30, D1100, D1400, D1700, D2100 and basement depth, together with elevation, sensor depth and network. The site-and-location model adds longitude, latitude and the two volcanic-front distance fields. Missing numeric values are median-imputed within each training fold; network is mode-imputed and one-hot encoded.
 
 Both models use squared-error loss, learning rate 0.04, 400 iterations, 15 maximum leaf nodes, 35 minimum samples per leaf and L2 regularisation 0.1. Five spatial blocks are formed by $k$-means clustering of standardised station coordinates. Each station is predicted only by the model trained on the other four blocks. Out-of-fold predictions are centred to zero using station record counts before conversion to multipliers $f_i(T)=10^{\widehat{\delta S}_i(T)}$. The zero station term is the baseline. Reported errors are weighted by the number of records at each station. The same hyperparameters are used in every period and fold. A six-setting sensitivity changes maximum leaf nodes, minimum leaf size, L2 regularisation or iteration budget one at a time while preserving the folds, preprocessing, weights and seed; it is not used for model selection (Supplementary Table 14).
+
+\subsection{MF2013 applicability sensitivity}
+
+The published MF2013 regression analysis selected $M_w\geq5.5$ ground-surface recordings with two horizontal components, at least five triggered stations per event and source distance below 200 km\cite{morikawa2013}. It also used a magnitude-dependent distance truncation where the Kanno et al. equation predicted PGA below 10 cm s$^{-2}$. We repeat the residual decomposition, event holdout, spatial prediction and spectrum propagation after imposing $M_w\geq5.5$, source distance below 200 km and at least five eligible stations per event. The sensor, response-component and model-input screens remain those of the primary analysis. This sensitivity contains 53,517 records, 488 earthquakes and 772 stations with at least 20 records. The Kanno-PGA truncation is not reconstructed, so this calculation tests the implemented magnitude, distance and event-station screens rather than reproducing the original regression sample (Supplementary Table 15).
 
 \subsection{Transfer and event-influence tests}
 
@@ -274,7 +282,7 @@ Analysis and figure-generation code is supplied in the accompanying peer-review 
 
 \section*{Author contributions}
 
-H.Z. designed the analysis, processed the public datasets, performed the computations, prepared the figures, and wrote the manuscript. Q.M. supervised the study and reviewed the manuscript.
+Haoyu Zhou designed the analysis, processed the public datasets, performed the computations, prepared the figures and wrote the manuscript. Qiang Ma supervised the study and reviewed the manuscript.
 
 \section*{Competing interests}
 
@@ -290,7 +298,9 @@ The authors thank the National Research Institute for Earth Science and Disaster
 
 \small
 \setstretch{1.0}
+\setlength{\parskip}{0pt}
 \begin{thebibliography}{99}
+\setlength{\itemsep}{0pt}
 
 \bibitem{anderson1999} Anderson, J. G. \& Brune, J. N. Probabilistic seismic hazard analysis without the ergodic assumption. \textit{Seismol. Res. Lett.} \textbf{70}, 19--28 (1999). \url{https://doi.org/10.1785/gssrl.70.1.19}.
 
@@ -328,7 +338,7 @@ The authors thank the National Research Institute for Earth Science and Disaster
 
 \bibitem{furumura2007} Furumura, T. \& Hayakawa, T. Anomalous propagation of long-period ground motions recorded in Tokyo during the 23 October 2004 Niigata-ken Chuetsu earthquake. \textit{Bull. Seismol. Soc. Am.} \textbf{97}, 863--880 (2007). \url{https://doi.org/10.1785/0120060166}.
 
-\bibitem{dohi2024} Dohi, Y., Shigeno, N., Morikawa, N., Fujiwara, H., Nojima, N. \& Iwata, T. Probabilistic seismic hazard analysis of response spectra: toward advanced national seismic hazard maps for Japan. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{24}, 1\_124--1\_147 (2024). \url{https://doi.org/10.5610/jaee.24.1_124}.
+\bibitem{dohi2024} Dohi, Y. et al. Probabilistic seismic hazard analysis of response spectra: toward advanced national seismic hazard maps for Japan. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{24}, 1\_124--1\_147 (2024). \url{https://doi.org/10.5610/jaee.24.1_124}.
 
 \bibitem{zhao2006} Zhao, J. X. et al. Attenuation relations of strong ground motion in Japan using site classification based on predominant period. \textit{Bull. Seismol. Soc. Am.} \textbf{96}, 898--913 (2006). \url{https://doi.org/10.1785/0120050122}.
 

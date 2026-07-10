@@ -6,11 +6,12 @@ The study starts from 333,808 public K-NET and KiK-net records. The archive cont
 
 ## Main result
 
-At 3.0 s, station terms from separate two-way decompositions of disjoint event groups correlate at `0.890`, and MF2013 and Zhao 2006 station terms correlate at `0.770`. Site and location variables reduce spatial-block RMSE by `12.6%` across 1,628 surface stations. Directional-sector correlations with the full station field range from `0.280` to `0.886`, showing path-conditioned transfer. Cross-validated multipliers have 5th and 95th percentiles of `0.624` and `1.338`. The matched-station median 50-year 10% surface spectrum changes from `0.081 g` to `0.075 g`; the nominal 90% empirical station-model interval attains `89.0%` station coverage.
+At 3.0 s, station terms from separate two-way decompositions of disjoint event groups correlate at `0.890`, and MF2013 and Zhao 2006 station terms correlate at `0.770`. Site and location variables reduce spatial-block RMSE by `12.6%` across 1,628 surface stations. Directional-sector correlations with the full station field range from `0.280` to `0.886`, showing path-conditioned transfer. Primary cross-validated multipliers have 5th and 95th percentiles of `0.624` and `1.338`. Restriction to the MF2013 regression study's magnitude, distance and event-station screens retains a station-field correlation of `0.959`, a spatial RMSE reduction of `9.9%` and multipliers of `0.649`--`1.445`. Local spectra change in both directions. The primary full-sample median changes from `0.081 g` to `0.075 g`, while the aggregate median direction changes with the record domain and station set.
 
 ## Repository layout
 
 - `work/jshis_event_adjusted_station_model.py`: primary residual, validation and response-spectrum analysis.
+- `work/jshis_mf2013_applicability_audit.py`: sensitivity to the published MF2013 magnitude-distance screens.
 - `work/jshis_independent_gmpe_replication.py`: Zhao 2006 ground-motion-model sensitivity.
 - `work/jshis_station_uncertainty_propagation.py`: empirical station-model intervals and spectrum propagation.
 - `work/jshis_robustness_stress_tests.py`: network, macroregion and influential-event tests.
@@ -49,7 +50,10 @@ conda run -n japan-station-terms python work/verify_public_inputs.py
 ```bash
 conda env create -f environment.yml
 conda run -n japan-station-terms python work/verify_public_inputs.py
+conda run -n japan-station-terms python work/audit_jshis_flatfile_selection.py
 conda run -n japan-station-terms python work/jshis_event_adjusted_station_model.py
+conda run -n japan-station-terms python work/jshis_spatial_model_complexity_audit.py
+conda run -n japan-station-terms python work/jshis_mf2013_applicability_audit.py
 conda run -n japan-station-terms python work/jshis_independent_gmpe_replication.py
 conda run -n japan-station-terms python work/jshis_station_uncertainty_propagation.py
 conda run -n japan-station-terms python work/jshis_robustness_stress_tests.py
@@ -68,4 +72,4 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error supplementary_information.t
 
 ## Scope
 
-The response-spectrum calculation is a matched-surface-station sensitivity analysis for the source-path distribution sampled by the strong-motion archive. It retains the source recurrence, aleatory model and logic-tree aggregation of the published J-SHIS product. The empirical bounds quantify station-model prediction error only. The release does not claim an official source-level J-SHIS PSHA reproduction, source-specific transfer or a complete PSHA uncertainty interval.
+The response-spectrum calculation is a matched-surface-station sensitivity analysis for the source-path distribution sampled by the strong-motion archive. It retains the source recurrence, aleatory model and logic-tree aggregation of the published J-SHIS product. The MF2013 applicability sensitivity does not reconstruct the original Kanno-PGA distance truncation and is not a reproduction of the regression sample. The empirical bounds quantify station-model prediction error only. The release does not claim an official source-level J-SHIS PSHA reproduction, source-specific transfer or a complete PSHA uncertainty interval.

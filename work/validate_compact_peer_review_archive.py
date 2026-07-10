@@ -85,6 +85,18 @@ def validate_claim_tables() -> None:
     complexity = [row for row in read_csv("jshis_spatial_model_complexity_sensitivity.csv") if row["scope"] == "overall"]
     require(len(complexity) == 48 and min(float(row["rmse_reduction_vs_zero_pct"]) for row in complexity) > 7.0, "model-complexity sensitivity changed")
 
+    applicability = read_csv("jshis_mf2013_applicability_sensitivity.csv")
+    require(len(applicability) == 8, "MF2013 applicability coverage changed")
+    require(all(int(float(row["n_records"])) == 53_517 for row in applicability), "MF2013 applicability record count changed")
+    require(all(int(float(row["n_events"])) == 488 for row in applicability), "MF2013 applicability event count changed")
+    applicability3 = next(row for row in applicability if float(row["period_s"]) == 3.0)
+    require(0.9593 < float(applicability3["station_field_correlation"]) < 0.9595, "SA3 applicability field correlation changed")
+    require(9.8 < float(applicability3["restricted_spatial_rmse_gain_pct"]) < 9.9, "SA3 applicability spatial gain changed")
+    require(0.648 < float(applicability3["restricted_multiplier_q05"]) < 0.650, "SA3 restricted lower multiplier changed")
+    require(1.444 < float(applicability3["restricted_multiplier_q95"]) < 1.446, "SA3 restricted upper multiplier changed")
+    applicability01 = next(row for row in applicability if float(row["period_s"]) == 0.1)
+    require(float(applicability01["restricted_spatial_rmse_gain_pct"]) < 0, "adverse 0.1 s applicability result disappeared")
+
     hazard3 = next(
         row
         for row in read_csv("jshis_event_adjusted_surface_spectrum_summary.csv")
@@ -115,10 +127,22 @@ def validate_claim_tables() -> None:
 def validate_manuscript_sources() -> None:
     main = (ARTICLE / "main.tex").read_text(encoding="utf-8")
     supplement = (ARTICLE / "supplementary_information.tex").read_text(encoding="utf-8")
-    for claim in ["222,664", "0.890", "0.770", "12.6\\%", "0.280--0.886", "0.624--1.338"]:
+    for claim in [
+        "222,664",
+        "0.890",
+        "0.770",
+        "12.6\\%",
+        "0.280--0.886",
+        "0.624--1.338",
+        "0.959",
+        "9.9\\%",
+        "53,517",
+        "$-2.6\\%$",
+        "0.649--1.445",
+    ]:
         require(claim in main, f"main manuscript lacks: {claim}")
     require(main.count("accompanying peer-review archive") >= 2, "review archive is not declared")
-    require(supplement.count(r"\begin{table}") == 14, "Supplementary Information table count changed")
+    require(supplement.count(r"\begin{table}") == 15, "Supplementary Information table count changed")
     require(supplement.count(r"\begin{figure}") == 7, "Supplementary Information figure count changed")
 
 

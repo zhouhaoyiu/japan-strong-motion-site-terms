@@ -30,6 +30,7 @@ conda run -n japan-station-terms python ../../work/verify_public_inputs.py
 conda run -n japan-station-terms python ../../work/audit_jshis_flatfile_selection.py
 conda run -n japan-station-terms python ../../work/jshis_event_adjusted_station_model.py
 conda run -n japan-station-terms python ../../work/jshis_spatial_model_complexity_audit.py
+conda run -n japan-station-terms python ../../work/jshis_mf2013_applicability_audit.py
 conda run -n japan-station-terms python ../../work/jshis_independent_gmpe_replication.py
 conda run -n japan-station-terms python ../../work/jshis_station_uncertainty_propagation.py
 conda run -n japan-station-terms python ../../work/jshis_robustness_stress_tests.py

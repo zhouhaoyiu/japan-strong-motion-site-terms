@@ -5,7 +5,7 @@ Date: 11 July 2026
 ## Manuscript checks
 
 - [x] Title has 13 words and no punctuation.
-- [x] Abstract has 140 words, contains no citations and follows the journal's background-to-"Here we present" structure.
+- [x] Abstract has 134 words, contains no citations and moves directly from two background sentences to the analysis.
 - [x] Section order is Introduction, Results, Discussion and Methods.
 - [x] Introduction and Discussion contain no subheadings.
 - [x] Main text is below the 5,000-word limit.
@@ -13,9 +13,11 @@ Date: 11 July 2026
 - [x] Supplementary items are cited in numerical order.
 - [x] Full postal address, correspondence email and ORCIDs are present.
 - [x] Funding, competing interests, author contributions and acknowledgements are present.
+- [x] Author contributions use full names, and references with more than five authors use first author plus `et al.`.
 - [x] Generative-AI assistance is disclosed in Methods and no generated image is included.
 - [x] All 33 main references and 11 Supplementary Information references have a DOI or official HTTPS source and appear in first-citation order.
 - [x] English and Chinese reference lists use the same 33 records in the same order.
+- [x] Current CEE guidance was rechecked on 11 July 2026: the initial submission uses compiled PDFs with figures embedded, main text is below the recommended 5,000 words excluding Methods, and LLM use is documented in Methods.
 
 ## Scientific checks
 
@@ -33,6 +35,7 @@ Date: 11 July 2026
 - [x] Equal-stratum prediction retains negative spatial-fold results and is labelled as a sensitivity analysis.
 - [x] Empirical station-model prediction intervals are calibrated outside each held spatial block.
 - [x] Six fixed spatial-model complexity settings retain positive overall gains at all eight periods and are reported as sensitivity tests without model reselection.
+- [x] The broader public-flatfile domain is separated from the implemented MF2013 magnitude, distance and event-station screens; the unreconstructed Kanno-PGA truncation, adverse 0.1 s result and sample-dependent aggregate median are stated explicitly.
 - [x] Hazard propagation uses out-of-fold zero-centred predictions.
 - [x] Official `Vs=400 m/s` values are converted to station AVS30 conditions before station adjustment.
 - [x] No claim of a national directional spectrum shift remains.
@@ -42,7 +45,7 @@ Date: 11 July 2026
 
 - [x] `main.pdf` compiled and visually checked.
 - [x] `supplementary_information.pdf` compiled and visually checked.
-- [x] Supplementary Information contains seven figures and fourteen tables in first-citation order.
+- [x] Supplementary Information contains seven figures and fifteen tables in first-citation order.
 - [x] Derived tables pass the updated `work/validate_event_adjusted_release.py`.
 - [x] Main and supplementary figures have source scripts.
 - [x] Historical figures and obsolete PBV audit tables are removed from the release package.

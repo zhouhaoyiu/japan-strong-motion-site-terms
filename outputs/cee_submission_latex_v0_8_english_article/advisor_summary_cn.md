@@ -23,7 +23,8 @@ Repeatable station terms redistribute long-period response spectra across Japane
 9. 新增路径与震源分层。SA(3.0 s)三类震源台站场与完整台站场的相关系数为0.924--0.942，4个方位扇区为0.280--0.886；000--090度扇区在不相交事件子集之间仍达到0.877，说明方向差异不能仅由抽样误差解释。
 10. 对方位、距离和震源类型分层等权平均后，1--3 s总体空间RMSE仍降低2.5%--9.6%，但部分空间折出现负改进。该结果作为敏感性分析保留，用于限定平均台站场的迁移范围。
 11. 空间分块误差构成名义90%经验区间。SA(3.0 s)台站覆盖率为89.0%，按记录数加权后为88.8%，区间上、下倍率之比中位数为3.00。
-12. 官方`Vs=400 m/s`工程基岩谱先转换到台站AVS30地表条件，再施加零均值折外台站项。SA(3.0 s)倍率的5%--95%范围为0.624--1.338；50年10%超越概率下，匹配台站地表谱中位数由0.081 g变为0.075 g。
+12. 官方`Vs=400 m/s`工程基岩谱先转换到台站AVS30地表条件，再施加零均值折外台站项。主样本SA(3.0 s)倍率的5%--95%范围为0.624--1.338；50年10%超越概率下，匹配台站地表谱中位数由0.081 g变为0.075 g。该中位数变化仅作为主样本的描述性结果。
+13. 按MF2013原始回归研究的$M_w\geq5.5$、断层距离小于200 km和每个事件至少5个台站的条件重算。受限样本含53,517条记录和488个地震；SA(3.0 s)台站场与主场相关系数为0.959，事件留出相关系数为0.895，空间RMSE降低9.9%。原研究的Kanno-PGA距离截断未复原，本文将该试验明确限定为震级--距离适用域敏感性。
 
 ## 核心结论
 
@@ -36,7 +37,7 @@ Repeatable station terms redistribute long-period response spectra across Japane
 ## 当前材料
 
 - 英文主文：`main.pdf`，16页，6幅主图、1张主表
-- 补充材料：`supplementary_information.pdf`，10页，7幅图、12张表
+- 补充材料：`supplementary_information.pdf`，12页，7幅图、15张表
 - 中文导师稿：`../advisor_chinese_manuscript_v1/main_zh.pdf`
 - Cover letter：`cover_letter_cee.md`
 - 投稿检查清单：`submission_closure_checklist_cee.md`

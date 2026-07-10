@@ -46,6 +46,7 @@ def validate_files() -> None:
         ROOT / "work" / "jshis_independent_gmpe_replication.py",
         ROOT / "work" / "jshis_station_uncertainty_propagation.py",
         ROOT / "work" / "jshis_spatial_model_complexity_audit.py",
+        ROOT / "work" / "jshis_mf2013_applicability_audit.py",
         ROOT / "work" / "jshis_robustness_stress_tests.py",
         ROOT / "work" / "jshis_path_stratification_audit.py",
         ROOT / "work" / "jshis_balanced_station_model.py",
@@ -63,6 +64,8 @@ def validate_files() -> None:
         SUPPLEMENT / "jshis_flatfile_selection_audit.md",
         SUPPLEMENT / "jshis_spatial_model_complexity_sensitivity.csv",
         SUPPLEMENT / "jshis_spatial_model_complexity_sensitivity.md",
+        SUPPLEMENT / "jshis_mf2013_applicability_sensitivity.csv",
+        SUPPLEMENT / "jshis_mf2013_applicability_sensitivity.md",
     ]
     for path in required:
         require(path.is_file() and path.stat().st_size > 0, f"missing or empty {path.relative_to(ROOT)}")
@@ -88,14 +91,15 @@ def validate_manuscript() -> None:
     require(not re.search(r"[,.:;!?]", title), "title contains punctuation")
 
     abstract_source = text.split(r"\noindent\textbf{Abstract}", 1)[1].split(r"\noindent\textbf{Keywords", 1)[0]
-    require("Here we present" in abstract_source, "abstract lacks the journal-style method transition")
-    background = abstract_source.split("Here we present", 1)[0]
+    transition = re.search(r"Here we (?:analyse|present)", abstract_source)
+    require(transition is not None, "abstract lacks a direct method transition")
+    background = abstract_source[: transition.start()]
     require(background.count(".") == 2, "abstract does not contain two background sentences")
     abstract = re.sub(r"\\[A-Za-z]+(?:\{[^}]*\})?", " ", abstract_source)
     abstract_words = re.findall(r"[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*", abstract)
     require(len(abstract_words) <= 150, f"abstract has {len(abstract_words)} words")
     require("222,664" in abstract and "surface records" in abstract, "abstract lacks the surface-record sample")
-    for claim in ["RotD100", "0.890", "0.770", "12.6", "0.280", "1.338"]:
+    for claim in ["RotD100", "0.890", "0.770", "12.6", "0.280", "1.338", "0.959", "9.9"]:
         require(claim in abstract, f"abstract lacks key result: {claim}")
     for claim in ["10.5\\%", "14.0\\%", "7.1\\%", "19.3\\%"]:
         require(claim in text, f"manuscript lacks model-complexity result: {claim}")
@@ -123,6 +127,11 @@ def validate_manuscript() -> None:
         "The manuscript and code were written by the authors. ChatGPT was used only for language and formatting revision and code verification" in text,
         "generative-AI assistance statement is not in the approved wording",
     )
+    require(
+        "Haoyu Zhou designed the analysis" in text and "Qiang Ma supervised the study" in text,
+        "author contributions do not use full author names",
+    )
+    require("H.Z. designed" not in text and "Q.M. supervised" not in text, "initial-only author contributions remain")
     require("No generative-AI image is included" in text, "generative-image status is not disclosed")
     require(
         text.count("accompanying peer-review archive") >= 2,
@@ -156,6 +165,9 @@ def validate_manuscript() -> None:
         "Harbin 150080",
         "maqiang@iem.ac.cn",
         "peer-review archive",
+        "0.959",
+        "9.9%",
+        "0.649--1.445",
     ]:
         require(claim in cover, f"cover letter lacks: {claim}")
 
@@ -163,7 +175,7 @@ def validate_manuscript() -> None:
 def validate_supplementary_order() -> None:
     main_text = (ARTICLE / "main.tex").read_text(encoding="utf-8")
     supplement_text = (ARTICLE / "supplementary_information.tex").read_text(encoding="utf-8")
-    for kind, expected in [("Fig", 7), ("Table", 14)]:
+    for kind, expected in [("Fig", 7), ("Table", 15)]:
         seen: list[int] = []
         for value in re.findall(rf"Supplementary {kind}\.?\s*(\d+)", main_text):
             number = int(value)
@@ -172,8 +184,8 @@ def validate_supplementary_order() -> None:
         require(seen == list(range(1, expected + 1)), f"Supplementary {kind} first-appearance order is {seen}")
 
     require(
-        len(re.findall(r"\\begin\{table\}", supplement_text)) == 14,
-        "Supplementary Information does not contain fourteen tables",
+        len(re.findall(r"\\begin\{table\}", supplement_text)) == 15,
+        "Supplementary Information does not contain fifteen tables",
     )
     require(
         r"\renewcommand{\figurename}{Supplementary Figure}" in supplement_text
@@ -241,6 +253,13 @@ def validate_references() -> None:
         all("https://" in entry for entry in supplement_entries.values()),
         "a supplementary reference lacks a DOI or official HTTPS source",
     )
+    for name, text in [
+        ("main manuscript", main_text),
+        ("Chinese shared references", shared),
+        ("Supplementary Information", supplement_text),
+    ]:
+        require("Dohi, Y. et al." in text, f"{name} does not abbreviate the six-author Dohi reference")
+        require("Dohi, Y., Shigeno" not in text, f"{name} retains all six Dohi authors")
 
 
 def validate_chinese_sync() -> None:
@@ -278,7 +297,20 @@ def validate_chinese_sync() -> None:
 
     for stale in ["0.928", "0.780", "0.625", "1.366", "0.074 g", "1,153"]:
         require(stale not in chinese_text, f"stale Chinese claim remains: {stale}")
-    for current in ["RotD100", "0.890", "0.770", "12.6\\%", "0.624", "1.338", "0.075 g"]:
+    for current in [
+        "RotD100",
+        "0.890",
+        "0.770",
+        "12.6\\%",
+        "0.624",
+        "1.338",
+        "0.075 g",
+        "0.959",
+        "9.9\\%",
+        "53,517",
+        "488个地震",
+        "$-2.6\\%$",
+    ]:
         require(current in chinese_text, f"Chinese manuscript lacks current result: {current}")
     require("分别对4组训练事件和1组检验事件拟合完整的事件--台站双向固定效应模型" in chinese_text, "Chinese event-holdout method is stale")
     require(
@@ -288,6 +320,9 @@ def validate_chinese_sync() -> None:
     require("补充表12" in chinese_text and "补充图7" in chinese_text, "Chinese supplementary numbering is incomplete")
     require("补充表13" in chinese_text, "Chinese sample-flow and component table numbering is incomplete")
     require("补充表14" in chinese_text, "Chinese complexity-sensitivity table is not cited")
+    require("补充表15" in chinese_text, "Chinese MF2013-applicability table is not cited")
+    require("未复原Kanno-PGA距离截断" in chinese_text, "Chinese MF2013 applicability boundary is missing")
+    require("整体中位数的变化方向随数据范围和台站集合而变" in chinese_text, "Chinese aggregate-median boundary is missing")
     require(r"M_{\mathrm{JMA}}\geq5" in chinese_text, "Chinese manuscript lacks the JMA magnitude threshold")
     require("8,675条缺少有限的F-net $M_w$" in chinese_text, "Chinese manuscript lacks the finite-Mw sample loss")
     require(chinese_text.count("随审稿档案提供") >= 2, "Chinese data or code availability is not synchronized")
@@ -327,6 +362,56 @@ def validate_sample_selection() -> None:
         "3 s: 222,664",
     ]:
         require(claim in report, f"flatfile selection report lacks: {claim}")
+
+
+def validate_mf2013_applicability() -> None:
+    rows = read_csv("jshis_mf2013_applicability_sensitivity.csv")
+    require(len(rows) == 8 and float_periods(rows) == PERIODS, "MF2013 applicability period coverage mismatch")
+    require(all(float(row["minimum_mw"]) == 5.5 for row in rows), "MF2013 sensitivity magnitude screen changed")
+    require(
+        all(float(row["maximum_distance_km_exclusive"]) == 200.0 for row in rows),
+        "MF2013 sensitivity distance screen changed",
+    )
+    require(
+        all(int(float(row["minimum_event_stations"])) == 5 for row in rows),
+        "MF2013 sensitivity event-station screen changed",
+    )
+    require(all(int(float(row["n_records"])) == 53_517 for row in rows), "MF2013 sensitivity record count changed")
+    require(all(int(float(row["n_events"])) == 488 for row in rows), "MF2013 sensitivity event count changed")
+    require(
+        all(int(float(row["n_eligible_stations"])) == 772 for row in rows),
+        "MF2013 sensitivity eligible-station count changed",
+    )
+    require(
+        max(float(row["solver_max_parameter_change"]) for row in rows) <= 1.01e-10,
+        "MF2013 sensitivity decomposition did not converge",
+    )
+
+    sa3 = next(row for row in rows if float(row["period_s"]) == 3.0)
+    bounds = {
+        "station_field_correlation": (0.9593, 0.9595),
+        "station_field_difference_q95_log10": (0.0827, 0.0830),
+        "restricted_event_holdout_correlation": (0.8946, 0.8948),
+        "restricted_spatial_rmse_gain_pct": (9.8, 9.9),
+        "oof_prediction_correlation": (0.7702, 0.7704),
+        "restricted_multiplier_q05": (0.648, 0.650),
+        "restricted_multiplier_q50": (0.963, 0.965),
+        "restricted_multiplier_q95": (1.444, 1.446),
+        "common_surface_sa_median_g": (0.0890, 0.0892),
+        "common_primary_adjusted_sa_median_g": (0.0910, 0.0912),
+        "common_restricted_adjusted_sa_median_g": (0.0876, 0.0879),
+    }
+    for column, (low, high) in bounds.items():
+        value = float(sa3[column])
+        require(low < value < high, f"unexpected MF2013 applicability {column}: {value}")
+    require(int(float(sa3["common_hazard_stations"])) == 772, "MF2013 common hazard-station count changed")
+
+    short = next(row for row in rows if float(row["period_s"]) == 0.1)
+    require(float(short["restricted_spatial_rmse_gain_pct"]) < 0, "adverse 0.1 s applicability result disappeared")
+    require(
+        all(float(row["restricted_spatial_rmse_gain_pct"]) > 0 for row in rows if float(row["period_s"]) >= 0.2),
+        "a 0.2--5.0 s applicability spatial result is not positive",
+    )
 
 
 def validate_model_complexity() -> None:
@@ -733,6 +818,7 @@ def main() -> None:
     validate_references()
     validate_chinese_sync()
     validate_sample_selection()
+    validate_mf2013_applicability()
     validate_decomposition()
     validate_prediction()
     validate_model_complexity()
