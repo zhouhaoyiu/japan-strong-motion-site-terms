@@ -24,7 +24,8 @@ Repeatable station terms redistribute long-period response spectra across Japane
 10. 对方位、距离和震源类型分层等权平均后，1--3 s总体空间RMSE仍降低2.5%--9.6%，但部分空间折出现负改进。该结果作为敏感性分析保留，用于限定平均台站场的迁移范围。
 11. 空间分块误差构成名义90%经验区间。SA(3.0 s)台站覆盖率为89.0%，按记录数加权后为88.8%，区间上、下倍率之比中位数为3.00。
 12. 官方`Vs=400 m/s`工程基岩谱先转换到台站AVS30地表条件，再施加零均值折外台站项。主样本SA(3.0 s)倍率的5%--95%范围为0.624--1.338；50年10%超越概率下，匹配台站地表谱中位数由0.081 g变为0.075 g。该中位数变化仅作为主样本的描述性结果。
-13. 按MF2013原始回归研究的$M_w\geq5.5$、断层距离小于200 km和每个事件至少5个台站的条件重算。受限样本含53,517条记录和488个地震；SA(3.0 s)台站场与主场相关系数为0.959，事件留出相关系数为0.895，空间RMSE降低9.9%。原研究的Kanno-PGA距离截断未复原，本文将该试验明确限定为震级--距离适用域敏感性。
+13. 完整复原MF2013原始回归研究的$M_w\geq5.5$、断层距离小于200 km、Kanno-PGA阈值和每个事件至少5个有效台站的筛选条件。严格适用域样本含35,857条记录和411个地震；SA(3.0 s)台站场与主场相关系数为0.959，事件留出相关系数为0.762，空间RMSE降低4.1%。该试验复原公开筛选方程，不重建历史波形库和原始回归权重。
+14. 从公开平面文件中形成102,428组KiK-net地表--井下RotD100配对谱，覆盖699个台站和1,410个地震。SA(3.0 s)实测谱比与台站项相关系数为0.315，训练事件谱比预测留出事件台站项的相关系数为0.290，RMSE降低2.7%。配对谱比在不相交事件组之间的相关系数为0.988。
 
 ## 核心结论
 
@@ -36,9 +37,9 @@ Repeatable station terms redistribute long-period response spectra across Japane
 
 ## 当前材料
 
-- 英文主文：`main.pdf`，16页，6幅主图、1张主表
-- 补充材料：`supplementary_information.pdf`，12页，7幅图、15张表
-- 中文导师稿：`../advisor_chinese_manuscript_v1/main_zh.pdf`
+- 英文主文：`main.pdf`，18页，7幅主图、1张主表
+- 补充材料：`supplementary_information.pdf`，12页，7幅图、16张表
+- 中文导师稿：`../advisor_chinese_manuscript_v1/main_zh.pdf`，13页
 - Cover letter：`cover_letter_cee.md`
 - 投稿检查清单：`submission_closure_checklist_cee.md`
 - 代码与派生数据：<https://github.com/zhouhaoyiu/japan-strong-motion-site-terms>

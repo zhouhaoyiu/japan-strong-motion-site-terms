@@ -10,20 +10,21 @@
 
 ## Current figures
 
-The main manuscript uses six figures:
+The main manuscript uses seven figures:
 
 1. `figure_event_adjusted_overview`
 2. `figure_event_adjusted_site_structure`
 3. `figure_ground_motion_model_sensitivity`
-4. `figure_event_adjusted_multiperiod`
-5. `figure_path_stratification`
-6. `figure_event_adjusted_city_cases`
+4. `figure_kiknet_surface_borehole_validation`
+5. `figure_event_adjusted_multiperiod`
+6. `figure_path_stratification`
+7. `figure_event_adjusted_city_cases`
 
 The Supplementary Information uses seven figures: event repeatability, spatial validation, robustness stress tests, equal-stratum prediction, response-spectrum sensitivity, station-model uncertainty and the KiK-net waveform comparison. Vector PDFs are the manuscript sources; PNG copies are retained for portal compatibility.
 
 ## Derived tables
 
-The `supplement/` directory contains the primary MF2013 results, the RotD50--RotD100 component audit, Zhao 2006 model sensitivity, station-model prediction intervals, transfer tests, influential-event deletion results, path/source stratification and equal-stratum sensitivity. Rebuild the analyses in this order:
+The `supplement/` directory contains the primary MF2013 results, the RotD50--RotD100 component audit, Zhao 2006 model sensitivity, the complete MF2013 regression-domain screen, national KiK-net paired-sensor validation, station-model prediction intervals, transfer tests, influential-event deletion results, path/source stratification and equal-stratum sensitivity. Rebuild the analyses in this order:
 
 ```bash
 conda run -n japan-station-terms python ../../work/verify_public_inputs.py
@@ -31,6 +32,7 @@ conda run -n japan-station-terms python ../../work/audit_jshis_flatfile_selectio
 conda run -n japan-station-terms python ../../work/jshis_event_adjusted_station_model.py
 conda run -n japan-station-terms python ../../work/jshis_spatial_model_complexity_audit.py
 conda run -n japan-station-terms python ../../work/jshis_mf2013_applicability_audit.py
+conda run -n japan-station-terms python ../../work/jshis_kiknet_surface_borehole_validation.py
 conda run -n japan-station-terms python ../../work/jshis_independent_gmpe_replication.py
 conda run -n japan-station-terms python ../../work/jshis_station_uncertainty_propagation.py
 conda run -n japan-station-terms python ../../work/jshis_robustness_stress_tests.py

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit station-field results under selected published MF2013 regression screens."""
+"""Audit station-field results under the published MF2013 regression screens."""
 
 from __future__ import annotations
 
@@ -16,25 +16,92 @@ from jshis_robustness_stress_tests import weighted_correlation, weighted_quantil
 OUT_METRICS = core.SUPPLEMENT_DIR / "jshis_mf2013_applicability_sensitivity.csv"
 OUT_AUDIT = core.SUPPLEMENT_DIR / "jshis_mf2013_applicability_sensitivity.md"
 
+KANNO_DEPTH_BOUNDARY_KM = 30.0
+KANNO_SHALLOW_PGA = {"a": 0.556, "b": -0.003070, "c": 0.2560, "d": 0.00547}
+KANNO_DEEP_PGA = {"a": 0.409, "b": -0.00389, "c": 1.5600, "d": 0.0}
+
+
+def kanno2006_base_pga_cm_s2(
+    magnitude: pd.Series,
+    source_distance_km: pd.Series,
+    focal_depth_km: pd.Series,
+) -> pd.Series:
+    """Return the Kanno et al. (2006) median base-model PGA in cm/s/s.
+
+    Equations 5 and 6 use separate coefficients for focal depths at or below
+    30 km and above 30 km. The site term from equation 8 is intentionally not
+    included because MF2013 used this relation to define a magnitude-distance
+    truncation rather than a station-specific selection boundary.
+    """
+    mw = pd.to_numeric(magnitude, errors="coerce").to_numpy(float)
+    distance = pd.to_numeric(source_distance_km, errors="coerce").to_numpy(float)
+    depth = pd.to_numeric(focal_depth_km, errors="coerce").to_numpy(float)
+    predicted = np.full(len(mw), np.nan, dtype=float)
+    valid = np.isfinite(mw) & np.isfinite(distance) & np.isfinite(depth) & (distance > 0.0)
+    shallow = valid & (depth <= KANNO_DEPTH_BOUNDARY_KM)
+    deep = valid & (depth > KANNO_DEPTH_BOUNDARY_KM)
+
+    for mask, coeff in ((shallow, KANNO_SHALLOW_PGA), (deep, KANNO_DEEP_PGA)):
+        log10_pga = (
+            coeff["a"] * mw[mask]
+            + coeff["b"] * distance[mask]
+            + coeff["c"]
+            - np.log10(distance[mask] + coeff["d"] * 10.0 ** (0.5 * mw[mask]))
+        )
+        predicted[mask] = 10.0**log10_pga
+    return pd.Series(predicted, index=magnitude.index, dtype=float)
+
 
 def restricted_records(
     records: dict[float, pd.DataFrame],
     source: pd.DataFrame,
     minimum_mw: float,
     maximum_distance_km: float,
+    minimum_kanno_pga_cm_s2: float,
     minimum_event_stations: int,
-) -> dict[float, pd.DataFrame]:
-    source_magnitude = source[["eq_source_id", "mw"]]
+) -> tuple[dict[float, pd.DataFrame], pd.DataFrame]:
+    source_parameters = source[["eq_source_id", "mw", "jem_depth"]]
     selected: dict[float, pd.DataFrame] = {}
+    screen_rows = []
     for period_s, frame in records.items():
-        joined = frame.merge(source_magnitude, on="eq_source_id", how="left", validate="many_to_one")
-        subset = joined[
+        joined = frame.merge(
+            source_parameters,
+            on="eq_source_id",
+            how="left",
+            validate="many_to_one",
+            suffixes=("", "_source"),
+        )
+        if "mw_source" in joined:
+            joined["mw"] = joined["mw"].fillna(joined["mw_source"])
+            joined = joined.drop(columns="mw_source")
+        magnitude_distance = joined[
             joined["mw"].ge(minimum_mw) & joined["fault_dist"].lt(maximum_distance_km)
         ].copy()
-        event_station_counts = subset.groupby("eq_source_id")["siteid2"].nunique()
+        magnitude_distance["kanno_base_pga_cm_s2"] = kanno2006_base_pga_cm_s2(
+            magnitude_distance["mw"],
+            magnitude_distance["fault_dist"],
+            magnitude_distance["jem_depth"],
+        )
+        pga_screened = magnitude_distance[
+            magnitude_distance["kanno_base_pga_cm_s2"].ge(minimum_kanno_pga_cm_s2)
+        ].copy()
+        event_station_counts = pga_screened.groupby("eq_source_id")["siteid2"].nunique()
         retained_events = event_station_counts[event_station_counts.ge(minimum_event_stations)].index
-        selected[period_s] = subset[subset["eq_source_id"].isin(retained_events)].drop(columns="mw")
-    return selected
+        retained = pga_screened[pga_screened["eq_source_id"].isin(retained_events)].drop(
+            columns=["mw", "jem_depth", "kanno_base_pga_cm_s2"]
+        )
+        selected[period_s] = retained
+        screen_rows.append(
+            {
+                "period_s": period_s,
+                "n_input_records": len(frame),
+                "n_magnitude_distance_records": len(magnitude_distance),
+                "n_kanno_pga_records": len(pga_screened),
+                "n_retained_records": len(retained),
+                "n_retained_events": retained["eq_source_id"].nunique(),
+            }
+        )
+    return selected, pd.DataFrame(screen_rows)
 
 
 def build_station_terms(
@@ -195,14 +262,16 @@ def run(args: argparse.Namespace) -> None:
     records = core.load_record_residuals(
         args.flatfile, coefficients, site, source, chunksize=args.chunksize
     )
-    restricted = restricted_records(
+    restricted, screening = restricted_records(
         records,
         source,
         minimum_mw=args.minimum_mw,
         maximum_distance_km=args.maximum_distance_km,
+        minimum_kanno_pga_cm_s2=args.minimum_kanno_pga_cm_s2,
         minimum_event_stations=args.minimum_event_stations,
     )
     station_terms, fits = build_station_terms(restricted, site)
+    fits = fits.merge(screening, on="period_s", validate="one_to_one")
     full_terms = pd.read_csv(args.full_station_terms)
     field_comparison = compare_station_fields(station_terms, full_terms, args.minimum_station_records)
 
@@ -274,15 +343,18 @@ def run(args: argparse.Namespace) -> None:
     )
     metrics.insert(2, "minimum_mw", args.minimum_mw)
     metrics.insert(3, "maximum_distance_km_exclusive", args.maximum_distance_km)
-    metrics.insert(4, "minimum_event_stations", args.minimum_event_stations)
+    metrics.insert(4, "minimum_kanno_pga_cm_s2", args.minimum_kanno_pga_cm_s2)
+    metrics.insert(5, "kanno_depth_boundary_km", KANNO_DEPTH_BOUNDARY_KM)
+    metrics.insert(6, "minimum_event_stations", args.minimum_event_stations)
     metrics.to_csv(OUT_METRICS, index=False)
 
     sa3 = metrics[metrics["period_s"].eq(3.0)].iloc[0]
     lines = [
-        "# MF2013 magnitude, distance and event-station sensitivity",
+        "# MF2013 regression-domain sensitivity",
         "",
-        "Morikawa and Fujiwara (2013) selected regression records with Mw >= 5.5, ground-surface sensors, at least five triggered stations per event and source distance below 200 km. This sensitivity applies the magnitude, distance and event-station-count conditions to the primary surface sample. It does not reconstruct the paper's additional magnitude-dependent PGA truncation.",
+        "Morikawa and Fujiwara (2013) selected regression records with Mw >= 5.5, ground-surface sensors, at least five triggered stations per event and source distance below 200 km. They also removed records beyond the distance at which the Kanno et al. (2006) median PGA fell below 10 cm/s/s. This sensitivity applies all of those conditions to the primary surface sample. The Kanno base equations use separate shallow and deep coefficients at a focal-depth boundary of 30 km; their station-amplification term is excluded from this magnitude-distance boundary.",
         "",
+        f"- Records before and after the Kanno-PGA screen: {int(sa3['n_magnitude_distance_records']):,} and {int(sa3['n_kanno_pga_records']):,}",
         f"- Records at each period: {int(sa3['n_records']):,}",
         f"- Earthquakes: {int(sa3['n_events']):,}",
         f"- Stations with at least {args.minimum_station_records} records: {int(sa3['n_eligible_stations']):,}",
@@ -295,7 +367,7 @@ def run(args: argparse.Namespace) -> None:
         f"- SA(3.0 s) restricted surface and adjusted medians: {sa3['restricted_surface_sa_median_g']:.3f} and {sa3['restricted_adjusted_sa_median_g']:.3f} g",
         f"- On the same {int(sa3['common_hazard_stations']):,} stations, the primary adjusted median is {sa3['common_primary_adjusted_sa_median_g']:.3f} g and the restricted adjusted median is {sa3['common_restricted_adjusted_sa_median_g']:.3f} g, from a common surface median of {sa3['common_surface_sa_median_g']:.3f} g",
         "",
-        "The restricted calculation tests selected magnitude, distance and event-station conditions from the original regression design. The primary analysis retains the broader public-flatfile domain because it evaluates the implementation used with the national response-spectrum product. Results outside the implemented screens are interpreted through this sensitivity.",
+        "The restricted calculation tests the published regression-domain conditions using the current public flatfile. It does not recreate the historical waveform database or the original regression weights. The primary analysis retains the broader public-flatfile domain because it evaluates the implementation used with the national response-spectrum product. Results outside the regression domain are interpreted through this sensitivity.",
     ]
     OUT_AUDIT.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(metrics.to_string(index=False), flush=True)
@@ -314,6 +386,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--chunksize", type=int, default=100_000)
     parser.add_argument("--minimum-mw", type=float, default=5.5)
     parser.add_argument("--maximum-distance-km", type=float, default=200.0)
+    parser.add_argument("--minimum-kanno-pga-cm-s2", type=float, default=10.0)
     parser.add_argument("--minimum-event-stations", type=int, default=5)
     parser.add_argument("--minimum-station-records", type=int, default=20)
     parser.add_argument("--spatial-folds", type=int, default=5)

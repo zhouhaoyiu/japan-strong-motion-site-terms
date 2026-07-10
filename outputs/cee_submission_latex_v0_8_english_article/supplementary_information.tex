@@ -61,7 +61,22 @@ Five spatial blocks are produced by $k$-means clustering of standardised longitu
 
 \subsection*{MF2013 applicability sensitivity}
 
-The MF2013 regression analysis selected $M_w\geq5.5$ ground-surface records with two horizontal components, at least five triggered stations per event and source distance below 200 km\cite{morikawa2013}. It also truncated data at the magnitude-dependent distance where the Kanno et al. equation predicted PGA below 10 cm s$^{-2}$. Our sensitivity imposes the published magnitude, distance and event-station screens on the primary flatfile sample, then repeats the residual decomposition, event holdout, spatial prediction and spectrum propagation. It contains 53,517 records from 488 earthquakes, including 772 stations with at least 20 records. The Kanno-PGA truncation is not reconstructed; the calculation tests the implemented screens and is not a reconstruction of the original regression sample.
+The MF2013 regression analysis selected $M_w\geq5.5$ ground-surface records with two horizontal components, at least five triggered stations per event and source distance below 200 km\cite{morikawa2013}. It also truncated records beyond the magnitude-dependent distance where the Kanno et al. median PGA fell below 10 cm s$^{-2}$\cite{kanno2006}. We reconstruct the base-model equations
+\begin{equation}
+\log_{10} PGA=aM_w+bX-\log_{10}\left(X+d10^{0.5M_w}\right)+c,
+\end{equation}
+with PGA in cm s$^{-2}$ and source distance $X$ in km. The coefficients are
+\begin{align*}
+(a,b,c,d)&=(0.556,-0.003070,0.2560,0.00547), && H\leq30~\mathrm{km},\\
+(a,b,c,d)&=(0.409,-0.00389,1.5600,0), && H>30~\mathrm{km}.
+\end{align*}
+The Kanno station-amplification term is excluded because MF2013 applies this screen as a magnitude--distance boundary. The relation is evaluated at each record distance after the $M_w$ and 200 km screens. Events with fewer than five remaining stations are then removed. The resulting sample contains 35,857 records from 411 earthquakes, including 578 stations with at least 20 records. Residual decomposition, event holdout, spatial prediction and spectrum propagation are repeated without changing the remaining settings.
+
+\subsection*{KiK-net paired-sensor validation}
+
+Ground-surface and borehole rows at a KiK-net site are paired by earthquake and site code. The pairing is one-to-one and yields 102,428 positive RotD100 pairs at every analysed period, spanning 699 sites and 1,410 earthquakes. A site's transfer proxy is the median log$_{10}$ surface-to-borehole ratio. Pearson, Spearman and record-count-weighted correlations compare this proxy with the primary station term. A depth-adjusted Pearson correlation first removes separate linear trends with log borehole depth from both variables.
+
+The primary five-group event partition supplies a held-event test. For each fold, station terms are fitted separately to training and held-out surface records. Training-event transfer ratios are calibrated to training-event station terms by weighted linear regression, then used to predict held-out station terms. The prediction never uses a paired ratio from a held-out earthquake. Stations require at least 15 training pairs and five held-out surface records. Transfer repeatability compares median ratios formed independently from the training and held-out earthquakes.
 
 \subsection*{Alternative ground-motion-model calculation}
 
@@ -89,7 +104,7 @@ F_{\mathrm{surf},i}(T)=10^{G_s(AVS30_i,T)-G_s(400,T)}.
 \end{equation}
 The cross-validated station factor $10^{\widehat{\delta S}_i(T)}$ is applied after this conversion. All eight period coordinates and four 50-year exceedance probabilities are read from the official map files. The calculation is restricted to matched station cells; national-grid interpolation lies outside this analysis.
 
-\subsection*{KiK-net waveform check}
+\subsection*{Two-event KiK-net waveform check}
 
 The waveform check uses 460 paired surface and downhole records from two KiK-net earthquakes\cite{aoi2004}. The first set contains 288 converted miniSEED pairs and the second contains 172 original NIED ASCII pairs converted with the scale factors in their headers. Each trace is demeaned and detrended. Horizontal peak amplitude is calculated from the two horizontal components. Surface-to-downhole Fourier amplitude ratios are evaluated from 0.2 to 20 Hz. This check is independent of the station residual model.
 
@@ -202,6 +217,28 @@ Period & MF2013--Zhao & Median absolute & Zhao event & Zhao spatial \\
 5.0 & 0.697 & 0.125 & 0.946 & 39.2 \\
 \bottomrule
 \end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{KiK-net paired-sensor spectral validation}
+\scriptsize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{rrrrrrr}
+\toprule
+Period & \multicolumn{3}{c}{Station term versus paired ratio} & Ratio train--test & Held-event term & Held-event RMSE \\
+(s) & Pearson & Spearman & Depth-adjusted Pearson & correlation & correlation & gain (\%) \\
+\midrule
+0.1 & 0.737 & 0.710 & 0.739 & 0.974 & 0.684 & 27.3 \\
+0.2 & 0.736 & 0.696 & 0.737 & 0.986 & 0.692 & 29.5 \\
+0.3 & 0.689 & 0.666 & 0.703 & 0.989 & 0.640 & 24.2 \\
+0.5 & 0.588 & 0.583 & 0.630 & 0.992 & 0.552 & 13.5 \\
+1.0 & 0.522 & 0.529 & 0.585 & 0.995 & 0.471 & 10.0 \\
+2.0 & 0.395 & 0.450 & 0.437 & 0.993 & 0.368 & 4.9 \\
+3.0 & 0.315 & 0.415 & 0.327 & 0.988 & 0.290 & 2.7 \\
+5.0 & 0.311 & 0.432 & 0.342 & 0.975 & 0.296 & 3.9 \\
+\bottomrule
+\end{tabular}}
 \end{table}
 
 \begin{table}[H]
@@ -434,7 +471,7 @@ Shorter iteration budget & Maximum iterations = 200 & 12.85 & 0.497 \\
 
 \begin{table}[H]
 \centering
-\caption{MF2013 magnitude, distance and event-station sensitivity}
+\caption{MF2013 regression-domain sensitivity including the Kanno-PGA cutoff}
 \scriptsize
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{rrrrrrr}
@@ -442,14 +479,14 @@ Shorter iteration budget & Maximum iterations = 200 & 12.85 & 0.497 \\
 Period & Station-field & 95th-percentile & Event-group & Spatial RMSE & OOF-prediction & Restricted multiplier \\
 (s) & correlation & difference (log$_{10}$) & correlation & gain (\%) & correlation & 5th--95th percentile \\
 \midrule
-0.1 & 0.977 & 0.120 & 0.940 & -2.6 & 0.780 & 0.443--1.936 \\
-0.2 & 0.981 & 0.117 & 0.946 & 12.4 & 0.849 & 0.419--1.868 \\
-0.3 & 0.981 & 0.112 & 0.939 & 17.5 & 0.778 & 0.471--1.956 \\
-0.5 & 0.981 & 0.097 & 0.931 & 20.2 & 0.819 & 0.493--1.773 \\
-1.0 & 0.976 & 0.098 & 0.927 & 12.1 & 0.662 & 0.543--1.656 \\
-2.0 & 0.970 & 0.089 & 0.897 & 10.6 & 0.664 & 0.612--1.561 \\
-3.0 & 0.959 & 0.083 & 0.895 & 9.9 & 0.770 & 0.649--1.445 \\
-5.0 & 0.921 & 0.103 & 0.834 & 9.2 & 0.753 & 0.674--1.381 \\
+0.1 & 0.963 & 0.144 & 0.916 & -2.3 & 0.671 & 0.485--1.871 \\
+0.2 & 0.973 & 0.128 & 0.909 & 12.2 & 0.766 & 0.436--2.018 \\
+0.3 & 0.969 & 0.117 & 0.903 & 16.3 & 0.720 & 0.454--1.995 \\
+0.5 & 0.965 & 0.117 & 0.884 & 18.5 & 0.756 & 0.481--1.785 \\
+1.0 & 0.959 & 0.109 & 0.829 & 9.3 & 0.666 & 0.538--1.679 \\
+2.0 & 0.956 & 0.094 & 0.777 & 5.8 & 0.615 & 0.596--1.541 \\
+3.0 & 0.959 & 0.082 & 0.762 & 4.1 & 0.648 & 0.660--1.503 \\
+5.0 & 0.924 & 0.098 & 0.719 & 7.6 & 0.637 & 0.707--1.428 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -463,6 +500,7 @@ Period & Station-field & 95th-percentile & Event-group & Spatial RMSE & OOF-pred
 \bibitem{morikawa2013} Morikawa, N. \& Fujiwara, H. A new ground motion prediction equation for Japan applicable up to M9 mega-earthquake. \textit{J. Disaster Res.} \textbf{8}, 878--888 (2013). \url{https://doi.org/10.20965/jdr.2013.p0878}.
 \bibitem{morikawa2023} Morikawa, N. \& Fujiwara, H. Ground motion prediction equation based on Morikawa and Fujiwara 2013. J-SHIS/NIED, \url{https://www.j-shis.bosai.go.jp/labs/mf2013/en/} (2023).
 \bibitem{morikawa2006} Morikawa, N. et al. New additional correction terms for attenuation relations corresponding to anomalous seismic intensity in northeastern Japan. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{6}, 23--41 (2006). \url{https://doi.org/10.5610/jaee.6.23}.
+\bibitem{kanno2006} Kanno, T., Narita, A., Morikawa, N., Fujiwara, H. \& Fukushima, Y. A new attenuation relation for strong ground motion in Japan based on recorded data. \textit{Bull. Seismol. Soc. Am.} \textbf{96}, 879--897 (2006). \url{https://doi.org/10.1785/0120050138}.
 \bibitem{zhao2006} Zhao, J. X. et al. Attenuation relations of strong ground motion in Japan using site classification based on predominant period. \textit{Bull. Seismol. Soc. Am.} \textbf{96}, 898--913 (2006). \url{https://doi.org/10.1785/0120050122}.
 \bibitem{pagani2014} Pagani, M. et al. OpenQuake Engine: an open hazard and risk software for the Global Earthquake Model. \textit{Seismol. Res. Lett.} \textbf{85}, 692--702 (2014). \url{https://doi.org/10.1785/0220130087}.
 \bibitem{jshisapi} Azuma, H., Kawai, S. \& Fujiwara, H. Development of J-SHIS and applications using API. \textit{J. Disaster Res.} \textbf{8}, 869--877 (2013). \url{https://doi.org/10.20965/jdr.2013.p0869}.

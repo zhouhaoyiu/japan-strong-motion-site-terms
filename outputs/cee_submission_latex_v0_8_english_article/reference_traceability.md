@@ -2,7 +2,7 @@
 
 Audit date: 2026-07-11
 
-The main manuscript contains 33 references: 28 DOI-bearing records and 5 official web records. Every DOI and official URL was checked against the cited title, authors, year, journal or issuing body. The local library contains 29 valid PDF files covering 28 references. PDF validity was checked from the file signature, and article identity was checked from the first-page title or official document heading.
+The main manuscript contains 34 references: 29 DOI-bearing records and 5 official web records. Every DOI and official URL was checked against the cited title, authors, year, journal or issuing body. The local library contains 29 valid PDF files covering 28 references. PDF validity was checked from the file signature, and article identity was checked from the first-page title or official document heading.
 
 The `references_pdfs/` directory is a private working library and is excluded from Git. A missing local PDF means that the citation metadata is verified but an exact full-text copy has not been archived locally.
 
@@ -29,19 +29,20 @@ The `references_pdfs/` directory is a private working library and is excluded fr
 | 19 | `dohi2024` | [DOI](https://doi.org/10.5610/jaee.24.1_124); [official English translation](https://www.jaee.gr.jp/en/wp-content/uploads/2024/12/24_7_1.pdf) | `19_Dohi2024_response_spectrum_PSHA_English.pdf` |
 | 20 | `zhao2006` | [DOI](https://doi.org/10.1785/0120050122) | `20_Zhao2006_Japan_GMM.pdf` |
 | 21 | `pagani2014` | [DOI](https://doi.org/10.1785/0220130087) | `21_Pagani2014_OpenQuake.pdf` |
-| 22 | `parker2022` | [DOI](https://doi.org/10.1177/87552930211056963) | `22_ParkerStewart2022_site_response.pdf` |
-| 23 | `delatorre2024` | [DOI](https://doi.org/10.1177/87552930241270562) | `23_deLaTorre2024_basin_residuals.pdf` |
-| 24 | `abrahamson2019` | [DOI](https://doi.org/10.1785/0120190030) | Not archived |
-| 25 | `cornell1968` | [DOI](https://doi.org/10.1785/BSSA0580051583) | `25_Cornell1968_engineering_seismic_risk.pdf` |
-| 26 | `mcguire1995` | [DOI](https://doi.org/10.1785/BSSA0850051275) | `26_McGuire1995_PSHA_design_earthquakes.pdf` |
-| 27 | `azuma2013` | [DOI](https://doi.org/10.20965/jdr.2013.p0869) | `27_Azuma2013_JSHIS_API.pdf` |
-| 28 | `fujiwara2013` | [DOI](https://doi.org/10.20965/jdr.2013.p0848) | `28_Fujiwara2013_hazard_assessment.pdf` |
-| 29 | `fujiwara2023` | [DOI](https://doi.org/10.24732/NIED.00003934) | `29_Fujiwara2023_NIED_TN490.pdf` |
-| 30 | `erc2022` | [Official Earthquake Research Committee page](https://www.jishin.go.jp/evaluation/seismic_hazard_map/sh_response_spectrum/) | `30_ERC2022_response_spectrum_PSHA.pdf` |
-| 31 | `morikawa2006` | [DOI](https://doi.org/10.5610/jaee.6.23) | `31_Morikawa2006_anomalous_intensity.pdf` |
-| 32 | `morikawa2014` | [Official J-SHIS MF2013 page](https://www.j-shis.bosai.go.jp/labs/mf2013/en/) | `32_MorikawaFujiwara2014_official_record.pdf` |
-| 33 | `morikawa2015` | [Official JpGU abstract PDF](https://www2.jpgu.org/meeting/2015/session/PDF/S-SS25/SSS25-14_E.pdf) | `33_MorikawaFujiwara2015_JpGU_SSS25-14.pdf` |
+| 22 | `kanno2006` | [DOI](https://doi.org/10.1785/0120050138); [official publisher PDF](https://pubs.geoscienceworld.org/ssa/bssa/article-pdf/96/3/879/2729752/879_963_05138.pdf) | Exact publisher text checked online; automated local download blocked |
+| 23 | `parker2022` | [DOI](https://doi.org/10.1177/87552930211056963) | `23_ParkerStewart2022_site_response.pdf` |
+| 24 | `delatorre2024` | [DOI](https://doi.org/10.1177/87552930241270562) | `24_deLaTorre2024_basin_residuals.pdf` |
+| 25 | `abrahamson2019` | [DOI](https://doi.org/10.1785/0120190030) | Not archived |
+| 26 | `cornell1968` | [DOI](https://doi.org/10.1785/BSSA0580051583) | `26_Cornell1968_engineering_seismic_risk.pdf` |
+| 27 | `mcguire1995` | [DOI](https://doi.org/10.1785/BSSA0850051275) | `27_McGuire1995_PSHA_design_earthquakes.pdf` |
+| 28 | `azuma2013` | [DOI](https://doi.org/10.20965/jdr.2013.p0869) | `28_Azuma2013_JSHIS_API.pdf` |
+| 29 | `fujiwara2013` | [DOI](https://doi.org/10.20965/jdr.2013.p0848) | `29_Fujiwara2013_hazard_assessment.pdf` |
+| 30 | `fujiwara2023` | [DOI](https://doi.org/10.24732/NIED.00003934) | `30_Fujiwara2023_NIED_TN490.pdf` |
+| 31 | `erc2022` | [Official Earthquake Research Committee page](https://www.jishin.go.jp/evaluation/seismic_hazard_map/sh_response_spectrum/) | `31_ERC2022_response_spectrum_PSHA.pdf` |
+| 32 | `morikawa2006` | [DOI](https://doi.org/10.5610/jaee.6.23) | `32_Morikawa2006_anomalous_intensity.pdf` |
+| 33 | `morikawa2014` | [Official J-SHIS MF2013 page](https://www.j-shis.bosai.go.jp/labs/mf2013/en/) | `33_MorikawaFujiwara2014_official_record.pdf` |
+| 34 | `morikawa2015` | [Official JpGU abstract PDF](https://www2.jpgu.org/meeting/2015/session/PDF/S-SS25/SSS25-14_E.pdf) | `34_MorikawaFujiwara2015_JpGU_SSS25-14.pdf` |
 
 ## Unarchived exact full texts
 
-The exact full texts for references 1, 4, 10 and 24 are behind publisher access controls or were not found in an authoritative open repository. Reference 5 is open access and was read from the publisher PDF, but the publisher blocked automated local download. Their citations remain supported by DOI registry metadata and authoritative publisher or institutional records.
+The exact full texts for references 1, 4, 10, 22 and 25 are behind publisher access controls or were not found in an authoritative open repository. References 5 and 22 were read from publisher material, but the publishers blocked automated local download. Their citations remain supported by DOI registry metadata and authoritative publisher or institutional records. The Kanno 2006 equations were also checked against the author-verified OpenQuake implementation.

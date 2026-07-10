@@ -87,15 +87,29 @@ def validate_claim_tables() -> None:
 
     applicability = read_csv("jshis_mf2013_applicability_sensitivity.csv")
     require(len(applicability) == 8, "MF2013 applicability coverage changed")
-    require(all(int(float(row["n_records"])) == 53_517 for row in applicability), "MF2013 applicability record count changed")
-    require(all(int(float(row["n_events"])) == 488 for row in applicability), "MF2013 applicability event count changed")
+    require(all(float(row["minimum_kanno_pga_cm_s2"]) == 10.0 for row in applicability), "Kanno-PGA cutoff changed")
+    require(all(int(float(row["n_records"])) == 35_857 for row in applicability), "MF2013 applicability record count changed")
+    require(all(int(float(row["n_events"])) == 411 for row in applicability), "MF2013 applicability event count changed")
     applicability3 = next(row for row in applicability if float(row["period_s"]) == 3.0)
     require(0.9593 < float(applicability3["station_field_correlation"]) < 0.9595, "SA3 applicability field correlation changed")
-    require(9.8 < float(applicability3["restricted_spatial_rmse_gain_pct"]) < 9.9, "SA3 applicability spatial gain changed")
-    require(0.648 < float(applicability3["restricted_multiplier_q05"]) < 0.650, "SA3 restricted lower multiplier changed")
-    require(1.444 < float(applicability3["restricted_multiplier_q95"]) < 1.446, "SA3 restricted upper multiplier changed")
+    require(4.1 < float(applicability3["restricted_spatial_rmse_gain_pct"]) < 4.2, "SA3 applicability spatial gain changed")
+    require(0.659 < float(applicability3["restricted_multiplier_q05"]) < 0.661, "SA3 restricted lower multiplier changed")
+    require(1.502 < float(applicability3["restricted_multiplier_q95"]) < 1.504, "SA3 restricted upper multiplier changed")
     applicability01 = next(row for row in applicability if float(row["period_s"]) == 0.1)
     require(float(applicability01["restricted_spatial_rmse_gain_pct"]) < 0, "adverse 0.1 s applicability result disappeared")
+
+    kiknet = read_csv("jshis_kiknet_surface_borehole_validation.csv")
+    require(len(kiknet) == 56, "KiK-net paired-sensor coverage changed")
+    kiknet3 = next(
+        row for row in kiknet if float(row["period_s"]) == 3.0 and row["scope"] == "full"
+    )
+    require(int(float(kiknet3["n_paired_records"])) == 102_428, "KiK-net paired count changed")
+    require(0.314 < float(kiknet3["station_transfer_pearson"]) < 0.316, "SA3 paired-sensor correlation changed")
+    kiknet3_mean = next(
+        row for row in kiknet if float(row["period_s"]) == 3.0 and row["scope"] == "fold_mean"
+    )
+    require(0.289 < float(kiknet3_mean["test_station_term_pearson"]) < 0.291, "SA3 held-event paired prediction changed")
+    require(2.7 < float(kiknet3_mean["transfer_prediction_rmse_gain_pct"]) < 2.8, "SA3 held-event paired gain changed")
 
     hazard3 = next(
         row
@@ -131,18 +145,21 @@ def validate_manuscript_sources() -> None:
         "222,664",
         "0.890",
         "0.770",
+        "102,428",
+        "0.315",
+        "0.290",
         "12.6\\%",
         "0.280--0.886",
         "0.624--1.338",
         "0.959",
-        "9.9\\%",
-        "53,517",
-        "$-2.6\\%$",
-        "0.649--1.445",
+        "4.1\\%",
+        "35,857",
+        "$-2.3\\%$",
+        "0.660--1.503",
     ]:
         require(claim in main, f"main manuscript lacks: {claim}")
     require(main.count("accompanying peer-review archive") >= 2, "review archive is not declared")
-    require(supplement.count(r"\begin{table}") == 15, "Supplementary Information table count changed")
+    require(supplement.count(r"\begin{table}") == 16, "Supplementary Information table count changed")
     require(supplement.count(r"\begin{figure}") == 7, "Supplementary Information figure count changed")
 
 
