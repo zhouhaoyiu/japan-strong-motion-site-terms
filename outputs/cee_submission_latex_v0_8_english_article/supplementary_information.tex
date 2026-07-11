@@ -90,6 +90,8 @@ The first cross-network stress test trains on K-NET and evaluates KiK-net, then 
 
 A stricter test separates both network and earthquake sample. We retain 1,286 earthquakes with at least five records in each network and assign them to five fixed groups. K-NET station terms from four groups train models with fixed primary hyperparameters; KiK-net station terms are estimated only from the fifth group. Physical models contain no network indicator. Source stations require 15 training records and targets require five held-event records. Predictions are centred by the source-network training predictions without target recentering. The reverse direction uses the same groups and settings. Target-station bootstrap intervals use 2,000 replicates.
 
+The chronological test retains 1,277 of these earthquakes with finite origin times and orders them before any station-term estimation. Fixed early/late splits of 70/30, 80/20 and 90/10 are evaluated. Early-event station terms from one network train the frozen model, and later-event station terms from the other network supply the target. The features, thresholds, hyperparameters and source-only centring match the random-event test. Origin time is used only to assign events. Every cutoff and both transfer directions are retained in the output. An event-level split table records each earthquake, timestamp and partition.
+
 Fixed macroregions are defined by reproducible latitude and longitude boundaries. Event influence is measured after deleting each of the ten events with the largest 3.0 s record count and after deleting all ten at every period. A record-weighted mean shift aligns each perturbed station field with the full field before comparison.
 
 \subsection*{Path and source stratification}
@@ -116,6 +118,7 @@ The cross-validated station factor $10^{\widehat{\delta S}_i(T)}$ is applied aft
 
 The waveform check uses 460 paired surface and downhole records from two KiK-net earthquakes\cite{aoi2004}. The first set contains 288 converted miniSEED pairs and the second contains 172 original NIED ASCII pairs converted with the scale factors in their headers. Each trace is demeaned and detrended. Horizontal peak amplitude is calculated from the two horizontal components. Surface-to-downhole Fourier amplitude ratios are evaluated from 0.2 to 20 Hz. This check is independent of the station residual model.
 
+\clearpage
 \section*{Supplementary Figures}
 
 \begin{figure}[!htbp]
@@ -178,8 +181,13 @@ The waveform check uses 460 paired surface and downhole records from two KiK-net
 \caption{\textbf{KiK-net surface and downhole waveform comparison.} \textbf{a}, horizontal surface-to-downhole peak acceleration ratios by earthquake. \textbf{b}, frequency-band Fourier amplitude ratios. \textbf{c}, median transfer functions for the two event sets. \textbf{d}, horizontal peak acceleration ratio against the downhole input-motion proxy. Ratios are shown in log$_{10}$ units in panels \textbf{a} and \textbf{b}.}
 \end{figure}
 
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.82\linewidth]{figures/supplementary_figure_temporal_network_transfer.pdf}
+\caption{\textbf{Chronological cross-network station-field validation.} \textbf{a}, K-NET-to-KiK-net correlations for fixed early/late event splits. \textbf{b}, root mean squared error reduction relative to a zero station term. \textbf{c}, frozen predictions from the earliest 80\% of K-NET events against KiK-net terms estimated from the latest 20\% at 3.0 s. \textbf{d}, station-bootstrap 95\% intervals at 1--3 s. The reverse direction is reported in Supplementary Table 20.}
+\end{figure}
+
 \FloatBarrier
-\clearpage
 \section*{Supplementary Tables}
 
 \begin{table}[H]
@@ -578,6 +586,37 @@ Period & Field & Direction & Same-direction change & Median absolute \\
 5.0 & 0.752 & 80.4 & 59.6 & 0.046 \\
 \bottomrule
 \end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Chronological K-NET-to-KiK-net station-field transfer}
+\scriptsize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{rrrrrrr}
+\toprule
+Early/late events & Period & Target stations & Correlation & Correlation 95\% interval & RMSE gain & RMSE-gain 95\% interval \\
+(\%) & (s) & & & & (\%) & (\%) \\
+\midrule
+70/30 & 1.0 & 593 & 0.543 & 0.475--0.606 & 17.6 & 10.1--24.4 \\
+70/30 & 2.0 & 593 & 0.524 & 0.461--0.586 & 16.6 & 9.7--23.4 \\
+70/30 & 3.0 & 593 & 0.536 & 0.470--0.594 & 19.2 & 13.6--24.2 \\
+80/20 & 0.1 & 547 & 0.635 & 0.587--0.679 & 21.5 & 16.1--26.6 \\
+80/20 & 0.2 & 547 & 0.598 & 0.537--0.652 & 20.1 & 14.4--25.4 \\
+80/20 & 0.3 & 547 & 0.560 & 0.495--0.620 & 19.5 & 12.4--26.7 \\
+80/20 & 0.5 & 547 & 0.514 & 0.448--0.577 & 17.3 & 10.1--23.9 \\
+80/20 & 1.0 & 547 & 0.460 & 0.384--0.527 & 12.6 & 4.0--20.2 \\
+80/20 & 2.0 & 547 & 0.479 & 0.401--0.550 & 15.9 & 8.5--22.6 \\
+80/20 & 3.0 & 547 & 0.536 & 0.469--0.600 & 19.4 & 13.6--24.9 \\
+80/20 & 5.0 & 547 & 0.570 & 0.503--0.630 & 21.3 & 14.7--27.3 \\
+90/10 & 1.0 & 355 & 0.327 & 0.218--0.436 & 12.8 & 4.4--20.3 \\
+90/10 & 2.0 & 355 & 0.358 & 0.251--0.457 & 13.0 & 5.3--20.3 \\
+90/10 & 3.0 & 355 & 0.416 & 0.316--0.502 & 14.5 & 6.7--21.8 \\
+\bottomrule
+\end{tabular}}
+
+\vspace{0.3em}
+\raggedright\footnotesize The physical-plus-location model is shown. In the reverse 80/20 test at 3.0 s, KiK-net-to-K-NET transfer gives a correlation of 0.302 and an RMSE gain of $-3.3\%$ (95\% interval $-7.8\%$ to 1.5\%).
 \end{table}
 
 \renewcommand{\refname}{Supplementary References}

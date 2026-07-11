@@ -131,6 +131,45 @@ def validate_claim_tables() -> None:
     require(0.597 < float(transfer3["pearson"]) < 0.599, "SA3 cross-network correlation changed")
     require(20.7 < float(transfer3["rmse_gain_pct"]) < 20.8, "SA3 cross-network gain changed")
 
+    temporal = [
+        row
+        for row in read_csv("jshis_temporal_network_transfer_metrics.csv")
+        if float(row["train_fraction"]) == 0.8
+        and row["source_network"] == "K-NET"
+        and row["target_network"] == "KiK-net"
+        and row["model"] == "physical_spatial_hgb"
+    ]
+    require(len(temporal) == 8, "chronological transfer period coverage changed")
+    require(
+        min(float(row["pearson_ci_low"]) for row in temporal) > 0
+        and min(float(row["rmse_gain_pct_ci_low"]) for row in temporal) > 0,
+        "a chronological transfer interval crosses zero",
+    )
+    temporal3 = next(row for row in temporal if float(row["period_s"]) == 3.0)
+    require(0.535 < float(temporal3["pearson"]) < 0.537, "SA3 chronological correlation changed")
+    require(19.3 < float(temporal3["rmse_gain_pct"]) < 19.5, "SA3 chronological gain changed")
+    reverse_temporal3 = next(
+        row
+        for row in read_csv("jshis_temporal_network_transfer_metrics.csv")
+        if float(row["period_s"]) == 3.0
+        and float(row["train_fraction"]) == 0.8
+        and row["source_network"] == "KiK-net"
+        and row["target_network"] == "K-NET"
+        and row["model"] == "physical_spatial_hgb"
+    )
+    require(float(reverse_temporal3["rmse_gain_pct"]) < 0, "adverse chronological reverse result disappeared")
+
+    temporal_splits = read_csv("jshis_temporal_network_event_splits.csv")
+    require(len(temporal_splits) == 30_648, "chronological event-split coverage changed")
+    split_groups: dict[tuple[float, float], list[dict[str, str]]] = defaultdict(list)
+    for row in temporal_splits:
+        split_groups[(float(row["period_s"]), float(row["train_fraction"]))].append(row)
+    require(len(split_groups) == 24, "chronological event-split groups changed")
+    for rows in split_groups.values():
+        early = [row["origin_time"] for row in rows if row["partition"] == "early_train"]
+        late = [row["origin_time"] for row in rows if row["partition"] == "late_test"]
+        require(early and late and max(early) < min(late), "chronological event split leaks across time")
+
     interval = read_csv("jshis_hazard_impact_interval_robustness.csv")
     interval3 = next(
         row
@@ -183,6 +222,9 @@ def validate_manuscript_sources() -> None:
         "102,428",
         "0.598",
         "20.8\\%",
+        "0.536",
+        "19.4\\%",
+        "1,277",
         "0.635",
         "79.7\\%",
         "2.0\\%",
@@ -197,8 +239,8 @@ def validate_manuscript_sources() -> None:
     ]:
         require(claim in main, f"main manuscript lacks: {claim}")
     require(main.count("accompanying peer-review archive") >= 2, "review archive is not declared")
-    require(supplement.count(r"\begin{table}") == 19, "Supplementary Information table count changed")
-    require(supplement.count(r"\begin{figure}") == 10, "Supplementary Information figure count changed")
+    require(supplement.count(r"\begin{table}") == 20, "Supplementary Information table count changed")
+    require(supplement.count(r"\begin{figure}") == 11, "Supplementary Information figure count changed")
 
 
 def main() -> None:

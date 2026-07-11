@@ -20,11 +20,11 @@ The main manuscript uses seven figures:
 6. `figure_path_stratification`
 7. `figure_event_adjusted_city_cases`
 
-The Supplementary Information uses ten figures: event repeatability, national paired-sensor amplitude and spectral-shape validation, spatial validation, robustness stress tests, equal-stratum prediction, response-spectrum sensitivity, station-model uncertainty, independent correction-field stability and the KiK-net waveform comparison. Vector PDFs are the manuscript sources; PNG copies are retained for portal compatibility.
+The Supplementary Information uses eleven figures: event repeatability, national paired-sensor amplitude and spectral-shape validation, spatial validation, robustness stress tests, equal-stratum prediction, response-spectrum sensitivity, station-model uncertainty, independent correction-field stability, the KiK-net waveform comparison and chronological cross-network transfer. Vector PDFs are the manuscript sources; PNG copies are retained for portal compatibility.
 
 ## Derived tables
 
-The `supplement/` directory contains the primary MF2013 results, the RotD50--RotD100 component audit, Zhao 2006 model sensitivity, the complete MF2013 regression-domain screen, national KiK-net paired-sensor validation, network-and-event transfer, station-model prediction intervals, independent correction-field stability, influential-event deletion results, path/source stratification and equal-stratum sensitivity. Rebuild the analyses in this order:
+The `supplement/` directory contains the primary MF2013 results, the RotD50--RotD100 component audit, Zhao 2006 model sensitivity, the complete MF2013 regression-domain screen, national KiK-net paired-sensor validation, random-event and chronological network transfer, station-model prediction intervals, independent correction-field stability, influential-event deletion results, path/source stratification and equal-stratum sensitivity. Rebuild the analyses in this order:
 
 ```bash
 conda run -n japan-station-terms python ../../work/verify_public_inputs.py
@@ -34,6 +34,7 @@ conda run -n japan-station-terms python ../../work/jshis_spatial_model_complexit
 conda run -n japan-station-terms python ../../work/jshis_mf2013_applicability_audit.py
 conda run -n japan-station-terms python ../../work/jshis_kiknet_surface_borehole_validation.py
 conda run -n japan-station-terms python ../../work/jshis_cross_network_transfer_validation.py
+conda run -n japan-station-terms python ../../work/jshis_temporal_network_transfer_validation.py
 conda run -n japan-station-terms python ../../work/jshis_independent_gmpe_replication.py
 conda run -n japan-station-terms python ../../work/jshis_station_uncertainty_propagation.py
 conda run -n japan-station-terms python ../../work/jshis_hazard_impact_robustness.py

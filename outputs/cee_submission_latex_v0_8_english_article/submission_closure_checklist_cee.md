@@ -39,6 +39,7 @@ Date: 11 July 2026
 - [x] The national KiK-net paired-sensor validation uses 102,428 surface--borehole spectra and disjoint-event calibration and evaluation.
 - [x] Cross-period paired-sensor spectral shape is validated with station-cluster bootstrap intervals and disjoint event groups.
 - [x] Frozen K-NET models are evaluated on KiK-net station terms from disjoint earthquakes, with no target recentering or target labels used in training.
+- [x] Chronological 70/30, 80/20 and 90/10 event splits are reported in both transfer directions, with an event-level split manifest and the adverse reverse result retained.
 - [x] Independent correction-field agreement and empirical prediction intervals are reported as distinct uncertainty quantities.
 - [x] Hazard propagation uses out-of-fold zero-centred predictions.
 - [x] Official `Vs=400 m/s` values are converted to station AVS30 conditions before station adjustment.

@@ -49,6 +49,7 @@ def validate_files() -> None:
         ROOT / "work" / "jshis_mf2013_applicability_audit.py",
         ROOT / "work" / "jshis_kiknet_surface_borehole_validation.py",
         ROOT / "work" / "jshis_cross_network_transfer_validation.py",
+        ROOT / "work" / "jshis_temporal_network_transfer_validation.py",
         ROOT / "work" / "jshis_hazard_impact_robustness.py",
         ROOT / "work" / "jshis_robustness_stress_tests.py",
         ROOT / "work" / "jshis_path_stratification_audit.py",
@@ -65,6 +66,7 @@ def validate_files() -> None:
         ARTICLE / "figures" / "figure_kiknet_surface_borehole_validation.pdf",
         ARTICLE / "figures" / "figure_kiknet_spectral_shape_validation.pdf",
         ARTICLE / "figures" / "figure_cross_network_transfer_validation.pdf",
+        ARTICLE / "figures" / "supplementary_figure_temporal_network_transfer.pdf",
         ARTICLE / "figures" / "supplementary_figure_hazard_impact_robustness.pdf",
         ARTICLE / "figures" / "supplementary_figure_balanced_station_model.pdf",
         SUPPLEMENT / "jshis_flatfile_selection_audit.csv",
@@ -81,6 +83,10 @@ def validate_files() -> None:
         SUPPLEMENT / "jshis_cross_network_transfer_metrics.csv",
         SUPPLEMENT / "jshis_cross_network_transfer_predictions.csv",
         SUPPLEMENT / "jshis_cross_network_transfer_validation.md",
+        SUPPLEMENT / "jshis_temporal_network_transfer_metrics.csv",
+        SUPPLEMENT / "jshis_temporal_network_transfer_predictions.csv",
+        SUPPLEMENT / "jshis_temporal_network_event_splits.csv",
+        SUPPLEMENT / "jshis_temporal_network_transfer_validation.md",
         SUPPLEMENT / "jshis_hazard_impact_interval_robustness.csv",
         SUPPLEMENT / "jshis_hazard_impact_independent_model_stations.csv",
         SUPPLEMENT / "jshis_hazard_impact_independent_model_summary.csv",
@@ -123,8 +129,8 @@ def validate_manuscript() -> None:
         "0.890",
         "0.770",
         "102,428",
-        "0.598",
-        "20.8",
+        "0.536",
+        "19.4",
         "0.635",
         "79.7",
         "2.0",
@@ -199,6 +205,8 @@ def validate_manuscript() -> None:
         "102,428",
         "0.598",
         "20.8%",
+        "0.536",
+        "19.4%",
         "0.635",
         "79.7%",
         "2.0%",
@@ -210,7 +218,7 @@ def validate_manuscript() -> None:
 def validate_supplementary_order() -> None:
     main_text = (ARTICLE / "main.tex").read_text(encoding="utf-8")
     supplement_text = (ARTICLE / "supplementary_information.tex").read_text(encoding="utf-8")
-    for kind, expected in [("Fig", 10)]:
+    for kind, expected in [("Fig", 11)]:
         seen: list[int] = []
         for value in re.findall(rf"Supplementary {kind}\.?\s*(\d+)", main_text):
             number = int(value)
@@ -222,13 +230,13 @@ def validate_supplementary_order() -> None:
         int(value) for value in re.findall(r"Supplementary Table\.?\s*(\d+)", main_text)
     }
     require(
-        table_numbers == set(range(1, 20)),
+        table_numbers == set(range(1, 21)),
         f"Supplementary Table citations are {sorted(table_numbers)}",
     )
 
     require(
-        len(re.findall(r"\\begin\{table\}", supplement_text)) == 19,
-        "Supplementary Information does not contain nineteen tables",
+        len(re.findall(r"\\begin\{table\}", supplement_text)) == 20,
+        "Supplementary Information does not contain twenty tables",
     )
     require(
         r"\renewcommand{\figurename}{Supplementary Figure}" in supplement_text
@@ -237,8 +245,8 @@ def validate_supplementary_order() -> None:
     )
     require(r"\caption{Supplementary Table" not in supplement_text, "a supplementary table caption repeats its number")
     require(
-        len(re.findall(r"\\begin\{figure\}", supplement_text)) == 10,
-        "Supplementary Information does not contain ten figures",
+        len(re.findall(r"\\begin\{figure\}", supplement_text)) == 11,
+        "Supplementary Information does not contain eleven figures",
     )
     require(
         r"\renewcommand{\refname}{Supplementary References}" in supplement_text
@@ -361,6 +369,10 @@ def validate_chinese_sync() -> None:
         "0.290",
         "0.598",
         "20.8\\%",
+        "0.536",
+        "19.4\\%",
+        "1,277",
+        "547个目标台站",
         "0.635",
         "0.736",
         "79.7\\%",
@@ -388,11 +400,11 @@ def validate_chinese_sync() -> None:
     require("补充表15" in chinese_text, "Chinese complexity-sensitivity table is not cited")
     require("补充表16" in chinese_text, "Chinese MF2013-applicability table is not cited")
     require(
-        all(f"补充表{number}" in chinese_text for number in [17, 18, 19]),
+        all(f"补充表{number}" in chinese_text for number in [17, 18, 19, 20]),
         "Chinese new validation tables are not cited",
     )
     require(
-        all(f"补充图{number}" in chinese_text for number in range(1, 11)),
+        all(f"补充图{number}" in chinese_text for number in range(1, 12)),
         "Chinese Supplementary Figure citations are incomplete",
     )
     require("复原了筛选方程" in chinese_text, "Chinese MF2013 applicability boundary is missing")
@@ -660,6 +672,91 @@ def validate_cross_network_transfer() -> None:
         for row in predictions
     }
     require(len(keys) == len(predictions), "duplicate cross-network prediction rows")
+
+
+def validate_temporal_network_transfer() -> None:
+    metrics = read_csv("jshis_temporal_network_transfer_metrics.csv")
+    require(len(metrics) == 96, f"unexpected temporal-transfer metric rows: {len(metrics)}")
+    require(float_periods(metrics) == PERIODS, "temporal-transfer period coverage changed")
+    require(
+        {float(row["train_fraction"]) for row in metrics} == {0.7, 0.8, 0.9},
+        "temporal-transfer split coverage changed",
+    )
+    primary = [
+        row
+        for row in metrics
+        if float(row["train_fraction"]) == 0.8
+        and row["source_network"] == "K-NET"
+        and row["target_network"] == "KiK-net"
+        and row["model"] == "physical_spatial_hgb"
+    ]
+    require(len(primary) == 8, "primary temporal-transfer period coverage changed")
+    require(
+        min(float(row["pearson_ci_low"]) for row in primary) > 0
+        and min(float(row["rmse_gain_pct_ci_low"]) for row in primary) > 0,
+        "a primary chronological confidence interval crosses zero",
+    )
+    primary3 = next(row for row in primary if float(row["period_s"]) == 3.0)
+    require(int(float(primary3["n_test_events"])) == 256, "temporal SA3 test-event count changed")
+    require(int(float(primary3["n_test_stations"])) == 547, "temporal SA3 target-station count changed")
+    require(0.535 < float(primary3["pearson"]) < 0.537, "temporal SA3 correlation changed")
+    require(19.3 < float(primary3["rmse_gain_pct"]) < 19.5, "temporal SA3 RMSE gain changed")
+    require(
+        0.468 < float(primary3["pearson_ci_low"]) < 0.470
+        and 0.599 < float(primary3["pearson_ci_high"]) < 0.601,
+        "temporal SA3 correlation interval changed",
+    )
+    require(
+        13.5 < float(primary3["rmse_gain_pct_ci_low"]) < 13.7
+        and 24.8 < float(primary3["rmse_gain_pct_ci_high"]) < 25.0,
+        "temporal SA3 RMSE interval changed",
+    )
+    reverse3 = next(
+        row
+        for row in metrics
+        if float(row["period_s"]) == 3.0
+        and float(row["train_fraction"]) == 0.8
+        and row["source_network"] == "KiK-net"
+        and row["target_network"] == "K-NET"
+        and row["model"] == "physical_spatial_hgb"
+    )
+    require(0.301 < float(reverse3["pearson"]) < 0.303, "temporal reverse correlation changed")
+    require(
+        float(reverse3["rmse_gain_pct"]) < 0
+        and float(reverse3["rmse_gain_pct_ci_low"]) < 0 < float(reverse3["rmse_gain_pct_ci_high"]),
+        "temporal reverse-direction boundary changed",
+    )
+
+    predictions = read_csv("jshis_temporal_network_transfer_predictions.csv")
+    require(len(predictions) == 62_448, f"unexpected temporal prediction rows: {len(predictions)}")
+    prediction_keys = {
+        (
+            row["period_s"],
+            row["train_fraction"],
+            row["source_network"],
+            row["target_network"],
+            row["model"],
+            row["siteid2"],
+        )
+        for row in predictions
+    }
+    require(len(prediction_keys) == len(predictions), "duplicate temporal prediction rows")
+
+    splits = read_csv("jshis_temporal_network_event_splits.csv")
+    require(len(splits) == 30_648, f"unexpected temporal event-split rows: {len(splits)}")
+    split_keys = {(row["period_s"], row["train_fraction"], row["eq_source_id"]) for row in splits}
+    require(len(split_keys) == len(splits), "duplicate temporal event-split rows")
+    expected_counts = {0.7: (893, 384), 0.8: (1_021, 256), 0.9: (1_149, 128)}
+    grouped: dict[tuple[float, float], list[dict[str, str]]] = defaultdict(list)
+    for row in splits:
+        grouped[(float(row["period_s"]), float(row["train_fraction"]))].append(row)
+    require(len(grouped) == 24, "temporal event-split group coverage changed")
+    for (period, fraction), rows in grouped.items():
+        require(period in PERIODS and fraction in expected_counts, "unexpected temporal split key")
+        train = [row for row in rows if row["partition"] == "early_train"]
+        test = [row for row in rows if row["partition"] == "late_test"]
+        require((len(train), len(test)) == expected_counts[fraction], "temporal split event counts changed")
+        require(max(row["origin_time"] for row in train) < min(row["origin_time"] for row in test), "temporal split leaks a later event into training")
 
 
 def validate_hazard_impact_robustness() -> None:
@@ -1103,6 +1200,7 @@ def main() -> None:
     validate_kiknet_paired_sensor()
     validate_kiknet_spectral_shape()
     validate_cross_network_transfer()
+    validate_temporal_network_transfer()
     validate_hazard_impact_robustness()
     validate_decomposition()
     validate_prediction()
