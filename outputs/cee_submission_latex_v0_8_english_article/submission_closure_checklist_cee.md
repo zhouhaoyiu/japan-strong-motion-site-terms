@@ -10,7 +10,7 @@ Date: 11 July 2026
 - [x] Introduction and Discussion contain no subheadings.
 - [x] Main text is below the 5,000-word limit.
 - [x] Seven main figures and one main table are cited in order.
-- [x] Supplementary items are cited in numerical order.
+- [x] All Supplementary Figures and Tables are cited and their numbering matches the compiled Supplementary Information.
 - [x] Full postal address, correspondence email and ORCIDs are present.
 - [x] Funding, competing interests, author contributions and acknowledgements are present.
 - [x] Author contributions use full names, and references with more than five authors use first author plus `et al.`.
@@ -37,6 +37,9 @@ Date: 11 July 2026
 - [x] Six fixed spatial-model complexity settings retain positive overall gains at all eight periods and are reported as sensitivity tests without model reselection.
 - [x] The full Kanno 2006 shallow/deep PGA cutoff is reconstructed and included with the MF2013 magnitude, distance and event-station screens; the adverse 0.1 s result and sample-dependent aggregate median are stated explicitly.
 - [x] The national KiK-net paired-sensor validation uses 102,428 surface--borehole spectra and disjoint-event calibration and evaluation.
+- [x] Cross-period paired-sensor spectral shape is validated with station-cluster bootstrap intervals and disjoint event groups.
+- [x] Frozen K-NET models are evaluated on KiK-net station terms from disjoint earthquakes, with no target recentering or target labels used in training.
+- [x] Independent correction-field agreement and empirical prediction intervals are reported as distinct uncertainty quantities.
 - [x] Hazard propagation uses out-of-fold zero-centred predictions.
 - [x] Official `Vs=400 m/s` values are converted to station AVS30 conditions before station adjustment.
 - [x] No claim of a national directional spectrum shift remains.
@@ -46,7 +49,7 @@ Date: 11 July 2026
 
 - [x] `main.pdf` compiled and visually checked.
 - [x] `supplementary_information.pdf` compiled and visually checked.
-- [x] Supplementary Information contains seven figures and sixteen tables in first-citation order.
+- [x] Supplementary Information contains ten figures and nineteen tables.
 - [x] Derived tables pass the updated `work/validate_event_adjusted_release.py`.
 - [x] Main and supplementary figures have source scripts.
 - [x] Historical figures and obsolete PBV audit tables are removed from the release package.

@@ -34,6 +34,8 @@ outputs/cee_submission_latex_v0_8_english_article/predictable-long-period-site-r
 !/work/jshis_spatial_model_complexity_audit.py
 !/work/jshis_mf2013_applicability_audit.py
 !/work/jshis_kiknet_surface_borehole_validation.py
+!/work/jshis_cross_network_transfer_validation.py
+!/work/jshis_hazard_impact_robustness.py
 !/work/jshis_robustness_stress_tests.py
 !/work/jshis_path_stratification_audit.py
 !/work/jshis_balanced_station_model.py

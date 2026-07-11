@@ -111,6 +111,41 @@ def validate_claim_tables() -> None:
     require(0.289 < float(kiknet3_mean["test_station_term_pearson"]) < 0.291, "SA3 held-event paired prediction changed")
     require(2.7 < float(kiknet3_mean["transfer_prediction_rmse_gain_pct"]) < 2.8, "SA3 held-event paired gain changed")
 
+    shape = read_csv("jshis_kiknet_spectral_shape_validation.csv")
+    require(len(shape) == 7, "KiK-net spectral-shape coverage changed")
+    shape_full = next(row for row in shape if row["scope"] == "full")
+    shape_mean = next(row for row in shape if row["scope"] == "held_event_fold_mean")
+    require(0.676 < float(shape_full["shape_pearson"]) < 0.678, "full spectral-shape correlation changed")
+    require(0.635 < float(shape_mean["shape_pearson"]) < 0.636, "held-event spectral-shape correlation changed")
+
+    transfer = [
+        row
+        for row in read_csv("jshis_cross_network_transfer_metrics.csv")
+        if row["scope"] == "station_aggregate"
+        and row["source_network"] == "K-NET"
+        and row["target_network"] == "KiK-net"
+        and row["model"] == "physical_spatial_hgb"
+    ]
+    require(len(transfer) == 8, "cross-network period coverage changed")
+    transfer3 = next(row for row in transfer if float(row["period_s"]) == 3.0)
+    require(0.597 < float(transfer3["pearson"]) < 0.599, "SA3 cross-network correlation changed")
+    require(20.7 < float(transfer3["rmse_gain_pct"]) < 20.8, "SA3 cross-network gain changed")
+
+    interval = read_csv("jshis_hazard_impact_interval_robustness.csv")
+    interval3 = next(
+        row
+        for row in interval
+        if float(row["period_s"]) == 3.0 and float(row["confidence_level_pct"]) == 90.0
+    )
+    require(1.9 < float(interval3["robust_direction_fraction_pct"]) < 2.1, "SA3 interval robustness changed")
+    agreement3 = next(
+        row
+        for row in read_csv("jshis_hazard_impact_independent_model_summary.csv")
+        if float(row["period_s"]) == 3.0
+    )
+    require(0.735 < float(agreement3["independent_model_pearson"]) < 0.737, "SA3 independent-field correlation changed")
+    require(79.6 < float(agreement3["direction_agreement_pct"]) < 79.7, "SA3 direction agreement changed")
+
     hazard3 = next(
         row
         for row in read_csv("jshis_event_adjusted_surface_spectrum_summary.csv")
@@ -146,8 +181,11 @@ def validate_manuscript_sources() -> None:
         "0.890",
         "0.770",
         "102,428",
-        "0.315",
-        "0.290",
+        "0.598",
+        "20.8\\%",
+        "0.635",
+        "79.7\\%",
+        "2.0\\%",
         "12.6\\%",
         "0.280--0.886",
         "0.624--1.338",
@@ -159,8 +197,8 @@ def validate_manuscript_sources() -> None:
     ]:
         require(claim in main, f"main manuscript lacks: {claim}")
     require(main.count("accompanying peer-review archive") >= 2, "review archive is not declared")
-    require(supplement.count(r"\begin{table}") == 16, "Supplementary Information table count changed")
-    require(supplement.count(r"\begin{figure}") == 7, "Supplementary Information figure count changed")
+    require(supplement.count(r"\begin{table}") == 19, "Supplementary Information table count changed")
+    require(supplement.count(r"\begin{figure}") == 10, "Supplementary Information figure count changed")
 
 
 def main() -> None:

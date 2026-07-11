@@ -78,13 +78,19 @@ Ground-surface and borehole rows at a KiK-net site are paired by earthquake and 
 
 The primary five-group event partition supplies a held-event test. For each fold, station terms are fitted separately to training and held-out surface records. Training-event transfer ratios are calibrated to training-event station terms by weighted linear regression, then used to predict held-out station terms. The prediction never uses a paired ratio from a held-out earthquake. Stations require at least 15 training pairs and five held-out surface records. Transfer repeatability compares median ratios formed independently from the training and held-out earthquakes.
 
+The spectral-shape calculation retains stations represented at all eight periods. Separate station and period means are removed from the station-term and transfer-ratio matrices. This isolates station-specific frequency dependence from average amplification and the network-wide response curve. Cluster-bootstrap intervals resample complete station spectra. In each held-event fold, the transfer spectrum is estimated from four event groups and the station-term spectrum from the fifth, followed by separate two-way centring within that fold.
+
 \subsection*{Alternative ground-motion-model calculation}
 
 We evaluate the Zhao et al. 2006 active-crustal, interface and intraslab equations with OpenQuake Engine 3.25.1\cite{zhao2006,pagani2014}. The flatfile source class selects the equation branch. Moment magnitude, hypocentral depth and crustal rake are read from the source table; documented shortest fault distance is supplied as rupture distance, and AVS30 is supplied as VS30. RotD50 is used as the closest orientation-independent coordinate to the model's geometric-mean target. The same surface observations, periods, station threshold, event folds and spatial folds are used for the MF2013 and Zhao calculations. This changes the ground-motion backbone while retaining the data and validation design.
 
 \subsection*{Transfer and event-influence tests}
 
-Cross-network tests train on K-NET and evaluate KiK-net, then reverse the direction. A common-feature model removes VS20, VS30 and network identity because these fields have different completeness in the two networks. It retains VS10, AVS30, sedimentary depths, elevation, sensor depth, coordinates and volcanic-front distances. Fixed macroregions are defined by reproducible latitude and longitude boundaries. Event influence is measured after deleting each of the ten events with the largest 3.0 s record count and after deleting all ten at every period. A record-weighted mean shift aligns each perturbed station field with the full field before comparison.
+The first cross-network stress test trains on K-NET and evaluates KiK-net, then reverses the direction. A common-feature model removes VS20, VS30 and network identity because these fields have different completeness in the two networks. It retains VS10, AVS30, sedimentary depths, elevation, sensor depth, coordinates and volcanic-front distances.
+
+A stricter test separates both network and earthquake sample. We retain 1,286 earthquakes with at least five records in each network and assign them to five fixed groups. K-NET station terms from four groups train models with fixed primary hyperparameters; KiK-net station terms are estimated only from the fifth group. Physical models contain no network indicator. Source stations require 15 training records and targets require five held-event records. Predictions are centred by the source-network training predictions without target recentering. The reverse direction uses the same groups and settings. Target-station bootstrap intervals use 2,000 replicates.
+
+Fixed macroregions are defined by reproducible latitude and longitude boundaries. Event influence is measured after deleting each of the ten events with the largest 3.0 s record count and after deleting all ten at every period. A record-weighted mean shift aligns each perturbed station field with the full field before comparison.
 
 \subsection*{Path and source stratification}
 
@@ -94,7 +100,9 @@ Five random, disjoint event-half comparisons at 1.0, 2.0 and 3.0 s measure sampl
 
 \subsection*{Empirical prediction intervals}
 
-For each held spatial block, signed prediction errors from the other four blocks provide record-weighted 5th and 95th percentiles. These quantiles are added to the held-block point prediction. Coverage is computed without using the held-block station terms for interval calibration. Lower and upper station terms are converted to multipliers and propagated to the matched response spectra. The resulting interval describes station-model prediction error under this spatial split. Source, ground-motion-model and J-SHIS logic-tree uncertainties are outside its scope.
+For each held spatial block, signed prediction errors from the other four blocks provide record-weighted central intervals at nominal coverage from 50\% to 95\%. These quantiles are added to the held-block point prediction. Coverage is computed without using the held-block station terms for calibration. We count intervals that exclude a unit multiplier and intervals that remain above or below a factor of 1.1. Lower and upper station terms are propagated to the matched response spectra.
+
+Independent-model stability is calculated separately. Primary spatial-block predictions are compared at KiK-net sites with terms predicted by the frozen K-NET model from disjoint earthquakes. Fold predictions are record-weighted to one value per target station and period. Field correlation, direction agreement, same-direction changes exceeding a factor of 1.1 and the distribution of model differences are reported. Prediction intervals describe station-model error; independent-model agreement describes reproducibility under a new network and earthquake set. Source, ground-motion-model and J-SHIS logic-tree uncertainties are outside both calculations.
 
 \subsection*{Reference condition conversion}
 
@@ -114,6 +122,18 @@ The waveform check uses 460 paired surface and downhole records from two KiK-net
 \centering
 \includegraphics[width=0.68\linewidth]{figures/supplementary_figure_event_repeatability.pdf}
 \caption{\textbf{Station term repeatability across held-out events.} \textbf{a}, train-test station correlations for five event folds; grey lines show individual folds and the blue line shows their mean. \textbf{b}, test root mean squared error reduction relative to a zero station term. \textbf{c}, mean number of stations meeting train and test record thresholds. \textbf{d}, event, station and record-remainder amplitudes from the primary MF2013 site residual decomposition.}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.82\linewidth]{figures/figure_kiknet_surface_borehole_validation.pdf}
+\caption{\textbf{National KiK-net paired-sensor validation.} \textbf{a}, median surface--borehole RotD100 ratio at 3.0 s for 699 sites. \textbf{b}, primary station terms against paired ratios at supported sites. \textbf{c}, single-period station-term correspondence and transfer stability across period. \textbf{d}, held-event station-term prediction from transfer ratios estimated on disjoint earthquakes.}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.90\linewidth]{figures/figure_kiknet_spectral_shape_validation.pdf}
+\caption{\textbf{Paired-sensor spectral-shape validation.} \textbf{a}, two-way-centred station-term and surface--borehole transfer shapes across eight periods. \textbf{b}, distribution of within-station shape correlations. \textbf{c}, correlations when transfer spectra and station-term spectra are estimated from disjoint earthquake groups; bars are station-cluster bootstrap 95\% intervals.}
 \end{figure}
 
 \begin{figure}[!htbp]
@@ -144,6 +164,12 @@ The waveform check uses 460 paired surface and downhole records from two KiK-net
 \centering
 \includegraphics[width=0.68\linewidth]{figures/supplementary_figure_station_uncertainty.pdf}
 \caption{\textbf{Spatial-block station-model uncertainty.} \textbf{a}, empirical coverage of the nominal 90\% interval by period. \textbf{b}, median interval factor span and its range across the five held blocks. \textbf{c}, point multipliers and empirical intervals for 35 ordered SA(3.0 s) stations. \textbf{d}, surface-reference and station-adjusted spectra with the station-model interval at the Tokyo-nearest matched station. The interval excludes source, backbone and J-SHIS logic-tree uncertainty.}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.82\linewidth]{figures/supplementary_figure_hazard_impact_robustness.pdf}
+\caption{\textbf{Uncertainty and independent-model stability of station corrections.} \textbf{a}, empirical spatial-block coverage against nominal coverage. \textbf{b}, fraction of station intervals excluding a unit multiplier. \textbf{c}, 3.0 s KiK-net sites classified by agreement between the primary and frozen K-NET correction fields. \textbf{d}, the two independent correction fields at 3.0 s. Prediction intervals and model agreement quantify different uncertainty components.}
 \end{figure}
 
 \begin{figure}[!htbp]
@@ -489,6 +515,69 @@ Period & Station-field & 95th-percentile & Event-group & Spatial RMSE & OOF-pred
 5.0 & 0.924 & 0.098 & 0.719 & 7.6 & 0.637 & 0.707--1.428 \\
 \bottomrule
 \end{tabular}}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{KiK-net station-term and surface--borehole spectral-shape correspondence}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Event scope & Stations & Shape & Cluster-bootstrap & Median station & Positive stations \\
+& & correlation & 95\% interval & correlation & (\%) \\
+\midrule
+All events & 639 & 0.677 & 0.648--0.704 & 0.769 & 91.5 \\
+Held fold 1 & 603 & 0.654 & 0.625--0.684 & 0.732 & 91.5 \\
+Held fold 2 & 568 & 0.620 & 0.588--0.651 & 0.701 & 88.6 \\
+Held fold 3 & 607 & 0.635 & 0.601--0.666 & 0.734 & 89.3 \\
+Held fold 4 & 537 & 0.597 & 0.562--0.633 & 0.666 & 88.1 \\
+Held fold 5 & 605 & 0.670 & 0.640--0.697 & 0.751 & 91.2 \\
+Fold mean & 584 & 0.635 & --- & 0.717 & 89.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Network- and event-external station prediction}
+\scriptsize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{rrrrrrr}
+\toprule
+Period & \multicolumn{2}{c}{K-NET to KiK-net, physical} & \multicolumn{2}{c}{K-NET to KiK-net, physical + location} & \multicolumn{2}{c}{KiK-net to K-NET, physical + location} \\
+(s) & Correlation & RMSE gain (\%) & Correlation & RMSE gain (\%) & Correlation & RMSE gain (\%) \\
+\midrule
+0.1 & 0.368 & 6.2 & 0.641 & 22.3 & 0.549 & 13.1 \\
+0.2 & 0.394 & 6.2 & 0.580 & 20.0 & 0.490 & 16.0 \\
+0.3 & 0.439 & 12.2 & 0.570 & 22.0 & 0.390 & 7.9 \\
+0.5 & 0.416 & 9.6 & 0.543 & 19.8 & 0.278 & -5.0 \\
+1.0 & 0.416 & 9.5 & 0.575 & 20.3 & 0.360 & -0.3 \\
+2.0 & 0.417 & 11.5 & 0.567 & 18.5 & 0.430 & 2.3 \\
+3.0 & 0.439 & 13.0 & 0.598 & 20.8 & 0.462 & 4.0 \\
+5.0 & 0.447 & 10.3 & 0.642 & 25.9 & 0.539 & 14.3 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Agreement between primary and frozen K-NET correction fields at KiK-net sites}
+\small
+\begin{tabular}{rrrrr}
+\toprule
+Period & Field & Direction & Same-direction change & Median absolute \\
+(s) & correlation & agreement (\%) & above 10\% (\%) & difference (log$_{10}$) \\
+\midrule
+0.1 & 0.709 & 81.1 & 68.5 & 0.100 \\
+0.2 & 0.692 & 80.3 & 67.3 & 0.122 \\
+0.3 & 0.680 & 76.8 & 63.4 & 0.123 \\
+0.5 & 0.690 & 76.8 & 63.1 & 0.097 \\
+1.0 & 0.698 & 76.4 & 57.0 & 0.079 \\
+2.0 & 0.713 & 77.2 & 56.2 & 0.061 \\
+3.0 & 0.736 & 79.7 & 57.9 & 0.053 \\
+5.0 & 0.752 & 80.4 & 59.6 & 0.046 \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \renewcommand{\refname}{Supplementary References}

@@ -9,5 +9,8 @@ Surface and borehole RotD100 spectra are paired by earthquake and KiK-net site c
 - SA(3.0 s) transfer train/test correlation across event folds: 0.988
 - SA(3.0 s) cross-event station-term correlation: 0.290
 - SA(3.0 s) cross-event RMSE gain over a zero station term: 2.7%
+- Two-way-centred eight-period spectral-shape correlation: 0.677 (cluster-bootstrap 95% CI 0.648 to 0.704).
+- Median within-station spectral-shape correlation and positive fraction: 0.769 and 91.5%.
+- Mean spectral-shape correlation with transfer ratios and station terms estimated from disjoint events: 0.635.
 
 The paired-sensor result provides an independent physical correlate of the event-adjusted surface station field. It is a validation of station-level response, not a calibrated nonlinear transfer-function model.

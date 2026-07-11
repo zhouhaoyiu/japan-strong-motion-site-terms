@@ -48,6 +48,8 @@ def validate_files() -> None:
         ROOT / "work" / "jshis_spatial_model_complexity_audit.py",
         ROOT / "work" / "jshis_mf2013_applicability_audit.py",
         ROOT / "work" / "jshis_kiknet_surface_borehole_validation.py",
+        ROOT / "work" / "jshis_cross_network_transfer_validation.py",
+        ROOT / "work" / "jshis_hazard_impact_robustness.py",
         ROOT / "work" / "jshis_robustness_stress_tests.py",
         ROOT / "work" / "jshis_path_stratification_audit.py",
         ROOT / "work" / "jshis_balanced_station_model.py",
@@ -61,6 +63,9 @@ def validate_files() -> None:
         ARTICLE / "figures" / "supplementary_figure_robustness_stress_tests.pdf",
         ARTICLE / "figures" / "figure_path_stratification.pdf",
         ARTICLE / "figures" / "figure_kiknet_surface_borehole_validation.pdf",
+        ARTICLE / "figures" / "figure_kiknet_spectral_shape_validation.pdf",
+        ARTICLE / "figures" / "figure_cross_network_transfer_validation.pdf",
+        ARTICLE / "figures" / "supplementary_figure_hazard_impact_robustness.pdf",
         ARTICLE / "figures" / "supplementary_figure_balanced_station_model.pdf",
         SUPPLEMENT / "jshis_flatfile_selection_audit.csv",
         SUPPLEMENT / "jshis_flatfile_selection_audit.md",
@@ -71,6 +76,15 @@ def validate_files() -> None:
         SUPPLEMENT / "jshis_kiknet_surface_borehole_station_transfer.csv",
         SUPPLEMENT / "jshis_kiknet_surface_borehole_validation.csv",
         SUPPLEMENT / "jshis_kiknet_surface_borehole_validation.md",
+        SUPPLEMENT / "jshis_kiknet_spectral_shape_rows.csv",
+        SUPPLEMENT / "jshis_kiknet_spectral_shape_validation.csv",
+        SUPPLEMENT / "jshis_cross_network_transfer_metrics.csv",
+        SUPPLEMENT / "jshis_cross_network_transfer_predictions.csv",
+        SUPPLEMENT / "jshis_cross_network_transfer_validation.md",
+        SUPPLEMENT / "jshis_hazard_impact_interval_robustness.csv",
+        SUPPLEMENT / "jshis_hazard_impact_independent_model_stations.csv",
+        SUPPLEMENT / "jshis_hazard_impact_independent_model_summary.csv",
+        SUPPLEMENT / "jshis_hazard_impact_robustness.md",
     ]
     for path in required:
         require(path.is_file() and path.stat().st_size > 0, f"missing or empty {path.relative_to(ROOT)}")
@@ -109,13 +123,13 @@ def validate_manuscript() -> None:
         "0.890",
         "0.770",
         "102,428",
-        "0.988",
-        "0.315",
-        "0.290",
-        "12.6",
+        "0.598",
+        "20.8",
+        "0.635",
+        "79.7",
+        "2.0",
         "1.338",
         "0.959",
-        "4.1",
     ]:
         require(claim in abstract, f"abstract lacks key result: {claim}")
     for claim in ["10.5\\%", "14.0\\%", "7.1\\%", "19.3\\%"]:
@@ -138,7 +152,7 @@ def validate_manuscript() -> None:
     introduction_words = re.findall(r"[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*", introduction)
     require(len(introduction_words) < 1_000, f"Introduction has {len(introduction_words)} words")
     last_introduction_paragraph = [paragraph for paragraph in introduction.split("\n\n") if paragraph.strip()][-1]
-    for phrase in ["Event holdout", "path-stratified analyses", "average-path station adjustment"]:
+    for phrase in ["frozen K-NET model", "path-stratified analyses", "average-path station adjustment"]:
         require(phrase in last_introduction_paragraph, f"Introduction scope paragraph lacks: {phrase}")
     require(
         "The manuscript and code were written by the authors. ChatGPT was used only for language and formatting revision and code verification" in text,
@@ -183,11 +197,12 @@ def validate_manuscript() -> None:
         "maqiang@iem.ac.cn",
         "peer-review archive",
         "102,428",
-        "0.988",
-        "0.315",
+        "0.598",
+        "20.8%",
+        "0.635",
+        "79.7%",
+        "2.0%",
         "0.959",
-        "4.1%",
-        "0.660--1.503",
     ]:
         require(claim in cover, f"cover letter lacks: {claim}")
 
@@ -195,7 +210,7 @@ def validate_manuscript() -> None:
 def validate_supplementary_order() -> None:
     main_text = (ARTICLE / "main.tex").read_text(encoding="utf-8")
     supplement_text = (ARTICLE / "supplementary_information.tex").read_text(encoding="utf-8")
-    for kind, expected in [("Fig", 7), ("Table", 16)]:
+    for kind, expected in [("Fig", 10)]:
         seen: list[int] = []
         for value in re.findall(rf"Supplementary {kind}\.?\s*(\d+)", main_text):
             number = int(value)
@@ -203,9 +218,17 @@ def validate_supplementary_order() -> None:
                 seen.append(number)
         require(seen == list(range(1, expected + 1)), f"Supplementary {kind} first-appearance order is {seen}")
 
+    table_numbers = {
+        int(value) for value in re.findall(r"Supplementary Table\.?\s*(\d+)", main_text)
+    }
     require(
-        len(re.findall(r"\\begin\{table\}", supplement_text)) == 16,
-        "Supplementary Information does not contain sixteen tables",
+        table_numbers == set(range(1, 20)),
+        f"Supplementary Table citations are {sorted(table_numbers)}",
+    )
+
+    require(
+        len(re.findall(r"\\begin\{table\}", supplement_text)) == 19,
+        "Supplementary Information does not contain nineteen tables",
     )
     require(
         r"\renewcommand{\figurename}{Supplementary Figure}" in supplement_text
@@ -214,8 +237,8 @@ def validate_supplementary_order() -> None:
     )
     require(r"\caption{Supplementary Table" not in supplement_text, "a supplementary table caption repeats its number")
     require(
-        len(re.findall(r"\\begin\{figure\}", supplement_text)) == 7,
-        "Supplementary Information does not contain seven figures",
+        len(re.findall(r"\\begin\{figure\}", supplement_text)) == 10,
+        "Supplementary Information does not contain ten figures",
     )
     require(
         r"\renewcommand{\refname}{Supplementary References}" in supplement_text
@@ -336,6 +359,12 @@ def validate_chinese_sync() -> None:
         "0.988",
         "0.315",
         "0.290",
+        "0.598",
+        "20.8\\%",
+        "0.635",
+        "0.736",
+        "79.7\\%",
+        "57.9\\%",
         "12.6\\%",
         "0.624",
         "1.338",
@@ -358,6 +387,14 @@ def validate_chinese_sync() -> None:
     require("补充表13" in chinese_text and "补充表14" in chinese_text, "Chinese sample-flow or component table is not cited")
     require("补充表15" in chinese_text, "Chinese complexity-sensitivity table is not cited")
     require("补充表16" in chinese_text, "Chinese MF2013-applicability table is not cited")
+    require(
+        all(f"补充表{number}" in chinese_text for number in [17, 18, 19]),
+        "Chinese new validation tables are not cited",
+    )
+    require(
+        all(f"补充图{number}" in chinese_text for number in range(1, 11)),
+        "Chinese Supplementary Figure citations are incomplete",
+    )
     require("复原了筛选方程" in chinese_text, "Chinese MF2013 applicability boundary is missing")
     require("整体中位数取决于记录范围和台站集合" in chinese_text, "Chinese aggregate-median boundary is missing")
     require(r"M_{\mathrm{JMA}}\geq5" in chinese_text, "Chinese manuscript lacks the JMA magnitude threshold")
@@ -523,6 +560,139 @@ def validate_kiknet_paired_sensor() -> None:
     require(len(stations) == 5_592, f"unexpected KiK-net station-period rows: {len(stations)}")
     station_keys = {(row["surface_siteid2"], float(row["period_s"])) for row in stations}
     require(len(station_keys) == len(stations), "duplicate KiK-net station-period rows")
+
+
+def validate_kiknet_spectral_shape() -> None:
+    metrics = read_csv("jshis_kiknet_spectral_shape_validation.csv")
+    require(len(metrics) == 7, f"unexpected spectral-shape metric rows: {len(metrics)}")
+    require(
+        {row["scope"] for row in metrics}
+        == {"full", "held_event_fold", "held_event_fold_mean"},
+        "spectral-shape validation scopes changed",
+    )
+    full = next(row for row in metrics if row["scope"] == "full")
+    require(int(float(full["n_stations"])) == 639, "spectral-shape station count changed")
+    require(0.676 < float(full["shape_pearson"]) < 0.678, "full spectral-shape correlation changed")
+    require(
+        0.648 < float(full["shape_pearson_ci_low"]) < 0.649
+        and 0.703 < float(full["shape_pearson_ci_high"]) < 0.705,
+        "full spectral-shape bootstrap interval changed",
+    )
+    require(
+        0.768 < float(full["median_within_station_shape_correlation"]) < 0.770
+        and 0.915 < float(full["positive_within_station_shape_fraction"]) < 0.916,
+        "within-station spectral-shape result changed",
+    )
+    folds = [row for row in metrics if row["scope"] == "held_event_fold"]
+    require(len(folds) == 5, "held-event spectral-shape folds are incomplete")
+    require(
+        min(float(row["shape_pearson"]) for row in folds) > 0.597
+        and max(float(row["shape_pearson"]) for row in folds) < 0.671,
+        "held-event spectral-shape range changed",
+    )
+    mean = next(row for row in metrics if row["scope"] == "held_event_fold_mean")
+    require(0.635 < float(mean["shape_pearson"]) < 0.636, "mean held-event spectral shape changed")
+
+    rows = read_csv("jshis_kiknet_spectral_shape_rows.csv")
+    require(len(rows) == 28_472, f"unexpected station-period shape rows: {len(rows)}")
+    keys = {(row["fold"], row["surface_siteid2"], row["period_s"]) for row in rows}
+    require(len(keys) == len(rows), "duplicate station-period spectral-shape rows")
+
+
+def validate_cross_network_transfer() -> None:
+    metrics = read_csv("jshis_cross_network_transfer_metrics.csv")
+    require(len(metrics) == 192, f"unexpected cross-network metric rows: {len(metrics)}")
+    aggregate = [row for row in metrics if row["scope"] == "station_aggregate"]
+    require(len(aggregate) == 32 and float_periods(aggregate) == PERIODS, "cross-network aggregate coverage changed")
+    primary = [
+        row
+        for row in aggregate
+        if row["source_network"] == "K-NET"
+        and row["target_network"] == "KiK-net"
+        and row["model"] == "physical_spatial_hgb"
+    ]
+    require(len(primary) == 8, "K-NET to KiK-net period coverage changed")
+    require(
+        min(float(row["pearson"]) for row in primary) > 0.54
+        and min(float(row["rmse_gain_pct"]) for row in primary) > 18.4,
+        "a K-NET to KiK-net external result degraded",
+    )
+    primary3 = next(row for row in primary if float(row["period_s"]) == 3.0)
+    require(int(float(primary3["n_test_stations"])) == 677, "SA3 target station count changed")
+    require(0.597 < float(primary3["pearson"]) < 0.599, "SA3 external correlation changed")
+    require(20.7 < float(primary3["rmse_gain_pct"]) < 20.8, "SA3 external RMSE gain changed")
+    require(
+        0.541 < float(primary3["pearson_ci_low"]) < 0.543
+        and 0.650 < float(primary3["pearson_ci_high"]) < 0.652,
+        "SA3 external correlation interval changed",
+    )
+    require(
+        13.2 < float(primary3["rmse_gain_pct_ci_low"]) < 13.4
+        and 26.7 < float(primary3["rmse_gain_pct_ci_high"]) < 26.8,
+        "SA3 external RMSE interval changed",
+    )
+    reverse3 = next(
+        row
+        for row in aggregate
+        if float(row["period_s"]) == 3.0
+        and row["source_network"] == "KiK-net"
+        and row["target_network"] == "K-NET"
+        and row["model"] == "physical_spatial_hgb"
+    )
+    require(0.461 < float(reverse3["pearson"]) < 0.463, "SA3 reverse correlation changed")
+    require(
+        float(reverse3["rmse_gain_pct_ci_low"]) < 0
+        < float(reverse3["rmse_gain_pct_ci_high"]),
+        "SA3 reverse-transfer uncertainty no longer crosses zero",
+    )
+
+    predictions = read_csv("jshis_cross_network_transfer_predictions.csv")
+    require(len(predictions) == 119_424, f"unexpected cross-network prediction rows: {len(predictions)}")
+    keys = {
+        (
+            row["period_s"],
+            row["source_network"],
+            row["target_network"],
+            row["model"],
+            row["fold"],
+            row["siteid2"],
+        )
+        for row in predictions
+    }
+    require(len(keys) == len(predictions), "duplicate cross-network prediction rows")
+
+
+def validate_hazard_impact_robustness() -> None:
+    interval = read_csv("jshis_hazard_impact_interval_robustness.csv")
+    require(len(interval) == 48 and float_periods(interval) == PERIODS, "interval robustness coverage changed")
+    sa3_80 = next(
+        row
+        for row in interval
+        if float(row["period_s"]) == 3.0 and float(row["confidence_level_pct"]) == 80.0
+    )
+    sa3_90 = next(
+        row
+        for row in interval
+        if float(row["period_s"]) == 3.0 and float(row["confidence_level_pct"]) == 90.0
+    )
+    require(77.8 < float(sa3_80["empirical_coverage_pct"]) < 78.0, "SA3 80% coverage changed")
+    require(8.3 < float(sa3_80["robust_direction_fraction_pct"]) < 8.5, "SA3 80% robust fraction changed")
+    require(88.9 < float(sa3_90["empirical_coverage_pct"]) < 89.1, "SA3 90% coverage changed")
+    require(1.9 < float(sa3_90["robust_direction_fraction_pct"]) < 2.1, "SA3 90% robust fraction changed")
+
+    summary = read_csv("jshis_hazard_impact_independent_model_summary.csv")
+    require(len(summary) == 8 and float_periods(summary) == PERIODS, "independent-field coverage changed")
+    sa3 = next(row for row in summary if float(row["period_s"]) == 3.0)
+    require(int(float(sa3["n_stations"])) == 639, "independent-field station count changed")
+    require(0.735 < float(sa3["independent_model_pearson"]) < 0.737, "independent-field correlation changed")
+    require(79.6 < float(sa3["direction_agreement_pct"]) < 79.7, "independent-field direction agreement changed")
+    require(57.8 < float(sa3["material_direction_agreement_pct"]) < 58.0, "independent-field material agreement changed")
+    require(0.053 < float(sa3["median_absolute_model_difference_log10"]) < 0.054, "independent-field difference changed")
+
+    stations = read_csv("jshis_hazard_impact_independent_model_stations.csv")
+    require(len(stations) == 5_112, f"unexpected independent-field station rows: {len(stations)}")
+    keys = {(row["period_s"], row["siteid2"]) for row in stations}
+    require(len(keys) == len(stations), "duplicate independent-field station rows")
 
 
 def validate_model_complexity() -> None:
@@ -931,6 +1101,9 @@ def main() -> None:
     validate_sample_selection()
     validate_mf2013_applicability()
     validate_kiknet_paired_sensor()
+    validate_kiknet_spectral_shape()
+    validate_cross_network_transfer()
+    validate_hazard_impact_robustness()
     validate_decomposition()
     validate_prediction()
     validate_model_complexity()
