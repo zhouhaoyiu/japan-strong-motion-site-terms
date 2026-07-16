@@ -1,6 +1,6 @@
-# Cross-network and held-event station-term validation
+# Cross-network and independent-earthquake station-term validation
 
-K-NET station terms are estimated only from training events. The fixed public-variable model is then evaluated against KiK-net station terms estimated only from disjoint held-out events. The reverse direction is retained as a transfer stress test.
+K-NET station terms are estimated from four earthquake groups. The fixed public-parameter relation is compared with KiK-net station terms estimated from the independent fifth group. The reverse network direction is retained as a sensitivity.
 
 - Event folds: 5; fixed seed: 20260711.
 - SA(3.0 s) K-NET to KiK-net target stations: 677.

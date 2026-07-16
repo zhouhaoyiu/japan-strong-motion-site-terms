@@ -303,6 +303,7 @@ def plot_results(
         [0.005, 0.995],
     )
     ax.plot(limits, limits, color="#555555", ls="--", lw=1.0)
+    ax.text(0.96, 0.04, "Dashed: equality", transform=ax.transAxes, ha="right", color="#555555")
     row3 = model_summary[model_summary["period_s"].eq(3.0)].iloc[0]
     ax.text(
         0.04,

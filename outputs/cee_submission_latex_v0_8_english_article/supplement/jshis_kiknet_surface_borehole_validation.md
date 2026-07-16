@@ -13,4 +13,4 @@ Surface and borehole RotD100 spectra are paired by earthquake and KiK-net site c
 - Median within-station spectral-shape correlation and positive fraction: 0.769 and 91.5%.
 - Mean spectral-shape correlation with transfer ratios and station terms estimated from disjoint events: 0.635.
 
-The paired-sensor result provides an independent physical correlate of the event-adjusted surface station field. It is a validation of station-level response, not a calibrated nonlinear transfer-function model.
+The paired-sensor result provides an independent physical correlate of the event-adjusted surface station terms. It validates their station-level period dependence. A nonlinear site-response model would require input-motion-dependent calibration beyond this comparison.

@@ -21,7 +21,7 @@
 ## Model boundary
 
 - The primary attenuation backbone contains the MF2013 basic, D1400, and AVS30 terms. It is labelled as such and is not described as the complete official implementation.
-- The rule-based AI sensitivity gives an SA(3.0 s) station-term correlation of 0.989 with the primary decomposition.
+- The rule-based anomalous-intensity sensitivity gives an SA(3.0 s) station-term correlation of 0.989 with the primary decomposition.
 - PH is an event-constant period term for qualifying Philippine Sea Plate intraplate earthquakes. The event fixed effect absorbs it for station-term estimation; the global intercept is not interpreted as an official MF2013 bias.
 - The response-map calculation is a matched-station surface-spectrum sensitivity analysis, not an official source-level J-SHIS PSHA rerun.
 

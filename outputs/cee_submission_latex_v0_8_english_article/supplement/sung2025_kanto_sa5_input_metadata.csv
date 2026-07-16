@@ -1,0 +1,2 @@
+input_path,input_bytes,input_sha256,total_grid_rows,valid_grid_rows,projection_lon0,projection_lat0,median_valid_grid_spacing_km,match_threshold_km,spatial_block_length_km,source_doi,source_archive_member,published_units,match_spacing_multiplier,bootstrap_replicates,random_seed
+work/external_data/sung2025/BSSA-2024239_Supplement.csv,8159511,cb8917049b026b0f96dbf020c7f3dfdb1534c988b5dcbd6724d8e4b398c686b4,250000,133151,139.4106799,35.84787746,0.8006941430339395,1.2010412145509093,31.7,https://doi.org/10.1785/0120240239,BSSA-2024239_Supplement.csv,natural_log,1.5,2000,20260711

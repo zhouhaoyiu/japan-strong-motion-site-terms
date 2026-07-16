@@ -50,6 +50,10 @@ def validate_files() -> None:
         ROOT / "work" / "jshis_kiknet_surface_borehole_validation.py",
         ROOT / "work" / "jshis_cross_network_transfer_validation.py",
         ROOT / "work" / "jshis_temporal_network_transfer_validation.py",
+        ROOT / "work" / "esm_external_station_validation.py",
+        ROOT / "work" / "jshis_source_category_response_sensitivity.py",
+        ROOT / "work" / "jshis_source_conditioned_station_fields.py",
+        ROOT / "work" / "sung2025_kanto_external_comparison.py",
         ROOT / "work" / "jshis_hazard_impact_robustness.py",
         ROOT / "work" / "jshis_robustness_stress_tests.py",
         ROOT / "work" / "jshis_path_stratification_audit.py",
@@ -66,6 +70,10 @@ def validate_files() -> None:
         ARTICLE / "figures" / "figure_kiknet_surface_borehole_validation.pdf",
         ARTICLE / "figures" / "figure_kiknet_spectral_shape_validation.pdf",
         ARTICLE / "figures" / "figure_cross_network_transfer_validation.pdf",
+        ARTICLE / "figures" / "figure_esm_external_validation.pdf",
+        ARTICLE / "figures" / "supplementary_figure_source_category_response.pdf",
+        ARTICLE / "figures" / "supplementary_figure_source_conditioned_fields.pdf",
+        ARTICLE / "figures" / "supplementary_figure_sung2025_kanto_external.pdf",
         ARTICLE / "figures" / "supplementary_figure_temporal_network_transfer.pdf",
         ARTICLE / "figures" / "supplementary_figure_hazard_impact_robustness.pdf",
         ARTICLE / "figures" / "supplementary_figure_balanced_station_model.pdf",
@@ -91,6 +99,33 @@ def validate_files() -> None:
         SUPPLEMENT / "jshis_hazard_impact_independent_model_stations.csv",
         SUPPLEMENT / "jshis_hazard_impact_independent_model_summary.csv",
         SUPPLEMENT / "jshis_hazard_impact_robustness.md",
+        SUPPLEMENT / "esm_external_selection_audit.csv",
+        SUPPLEMENT / "esm_external_decomposition_metrics.csv",
+        SUPPLEMENT / "esm_external_station_terms.csv",
+        SUPPLEMENT / "esm_external_repeatability_metrics.csv",
+        SUPPLEMENT / "esm_external_repeatability_pairs.csv",
+        SUPPLEMENT / "esm_japan_station_field_comparison.csv",
+        SUPPLEMENT / "esm_cross_region_transfer_metrics.csv",
+        SUPPLEMENT / "esm_cross_region_transfer_predictions.csv",
+        SUPPLEMENT / "esm_local_spatial_prediction_metrics.csv",
+        SUPPLEMENT / "esm_local_spatial_prediction_predictions.csv",
+        SUPPLEMENT / "esm_external_validation.md",
+        SUPPLEMENT / "jshis_source_category_surface_spectrum_values.csv",
+        SUPPLEMENT / "jshis_source_category_surface_spectrum_summary.csv",
+        SUPPLEMENT / "jshis_source_category_sa3_station_comparison.csv",
+        SUPPLEMENT / "jshis_source_category_response_sensitivity.md",
+        SUPPLEMENT / "jshis_source_conditioned_station_terms.csv",
+        SUPPLEMENT / "jshis_source_conditioned_station_predictions.csv",
+        SUPPLEMENT / "jshis_source_conditioned_station_metrics.csv",
+        SUPPLEMENT / "jshis_source_conditioned_station_bootstrap.csv",
+        SUPPLEMENT / "jshis_source_conditioned_hazard_values.csv",
+        SUPPLEMENT / "jshis_source_conditioned_hazard_summary.csv",
+        SUPPLEMENT / "jshis_source_conditioned_station_fields.md",
+        SUPPLEMENT / "sung2025_kanto_sa5_matched_station_fields.csv",
+        SUPPLEMENT / "sung2025_kanto_sa5_external_metrics.csv",
+        SUPPLEMENT / "sung2025_kanto_sa5_spatial_block_bootstrap.csv",
+        SUPPLEMENT / "sung2025_kanto_sa5_input_metadata.csv",
+        SUPPLEMENT / "sung2025_kanto_sa5_external_comparison.md",
     ]
     for path in required:
         require(path.is_file() and path.stat().st_size > 0, f"missing or empty {path.relative_to(ROOT)}")
@@ -99,7 +134,14 @@ def validate_files() -> None:
         inputs = list(csv.DictReader(handle, delimiter="\t"))
     require(
         {row["role"] for row in inputs}
-        == {"strong_motion_flatfile", "mf2013_coefficients", "jshis_response_spectra"},
+        == {
+            "strong_motion_flatfile",
+            "mf2013_coefficients",
+            "jshis_response_spectra",
+            "jshis_response_spectra_active_shallow",
+            "jshis_response_spectra_subduction",
+            "sung2025_kanto_site_field",
+        },
         "public input manifest roles are incomplete",
     )
     require(all(re.fullmatch(r"[0-9a-f]{64}", row["sha256"]) for row in inputs), "invalid input SHA-256")
@@ -115,8 +157,8 @@ def validate_manuscript() -> None:
     require(len(title_words) <= 15, f"title has {len(title_words)} words")
     require(not re.search(r"[,.:;!?]", title), "title contains punctuation")
 
-    abstract_source = text.split(r"\noindent\textbf{Abstract}", 1)[1].split(r"\noindent\textbf{Keywords", 1)[0]
-    transition = re.search(r"We analyse", abstract_source)
+    abstract_source = text.split(r"\noindent\textbf{Abstract}", 1)[1].split(r"\section{Introduction}", 1)[0]
+    transition = re.search(r"Here we analyse", abstract_source)
     require(transition is not None, "abstract lacks a direct method transition")
     background = abstract_source[: transition.start()]
     require(background.count(".") == 1, "abstract does not contain one background sentence")
@@ -125,19 +167,22 @@ def validate_manuscript() -> None:
     require(len(abstract_words) <= 150, f"abstract has {len(abstract_words)} words")
     require("222,664" in abstract and "surface records" in abstract, "abstract lacks the surface-record sample")
     for claim in [
-        "RotD100",
         "0.890",
-        "0.770",
-        "102,428",
-        "0.536",
         "19.4",
         "0.635",
-        "79.7",
-        "2.0",
+        "0.304",
+        "0.624",
         "1.338",
-        "0.959",
+        "European-Mediterranean",
     ]:
         require(claim in abstract, f"abstract lacks key result: {claim}")
+    require(
+        "5th--95th percentile interval of 0.624--1.338" in abstract_source,
+        "abstract misstates the station-adjustment percentile interval",
+    )
+    require("Station-level uncertainty remains large" in abstract, "abstract omits station-level uncertainty")
+    require("Supplementary Methods" in text, "main manuscript does not cite Supplementary Methods")
+    require("probabilistic response spectra" not in title, "title overstates the fixed-probability analysis")
     for claim in ["10.5\\%", "14.0\\%", "7.1\\%", "19.3\\%"]:
         require(claim in text, f"manuscript lacks model-complexity result: {claim}")
 
@@ -158,7 +203,11 @@ def validate_manuscript() -> None:
     introduction_words = re.findall(r"[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*", introduction)
     require(len(introduction_words) < 1_000, f"Introduction has {len(introduction_words)} words")
     last_introduction_paragraph = [paragraph for paragraph in introduction.split("\n\n") if paragraph.strip()][-1]
-    for phrase in ["frozen K-NET model", "path-stratified analyses", "average-path station adjustment"]:
+    for phrase in [
+        "recording networks",
+        "surface-to-borehole response-spectrum ratios",
+        "source-class and regional tests",
+    ]:
         require(phrase in last_introduction_paragraph, f"Introduction scope paragraph lacks: {phrase}")
     require(
         "The manuscript and code were written by the authors. ChatGPT was used only for language and formatting revision and code verification" in text,
@@ -186,17 +235,17 @@ def validate_manuscript() -> None:
     require("8,675 lack finite F-net $M_w$" in text, "finite-Mw sample loss is not stated")
     require(r"moment magnitude $M_w\geq5$" not in text, "public subset is incorrectly labelled as Mw>=5")
     require(
-        "Each fold fits the two-way event-station decomposition separately" in text,
-        "event holdout is not documented as separate two-way decompositions",
+        "Each fold fits the two-way event--station decomposition separately" in text,
+        "independent earthquake-group test is not documented as separate two-way decompositions",
     )
     require("used only for manuscript-format checks" not in text, "obsolete AI-use statement remains")
     require(r"\section*{References}" not in text, "manual References heading duplicates the bibliography heading")
-    for stale in ["322,020", "2,267", "23.1\\%", "0.589", "1.449", "0.048 g", "10,467"]:
+    for stale in ["322,020", "2,267", "23.1\\%", "0.589", "1.449", "0.048 g", "10,467", "13,437", "635 shallow", "0.926"]:
         require(stale not in text, f"stale claim remains: {stale}")
 
     cover = (ARTICLE / "cover_letter_cee.md").read_text(encoding="utf-8")
     for claim in [
-        "Repeatable station terms redistribute long-period response spectra across Japanese strong-motion sites",
+        "Repeatable station terms modify fixed-probability long-period response spectra at stations across Japan",
         "Institute of Engineering Mechanics, China Earthquake Administration",
         "No. 29 Xuefu Road",
         "Harbin 150080",
@@ -208,9 +257,18 @@ def validate_manuscript() -> None:
         "0.536",
         "19.4%",
         "0.635",
+        "0.304",
+        "0.163--0.434",
+        "0.135",
+        "14.3--14.8%",
         "79.7%",
         "2.0%",
         "0.959",
+        "13,430",
+        "0.928",
+        "0.047",
+        "3.6--7.6%",
+        "1,428 of 1,628",
     ]:
         require(claim in cover, f"cover letter lacks: {claim}")
 
@@ -218,7 +276,9 @@ def validate_manuscript() -> None:
 def validate_supplementary_order() -> None:
     main_text = (ARTICLE / "main.tex").read_text(encoding="utf-8")
     supplement_text = (ARTICLE / "supplementary_information.tex").read_text(encoding="utf-8")
-    for kind, expected in [("Fig", 11)]:
+    main_title = re.search(r"\\LARGE\\bfseries (.*?)\\par", main_text)
+    require(main_title is not None and main_title.group(1) in supplement_text, "supplement title differs from main title")
+    for kind, expected in [("Fig", 14)]:
         seen: list[int] = []
         for value in re.findall(rf"Supplementary {kind}\.?\s*(\d+)", main_text):
             number = int(value)
@@ -230,13 +290,13 @@ def validate_supplementary_order() -> None:
         int(value) for value in re.findall(r"Supplementary Table\.?\s*(\d+)", main_text)
     }
     require(
-        table_numbers == set(range(1, 21)),
+        table_numbers == set(range(1, 27)),
         f"Supplementary Table citations are {sorted(table_numbers)}",
     )
 
     require(
-        len(re.findall(r"\\begin\{table\}", supplement_text)) == 20,
-        "Supplementary Information does not contain twenty tables",
+        len(re.findall(r"\\begin\{table\}", supplement_text)) == 26,
+        "Supplementary Information does not contain twenty-six tables",
     )
     require(
         r"\renewcommand{\figurename}{Supplementary Figure}" in supplement_text
@@ -245,8 +305,8 @@ def validate_supplementary_order() -> None:
     )
     require(r"\caption{Supplementary Table" not in supplement_text, "a supplementary table caption repeats its number")
     require(
-        len(re.findall(r"\\begin\{figure\}", supplement_text)) == 11,
-        "Supplementary Information does not contain eleven figures",
+        len(re.findall(r"\\begin\{figure\}", supplement_text)) == 14,
+        "Supplementary Information does not contain fourteen figures",
     )
     require(
         r"\renewcommand{\refname}{Supplementary References}" in supplement_text
@@ -279,20 +339,29 @@ def validate_references() -> None:
     main_text = (ARTICLE / "main.tex").read_text(encoding="utf-8")
     supplement_text = (ARTICLE / "supplementary_information.tex").read_text(encoding="utf-8")
     for name, text, expected in [
-        ("main manuscript", main_text, 34),
-        ("Supplementary Information", supplement_text, 12),
+        ("main manuscript", main_text, 37),
+        ("Supplementary Information", supplement_text, 16),
     ]:
         cited, bibliography = citation_order(text)
         require(len(bibliography) == expected, f"unexpected {name} reference count: {len(bibliography)}")
         require(cited == bibliography, f"{name} references are missing, uncited or out of first-appearance order")
 
     shared = (ARTICLE / "references_shared.tex").read_text(encoding="utf-8")
+    chinese_references = (CHINESE / "references_chinese.tex").read_text(encoding="utf-8")
     shared_keys = re.findall(r"\\bibitem\{([^}]*)\}", shared)
     main_keys = re.findall(r"\\bibitem\{([^}]*)\}", main_text)
     require(shared_keys == main_keys, "Chinese shared-reference keys differ from the English manuscript")
     require(
         bibliography_entries(shared) == bibliography_entries(main_text),
         "Chinese shared-reference content differs from the English manuscript",
+    )
+    require(
+        set(re.findall(r"\\bibitem\{([^}]*)\}", chinese_references)) == set(main_keys),
+        "Chinese manuscript reference keys differ from the English manuscript",
+    )
+    require(
+        bibliography_entries(chinese_references) == bibliography_entries(main_text),
+        "Chinese manuscript reference content differs from the English manuscript",
     )
     main_entries = bibliography_entries(main_text)
     require(
@@ -307,6 +376,7 @@ def validate_references() -> None:
     for name, text in [
         ("main manuscript", main_text),
         ("Chinese shared references", shared),
+        ("Chinese manuscript references", chinese_references),
         ("Supplementary Information", supplement_text),
     ]:
         require("Dohi, Y. et al." in text, f"{name} does not abbreviate the six-author Dohi reference")
@@ -320,6 +390,7 @@ def validate_chinese_sync() -> None:
         CHINESE / "main_zh.tex",
         CHINESE / "main_zh.pdf",
         CHINESE / "main_zh_preview_safe.pdf",
+        CHINESE / "references_chinese.tex",
         ADVISOR / "main_zh.tex",
         ADVISOR / "main_zh.pdf",
         ADVISOR / "main_zh_preview_safe.pdf",
@@ -327,8 +398,15 @@ def validate_chinese_sync() -> None:
         require(path.is_file() and path.stat().st_size > 0, f"missing or empty local Chinese artifact: {path}")
     main_text = (ARTICLE / "main.tex").read_text(encoding="utf-8")
     chinese_text = (CHINESE / "main_zh.tex").read_text(encoding="utf-8")
+    main_title = re.search(r"\\LARGE\\bfseries (.*?)\\par", main_text)
+    require(main_title is not None and main_title.group(1) in chinese_text, "English title in Chinese manuscript is not synchronized")
+    require(
+        "台站项的重复性" in chinese_text and "固定超越概率" in chinese_text,
+        "Chinese title does not reflect the station-term or fixed-probability scope",
+    )
+    require("单台站修正仍有较大不确定性" in chinese_text, "Chinese manuscript omits station-level uncertainty")
     english_abstract = main_text.split(r"\noindent\textbf{Abstract}", 1)[1].split(
-        r"\noindent\textbf{Keywords", 1
+        r"\section{Introduction}", 1
     )[0]
     chinese_english_abstract = chinese_text.split(r"\noindent{\bfseries Abstract:}", 1)[1].split(
         r"\noindent{\bfseries Keywords:", 1
@@ -343,11 +421,14 @@ def validate_chinese_sync() -> None:
         for key in group.split(","):
             if key not in chinese_citations:
                 chinese_citations.append(key)
-    main_bibliography = re.findall(r"\\bibitem\{([^}]*)\}", main_text)
-    require(chinese_citations == main_bibliography, "Chinese citation order differs from the English bibliography")
+    chinese_reference_text = (CHINESE / "references_chinese.tex").read_text(encoding="utf-8")
+    chinese_bibliography = re.findall(r"\\bibitem\{([^}]*)\}", chinese_reference_text)
+    require(
+        chinese_citations == chinese_bibliography,
+        "Chinese references are missing, uncited or out of first-appearance order",
+    )
 
     for stale in [
-        "0.928",
         "0.780",
         "0.625",
         "1.366",
@@ -372,7 +453,7 @@ def validate_chinese_sync() -> None:
         "0.536",
         "19.4\\%",
         "1,277",
-        "547个目标台站",
+        "547个检验台站",
         "0.635",
         "0.736",
         "79.7\\%",
@@ -385,11 +466,70 @@ def validate_chinese_sync() -> None:
         "4.1\\%",
         "35,857",
         "411个地震",
-        "578个记录数",
-        "$-2.3\\%$",
+        "578个台站",
+        "0.1 s的RMSE增加2.3\\%",
+        "13,430",
+        "634个欧洲--地中海",
+        "0.929",
+        "0.939",
+        "0.928",
+        "0.047",
+        "0.074",
+        "3.6\\%",
+        "1,428个",
+        "0.071 g",
     ]:
         require(current in chinese_text, f"Chinese manuscript lacks current result: {current}")
-    require("分别对4组训练事件和1组检验事件拟合完整的事件--台站双向固定效应模型" in chinese_text, "Chinese event-holdout method is stale")
+    require(
+        "每轮用其中4组地震估计完整的地震--台站双因素模型，以余下1组地震独立检验"
+        in chinese_text,
+        "Chinese event-group method is stale",
+    )
+    section_markers = [
+        r"\section{资料与研究方法}",
+        r"\section{结果}",
+        r"\section{讨论}",
+        r"\section{结论}",
+    ]
+    require(
+        [chinese_text.index(marker) for marker in section_markers]
+        == sorted(chinese_text.index(marker) for marker in section_markers),
+        "Chinese manuscript section order is stale",
+    )
+    for definition in [
+        r"AVS30=\frac{30}",
+        "$V_S=1.4$ km/s层顶界面埋深D1400",
+        "Dbase为地震基岩面埋深",
+        "深部沉积层修正项$G_d$和浅层场地修正项$G_s$",
+        "场地（台站）间残差",
+        "场地（台站）内残差",
+        "地表/井下反应谱谱比",
+        "空间分块交叉检验",
+    ]:
+        require(definition in chinese_text, f"Chinese site-parameter definition is missing: {definition}")
+    for stale_term in [
+        "冻结模型",
+        "目标台站",
+        "场地--空间模型",
+        "台站倍率",
+        "训练事件",
+        "留出事件",
+        "零台站项",
+        "场地--位置回归",
+        "台站残差场",
+        "台站残差项",
+        "剩余记录残差",
+        "井地谱比",
+        "扩展参数方案",
+        "空间分区检验",
+        "实测台站项",
+        "官方谱坐标",
+    ]:
+        require(stale_term not in chinese_text, f"computer-centric Chinese term remains: {stale_term}")
+    require(
+        "令所有$\\delta S_i=0$，所得结果作为不进行台站修正的基准" in chinese_text,
+        "Chinese no-station-adjustment baseline is not defined plainly",
+    )
     require(
         r"figure_path_stratification.pdf" in chinese_text,
         "Chinese manuscript lacks the path-stratification figure",
@@ -400,17 +540,17 @@ def validate_chinese_sync() -> None:
     require("补充表15" in chinese_text, "Chinese complexity-sensitivity table is not cited")
     require("补充表16" in chinese_text, "Chinese MF2013-applicability table is not cited")
     require(
-        all(f"补充表{number}" in chinese_text for number in [17, 18, 19, 20]),
+        all(f"补充表{number}" in chinese_text for number in [17, 18, 19, 20, 21, 22, 23]),
         "Chinese new validation tables are not cited",
     )
     require(
-        all(f"补充图{number}" in chinese_text for number in range(1, 12)),
+        all(f"补充图{number}" in chinese_text for number in range(1, 13)),
         "Chinese Supplementary Figure citations are incomplete",
     )
-    require("复原了筛选方程" in chinese_text, "Chinese MF2013 applicability boundary is missing")
+    require("复原样本筛选条件" in chinese_text, "Chinese MF2013 applicability boundary is missing")
     require("整体中位数取决于记录范围和台站集合" in chinese_text, "Chinese aggregate-median boundary is missing")
     require(r"M_{\mathrm{JMA}}\geq5" in chinese_text, "Chinese manuscript lacks the JMA magnitude threshold")
-    require("8,675条缺少有限的F-net $M_w$" in chinese_text, "Chinese manuscript lacks the finite-Mw sample loss")
+    require("8,675条缺少有效的F-net $M_w$" in chinese_text, "Chinese manuscript lacks the finite-Mw sample loss")
     require(chinese_text.count("随审稿档案提供") >= 2, "Chinese data or code availability is not synchronized")
     for claim in ["10.5\\%--14.0\\%", "7.1\\%--19.3\\%"]:
         require(claim in chinese_text, f"Chinese manuscript lacks model-complexity result: {claim}")
@@ -448,6 +588,315 @@ def validate_sample_selection() -> None:
         "3 s: 222,664",
     ]:
         require(claim in report, f"flatfile selection report lacks: {claim}")
+
+
+def validate_esm_external() -> None:
+    selection = read_csv("esm_external_selection_audit.csv")
+    require(len(selection) == 12, "ESM selection audit coverage changed")
+    final = {
+        row["analysis"]: (int(row["n_records"]), int(row["n_events"]), int(row["n_stations"]))
+        for row in selection
+        if row["stage"] == "iterative_event_station_support"
+    }
+    require(
+        final
+        == {
+            "bindi2014_rhyp_mw4.5-7.6_2015-01-01": (13_430, 634, 539),
+            "bindi2014_rhyp_mw5-7.6_2015-01-01": (5_411, 213, 371),
+            "kotha2020_rjb_mw4.5-7.4_all": (1_616, 72, 193),
+        },
+        f"ESM supported samples changed: {final}",
+    )
+
+    decomposition = read_csv("esm_external_decomposition_metrics.csv")
+    require(len(decomposition) == 9, "ESM decomposition coverage changed")
+    require(
+        max(float(row["solver_max_relative_normal_residual"]) for row in decomposition) < 3e-10,
+        "an ESM component solver residual is too large",
+    )
+
+    metrics = read_csv("esm_external_repeatability_metrics.csv")
+    require(len(metrics) == 54, "ESM repeatability metric coverage changed")
+    means = [row for row in metrics if row["scope"] == "fold_mean"]
+    require(len(means) == 9, "ESM fold-mean coverage changed")
+    primary = {
+        float(row["period_s"]): row
+        for row in means
+        if row["backbone"] == "bindi2014_rhyp"
+        and float(row["minimum_mw"]) == 4.5
+        and row["start_date"] == "2015-01-01"
+    }
+    expected = {
+        1.0: (0.9285, 0.9288, 66.7, 66.9),
+        2.0: (0.9391, 0.9394, 69.4, 69.6),
+        3.0: (0.9277, 0.9280, 66.3, 66.5),
+    }
+    require(set(primary) == {1.0, 2.0, 3.0}, "ESM primary periods changed")
+    for period, (r_low, r_high, gain_low, gain_high) in expected.items():
+        row = primary[period]
+        require(r_low < float(row["pearson"]) < r_high, f"ESM SA{period:g} correlation changed")
+        require(gain_low < float(row["rmse_gain_pct"]) < gain_high, f"ESM SA{period:g} gain changed")
+        require(float(row["pearson_ci_low"]) > 0.89, f"ESM SA{period:g} correlation interval degraded")
+        require(float(row["rmse_gain_pct_ci_low"]) > 60, f"ESM SA{period:g} gain interval degraded")
+
+    magnitude_sensitivity = [
+        row
+        for row in means
+        if row["backbone"] == "bindi2014_rhyp" and float(row["minimum_mw"]) == 5.0
+    ]
+    require(
+        len(magnitude_sensitivity) == 3
+        and min(float(row["pearson_ci_low"]) for row in magnitude_sensitivity) > 0.81
+        and min(float(row["rmse_gain_pct_ci_low"]) for row in magnitude_sensitivity) > 43,
+        "ESM Mw>=5 sensitivity is incomplete or degraded",
+    )
+    kotha3 = next(
+        row
+        for row in means
+        if row["backbone"] == "kotha2020_rjb" and float(row["period_s"]) == 3.0
+    )
+    require(float(kotha3["rmse_gain_pct_ci_low"]) < 0, "Kotha SA3 sample-limited interval no longer crosses zero")
+
+    field = read_csv("esm_japan_station_field_comparison.csv")
+    require(len(field) == 6, "ESM-Japan field comparison coverage changed")
+    esm3 = next(row for row in field if row["region"] == "ESM Europe" and float(row["period_s"]) == 3.0)
+    japan3 = next(row for row in field if row["region"] == "J-SHIS Japan" and float(row["period_s"]) == 3.0)
+    require(0.242 < float(esm3["weighted_std_log10"]) < 0.244, "ESM SA3 field amplitude changed")
+    require(0.167 < float(japan3["weighted_std_log10"]) < 0.169, "Japan SA3 comparison amplitude changed")
+
+    transfer = read_csv("esm_cross_region_transfer_metrics.csv")
+    require(len(transfer) == 3 and float_periods(transfer) == {1.0, 2.0, 3.0}, "ESM transfer coverage changed")
+    require(
+        {row["prediction_centering"] for row in transfer}
+        == {"target_prediction_weighted_zero_without_labels"},
+        "ESM transfer centring rule changed",
+    )
+    transfer3 = next(row for row in transfer if float(row["period_s"]) == 3.0)
+    require(0.046 < float(transfer3["pearson"]) < 0.049, "Japan-to-ESM SA3 correlation changed")
+    require(-2.9 < float(transfer3["rmse_gain_pct"]) < -2.6, "Japan-to-ESM SA3 gain changed")
+    require(
+        all(float(row["rmse_gain_pct"]) < 0 for row in transfer),
+        "the adverse Japan-to-ESM point transfer result disappeared",
+    )
+
+    spatial = read_csv("esm_local_spatial_prediction_metrics.csv")
+    require(
+        {row["scope"] for row in spatial}
+        == {"spatial_fold", "overall", "event_fold", "event_fold_mean"},
+        "ESM local spatial validation scopes changed",
+    )
+    require(
+        {int(float(row["n_spatial_blocks"])) for row in spatial} == {3},
+        "ESM objective spatial-block count changed",
+    )
+    full3 = next(
+        row for row in spatial
+        if row["scope"] == "overall"
+        and row["model"] == "common_site_hgb"
+        and float(row["period_s"]) == 3.0
+    )
+    strict3 = next(
+        row for row in spatial
+        if row["scope"] == "event_fold_mean"
+        and row["model"] == "common_site_hgb"
+        and float(row["period_s"]) == 3.0
+    )
+    require(0.073 < float(full3["pearson"]) < 0.075, "ESM local SA3 correlation changed")
+    require(-3.8 < float(full3["rmse_gain_pct"]) < -3.5, "ESM local SA3 gain changed")
+    require(0.020 < float(strict3["pearson"]) < 0.022, "ESM strict SA3 correlation changed")
+    require(-3.9 < float(strict3["rmse_gain_pct"]) < -3.5, "ESM strict SA3 gain changed")
+    require(
+        all(
+            float(row["rmse_gain_pct"]) < 0
+            for row in spatial
+            if row["scope"] in {"overall", "event_fold_mean"}
+        ),
+        "an ESM aggregate spatial result changed sign",
+    )
+
+    audit = (SUPPLEMENT / "esm_external_validation.md").read_text(encoding="utf-8")
+    for claim in [
+        "084ef4c7519fdeb26a05db9ad980535cd4c2207b2358d6b668cd5dafb4f0c724",
+        "4.5 <= Mw <= 7.6",
+        "0.928",
+        "RMSE gain 66.4%",
+        "correlation 0.047 and RMSE gain -2.8%",
+        "fixed minimum of 30 stations per block selected 3 blocks",
+        "correlation 0.021",
+        "RMSE gain -3.7%",
+    ]:
+        require(claim in audit, f"ESM audit lacks: {claim}")
+
+
+def validate_source_category_response() -> None:
+    summary = read_csv("jshis_source_category_surface_spectrum_summary.csv")
+    require(len(summary) == 96, f"unexpected source-category summary rows: {len(summary)}")
+    require(
+        {row["source_category"] for row in summary}
+        == {"all_earthquakes", "active_shallow", "subduction"},
+        "source-category response coverage changed",
+    )
+    selected = {
+        row["source_category"]: row
+        for row in summary
+        if float(row["period_s"]) == 3.0 and row["probability_level"] == "50y_10pct"
+    }
+    require(set(selected) == {"all_earthquakes", "active_shallow", "subduction"}, "SA3 source summaries missing")
+    require(
+        0.030 < float(selected["active_shallow"]["official_vs400_sa_g_q50"]) < 0.032,
+        "active-shallow SA3 median changed",
+    )
+    require(
+        0.070 < float(selected["subduction"]["official_vs400_sa_g_q50"]) < 0.072,
+        "subduction SA3 median changed",
+    )
+    stations = read_csv("jshis_source_category_sa3_station_comparison.csv")
+    require(len(stations) == 1_628, f"unexpected source-category station rows: {len(stations)}")
+    counts: defaultdict[str, int] = defaultdict(int)
+    for row in stations:
+        counts[row["dominant_source_category"]] += 1
+    require(
+        dict(counts) == {"subduction": 1_428, "active_shallow": 200},
+        f"source-category dominance counts changed: {dict(counts)}",
+    )
+    audit = (SUPPLEMENT / "jshis_source_category_response_sensitivity.md").read_text(encoding="utf-8")
+    for claim in [
+        "ec1ab8436bffa628788a67b4cfeeded59b6debd9eb8979cdc82f95a0deeb1532",
+        "75e9c127556a4b76da655c733f33cce0fbbb93a451f41d2b2513ffb6769d64f7",
+        "They are not summed",
+        "Paired stations: 1,628",
+        "subduction ordinate is at least as large at 1,428 stations",
+    ]:
+        require(claim in audit, f"source-category audit lacks: {claim}")
+
+
+def validate_source_conditioned_fields() -> None:
+    metrics = read_csv("jshis_source_conditioned_station_metrics.csv")
+    require(len(metrics) == 288, f"unexpected source-conditioned metric rows: {len(metrics)}")
+    require(float_periods(metrics) == PERIODS, "source-conditioned period coverage changed")
+    require(
+        {row["source_type"] for row in metrics} == {"Crustal", "Interplate", "Intraplate"},
+        "source-conditioned class coverage changed",
+    )
+    selected = [
+        row
+        for row in metrics
+        if row["model"] == "physical_spatial_hgb" and row["scope"] == "overall"
+    ]
+    require(len(selected) == 24, "source-conditioned primary metric coverage changed")
+    by_key = {(row["source_type"], float(row["period_s"])): row for row in selected}
+    require(
+        8.8 < float(by_key[("Crustal", 3.0)]["rmse_reduction_vs_zero_pct"]) < 9.0,
+        "crustal SA3 gain changed",
+    )
+    require(
+        14.2 < float(by_key[("Intraplate", 3.0)]["rmse_reduction_vs_zero_pct"]) < 14.4
+        and 14.7 < float(by_key[("Intraplate", 5.0)]["rmse_reduction_vs_zero_pct"]) < 14.9,
+        "intraplate long-period gains changed",
+    )
+    require(
+        float(by_key[("Crustal", 0.1)]["rmse_reduction_vs_zero_pct"]) < 0
+        and float(by_key[("Interplate", 2.0)]["rmse_reduction_vs_zero_pct"]) < 0,
+        "an adverse source-conditioned result disappeared",
+    )
+
+    bootstrap = read_csv("jshis_source_conditioned_station_bootstrap.csv")
+    require(len(bootstrap) == 48, "source-conditioned bootstrap coverage changed")
+    intraplate5 = next(
+        row
+        for row in bootstrap
+        if row["source_type"] == "Intraplate"
+        and row["model"] == "physical_spatial_hgb"
+        and float(row["period_s"]) == 5.0
+    )
+    require(float(intraplate5["rmse_gain_pct_ci_low"]) > 10.0, "intraplate SA5 interval degraded")
+
+    hazard = read_csv("jshis_source_conditioned_hazard_summary.csv")
+    require(len(hazard) == 96, f"unexpected source-conditioned hazard rows: {len(hazard)}")
+    require(
+        {row["hazard_scenario"] for row in hazard}
+        == {"active_shallow_crustal", "subduction_interplate", "subduction_intraplate"},
+        "source-conditioned hazard scenarios changed",
+    )
+    hazard3 = {
+        row["hazard_scenario"]: row
+        for row in hazard
+        if float(row["period_s"]) == 3.0 and row["probability_level"] == "50y_10pct"
+    }
+    require(
+        0.032 < float(hazard3["active_shallow_crustal"]["adjusted_surface_sa_g_q50"]) < 0.034,
+        "source-conditioned active-shallow median changed",
+    )
+    require(
+        0.083 < float(hazard3["subduction_interplate"]["adjusted_surface_sa_g_q50"]) < 0.085
+        and 0.082 < float(hazard3["subduction_intraplate"]["adjusted_surface_sa_g_q50"]) < 0.084,
+        "source-conditioned subduction medians changed",
+    )
+    audit = (SUPPLEMENT / "jshis_source_conditioned_station_fields.md").read_text(encoding="utf-8")
+    for claim in [
+        "Every class, period and spatial fold is retained",
+        "RMSE gain -0.8%",
+        "RMSE gain 14.8%",
+        "they are not averaged because official source weights are unavailable",
+        "do not replace source-specific terms inside a production PSHA integral",
+    ]:
+        require(claim in audit, f"source-conditioned audit lacks: {claim}")
+
+
+def validate_sung2025_external_comparison() -> None:
+    metrics = read_csv("sung2025_kanto_sa5_external_metrics.csv")
+    require(len(metrics) == 6, f"unexpected Sung comparison rows: {len(metrics)}")
+    require(
+        {row["comparison_field"] for row in metrics}
+        == {
+            "crustal_observed",
+            "crustal_oof_spatial",
+            "crustal_oof_physical",
+            "full_observed",
+            "full_oof_spatial",
+            "full_oof_physical",
+        },
+        "Sung comparison field coverage changed",
+    )
+    primary = next(row for row in metrics if row["comparison_field"] == "crustal_observed")
+    require(int(primary["n_stations"]) == 364, "Sung source-matched station count changed")
+    require(0.303 < float(primary["pearson"]) < 0.305, "Sung source-matched Pearson changed")
+    require(0.371 < float(primary["spearman"]) < 0.373, "Sung source-matched Spearman changed")
+    require(
+        0.16 < float(primary["pearson_ci_low"]) < 0.17
+        and 0.43 < float(primary["pearson_ci_high"]) < 0.44,
+        "Sung source-matched spatial interval changed",
+    )
+    source_oof = next(row for row in metrics if row["comparison_field"] == "crustal_oof_spatial")
+    full_oof = next(row for row in metrics if row["comparison_field"] == "full_oof_spatial")
+    require(0.13 < float(source_oof["pearson"]) < 0.14, "Sung source-conditioned OOF result changed")
+    require(0.34 < float(full_oof["pearson"]) < 0.36, "Sung all-source OOF result changed")
+
+    matched = read_csv("sung2025_kanto_sa5_matched_station_fields.csv")
+    require(len(matched) == 2_259, f"unexpected Sung matched rows: {len(matched)}")
+    metadata = read_csv("sung2025_kanto_sa5_input_metadata.csv")
+    require(len(metadata) == 1, "Sung input metadata row missing")
+    meta = metadata[0]
+    require(int(meta["total_grid_rows"]) == 250_000, "Sung total grid size changed")
+    require(int(meta["valid_grid_rows"]) == 133_151, "Sung valid grid size changed")
+    require(
+        meta["input_sha256"] == "cb8917049b026b0f96dbf020c7f3dfdb1534c988b5dcbd6724d8e4b398c686b4",
+        "Sung extracted CSV digest changed",
+    )
+    threshold = float(meta["match_threshold_km"])
+    require(1.20 < threshold < 1.21, "Sung match threshold changed")
+    require(
+        max(float(row["grid_match_distance_km"]) for row in matched) <= threshold + 1e-9,
+        "a Sung station match exceeds the locked threshold",
+    )
+    audit = (SUPPLEMENT / "sung2025_kanto_sa5_external_comparison.md").read_text(encoding="utf-8")
+    for claim in [
+        "No geographic response-value screen is applied",
+        "Pearson correlation is 0.304",
+        "Spearman correlation is 0.372",
+        "does not equate the two amplitudes",
+    ]:
+        require(claim in audit, f"Sung external audit lacks: {claim}")
 
 
 def validate_mf2013_applicability() -> None:
@@ -1196,6 +1645,10 @@ def main() -> None:
     validate_references()
     validate_chinese_sync()
     validate_sample_selection()
+    validate_esm_external()
+    validate_source_category_response()
+    validate_source_conditioned_fields()
+    validate_sung2025_external_comparison()
     validate_mf2013_applicability()
     validate_kiknet_paired_sensor()
     validate_kiknet_spectral_shape()

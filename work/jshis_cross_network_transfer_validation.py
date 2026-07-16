@@ -355,11 +355,11 @@ def plot_results(aggregate: pd.DataFrame, metrics: pd.DataFrame) -> None:
         s=16,
         linewidths=0,
     )
-    fig.colorbar(points, ax=ax, label="Held-event station term (log$_{10}$)")
+    fig.colorbar(points, ax=ax, label="Fifth-group station term (log$_{10}$)")
     ax.set(
         xlabel="Longitude (°E)",
         ylabel="Latitude (°N)",
-        title="a  Unseen KiK-net stations and events at 3.0 s",
+        title="a  Independent KiK-net terms at 3.0 s",
     )
 
     ax = axes[0, 1]
@@ -380,6 +380,7 @@ def plot_results(aggregate: pd.DataFrame, metrics: pd.DataFrame) -> None:
         [0.005, 0.995],
     )
     ax.plot(limits, limits, color="#444444", lw=1.2, ls="--")
+    ax.text(0.96, 0.04, "Dashed: equality", transform=ax.transAxes, ha="right", color="#444444")
     ax.text(
         0.04,
         0.96,
@@ -394,13 +395,13 @@ def plot_results(aggregate: pd.DataFrame, metrics: pd.DataFrame) -> None:
     ax.set(
         xlim=limits,
         ylim=limits,
-        xlabel="Frozen K-NET prediction (log$_{10}$)",
-        ylabel="Observed KiK-net station term (log$_{10}$)",
-        title="b  Network- and event-external prediction",
+        xlabel="Fixed K-NET estimate (log$_{10}$)",
+        ylabel="Record-derived KiK-net station term (log$_{10}$)",
+        title="b  Cross-network independent-earthquake test",
     )
 
     colors = {"physical_hgb": "#D55E00", "physical_spatial_hgb": "#0072B2"}
-    labels = {"physical_hgb": "Physical", "physical_spatial_hgb": "Physical + spatial"}
+    labels = {"physical_hgb": "Site parameters", "physical_spatial_hgb": "Site + regional"}
     ax = axes[1, 0]
     for model_name, block in selected.groupby("model"):
         block = block.sort_values("period_s")
@@ -423,8 +424,8 @@ def plot_results(aggregate: pd.DataFrame, metrics: pd.DataFrame) -> None:
     ax.set_xticks([0.1, 0.2, 0.5, 1, 2, 3, 5], labels=["0.1", "0.2", "0.5", "1", "2", "3", "5"])
     ax.set(
         xlabel="Period (s)",
-        ylabel="Observed-predicted correlation",
-        title="c  Transfer across response periods",
+        ylabel="Record-derived versus estimated",
+        title="c  Correlation across response periods",
     )
     ax.legend(frameon=False)
 
@@ -530,9 +531,9 @@ def run(args: argparse.Namespace) -> None:
         & metrics["period_s"].eq(3.0)
     ].iloc[0]
     lines = [
-        "# Cross-network and held-event station-term validation",
+        "# Cross-network and independent-earthquake station-term validation",
         "",
-        "K-NET station terms are estimated only from training events. The fixed public-variable model is then evaluated against KiK-net station terms estimated only from disjoint held-out events. The reverse direction is retained as a transfer stress test.",
+        "K-NET station terms are estimated from four earthquake groups. The fixed public-parameter relation is compared with KiK-net station terms estimated from the independent fifth group. The reverse network direction is retained as a sensitivity.",
         "",
         f"- Event folds: {args.folds}; fixed seed: {args.seed}.",
         f"- SA(3.0 s) K-NET to KiK-net target stations: {int(primary['n_test_stations']):,}.",

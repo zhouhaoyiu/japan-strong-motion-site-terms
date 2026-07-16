@@ -512,7 +512,7 @@ def save_figure(rows: pd.DataFrame, bins: pd.DataFrame, event_summary: pd.DataFr
             labels.append(event_id)
             data.append(vals.to_numpy())
     ax.boxplot(data, tick_labels=labels, showfliers=False)
-    ax.axhline(0.0, color="0.25", lw=0.9)
+    ax.axhline(0.0, color="0.25", lw=0.9, ls="--")
     ax.set_ylabel("log10 horizontal PGA ratio")
     ax.set_title("A Surface/downhole PGA ratio by event")
     ax.tick_params(axis="x", rotation=20)
@@ -522,7 +522,7 @@ def save_figure(rows: pd.DataFrame, bins: pd.DataFrame, event_summary: pd.DataFr
     band_labels = [f"{lo:g}-{hi:g}" for lo, hi in FREQ_BANDS]
     data = [pd.to_numeric(rows[col], errors="coerce").dropna().to_numpy() for col in band_cols]
     ax.boxplot(data, tick_labels=band_labels, showfliers=False)
-    ax.axhline(0.0, color="0.25", lw=0.9)
+    ax.axhline(0.0, color="0.25", lw=0.9, ls="--")
     ax.set_xlabel("Frequency band (Hz)")
     ax.set_ylabel("log10 transfer ratio")
     ax.set_title("B Frequency-band transfer ratios")
@@ -543,7 +543,7 @@ def save_figure(rows: pd.DataFrame, bins: pd.DataFrame, event_summary: pd.DataFr
             color=colors.get(str(event_id), None),
             label=f"{event_id} median",
         )
-    ax.axhline(1.0, color="0.25", lw=0.9)
+    ax.axhline(1.0, color="0.25", lw=0.9, ls="--")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("Frequency (Hz)")
@@ -565,7 +565,7 @@ def save_figure(rows: pd.DataFrame, bins: pd.DataFrame, event_summary: pd.DataFr
             color=colors.get(str(event_id), None),
             label=str(event_id),
         )
-    ax.axhline(1.0, color="0.25", lw=0.9)
+    ax.axhline(1.0, color="0.25", lw=0.9, ls="--")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("Downhole horizontal PGA proxy")

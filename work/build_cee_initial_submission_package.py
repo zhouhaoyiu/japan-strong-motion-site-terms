@@ -68,8 +68,9 @@ def build_reviewer_archive(path: Path) -> None:
         "environment specification, manuscript sources, validation scripts and compact derived tables needed "
         "to audit the reported summary statistics.",
         "",
-        "The third-party J-SHIS/NIED archives are not redistributed. Download locations, byte sizes and SHA-256 "
-        "hashes are listed in public_inputs_manifest.tsv. Run work/verify_public_inputs.py before reproducing the analyses.",
+        "The third-party J-SHIS/NIED, Sung et al. supplement and ESM archives are not redistributed. Public-input "
+        "locations, byte sizes and SHA-256 hashes are listed in public_inputs_manifest.tsv. The ESM script records its exact version 3 query "
+        "and snapshot digest. Run work/verify_public_inputs.py before reproducing the Japanese analyses.",
         "",
         "Large station-level and spectrum-level derived matrices are excluded from this upload-size-controlled "
         "archive. They are deterministic outputs of the included scripts and will be included in the public "

@@ -1,0 +1,4 @@
+period_s,source_region,target_region,features,prediction_centering,n_source_stations,n_target_stations,pearson,pearson_ci_low,pearson_ci_high,rmse_gain_pct,rmse_gain_pct_ci_low,rmse_gain_pct_ci_high
+1.0,Japan K-NET,ESM Europe post-2015,"log10(Vs30), elevation",target_prediction_weighted_zero_without_labels,1039,265,0.07922988368688991,-0.027399156352159625,0.19249146505883794,-5.907717750612518,-12.330318321809564,-0.8381237224751366
+2.0,Japan K-NET,ESM Europe post-2015,"log10(Vs30), elevation",target_prediction_weighted_zero_without_labels,1039,265,0.04335960445353435,-0.07226601917132527,0.16347716901542958,-3.719056259506659,-7.999886371741006,0.053056262321477775
+3.0,Japan K-NET,ESM Europe post-2015,"log10(Vs30), elevation",target_prediction_weighted_zero_without_labels,1039,265,0.04738949616118629,-0.06292936469652603,0.15673954773631985,-2.7565081808792913,-6.600202840152329,0.5669923809740187

@@ -621,22 +621,40 @@ def plot_results(stations: pd.DataFrame, metrics: pd.DataFrame) -> None:
         linewidths=0,
     )
     fig.colorbar(points, ax=ax, label=r"Median $\log_{10}$(surface/borehole)")
-    ax.set(xlabel="Longitude (°E)", ylabel="Latitude (°N)", title="a  KiK-net paired transfer at 3.0 s")
+    ax.set(xlabel="Longitude (°E)", ylabel="Latitude (°N)", title="a  Surface-to-borehole ratio at 3.0 s")
 
     ax = axes[0, 1]
     ax.scatter(
         linked["transfer_log10_median"],
         linked["station_effect_log10"],
-        s=np.clip(linked["n_paired_records"], 8, 80),
-        alpha=0.55,
+        s=12,
+        alpha=0.22,
         color="#2878B5",
         linewidths=0,
+        rasterized=True,
     )
-    slope, intercept = np.polyfit(
-        linked["transfer_log10_median"], linked["station_effect_log10"], 1
+    linked["transfer_bin"] = pd.qcut(
+        linked["transfer_log10_median"], q=8, labels=False, duplicates="drop"
     )
-    xline = np.linspace(linked["transfer_log10_median"].min(), linked["transfer_log10_median"].max(), 100)
-    ax.plot(xline, intercept + slope * xline, color="#C43C39", lw=1.6)
+    binned = linked.groupby("transfer_bin").agg(
+        x=("transfer_log10_median", "median"),
+        y=("station_effect_log10", "median"),
+        y25=("station_effect_log10", lambda values: values.quantile(0.25)),
+        y75=("station_effect_log10", lambda values: values.quantile(0.75)),
+    )
+    ax.errorbar(
+        binned["x"],
+        binned["y"],
+        yerr=np.vstack([binned["y"] - binned["y25"], binned["y75"] - binned["y"]]),
+        fmt="o",
+        linestyle="none",
+        markersize=4.2,
+        capsize=2.5,
+        color="#C43C39",
+        ecolor="#C43C39",
+        label="Equal-count-bin median and IQR",
+        zorder=3,
+    )
     row3 = full[full["period_s"].eq(3.0)].iloc[0]
     ax.text(
         0.04,
@@ -648,16 +666,17 @@ def plot_results(stations: pd.DataFrame, metrics: pd.DataFrame) -> None:
     ax.set(
         xlabel=r"Median $\log_{10}$(surface/borehole)",
         ylabel="MF2013 station term (log$_{10}$)",
-        title="b  Paired-sensor correspondence",
+        title="b  Single-period station association",
     )
+    ax.legend(frameon=False, fontsize=7.2, loc="lower right")
 
     ax = axes[1, 0]
-    ax.plot(full["period_s"], full["station_transfer_pearson"], "o-", label="Station field, Pearson")
-    ax.plot(full["period_s"], full["station_transfer_spearman"], "s-", label="Station field, Spearman")
-    ax.plot(means["period_s"], means["transfer_train_test_pearson"], "^-", label="Transfer across events")
+    ax.plot(full["period_s"], full["station_transfer_pearson"], "o-", label="Station terms, Pearson")
+    ax.plot(full["period_s"], full["station_transfer_spearman"], "s-", label="Station terms, Spearman")
+    ax.plot(means["period_s"], means["transfer_train_test_pearson"], "^-", label="Ratio repeatability")
     ax.set_xscale("log")
     ax.set_xticks([0.1, 0.2, 0.5, 1, 2, 3, 5], labels=["0.1", "0.2", "0.5", "1", "2", "3", "5"])
-    ax.set(xlabel="Period (s)", ylabel="Correlation", ylim=(0, 1.02), title="c  Period dependence and event stability")
+    ax.set(xlabel="Period (s)", ylabel="Correlation", ylim=(0, 1.02), title="c  Period dependence and group repeatability")
     ax.legend(frameon=False, fontsize=8)
 
     ax = axes[1, 1]
@@ -669,7 +688,7 @@ def plot_results(stations: pd.DataFrame, metrics: pd.DataFrame) -> None:
     ax.plot(periods, correlations, "o-", color="#2878B5", label="Correlation")
     ax.set_xscale("log")
     ax.set_xticks([0.1, 0.2, 0.5, 1, 2, 3, 5], labels=["0.1", "0.2", "0.5", "1", "2", "3", "5"])
-    ax.set(xlabel="Period (s)", ylabel="Test-event correlation", ylim=(0, 0.8), title="d  Held-event prediction from paired transfer")
+    ax.set(xlabel="Period (s)", ylabel="Fifth-group correlation", ylim=(0, 0.8), title="d  Station-term estimate from paired ratios")
     twin = ax.twinx()
     twin.plot(
         periods,
@@ -791,7 +810,7 @@ def run(args: argparse.Namespace) -> None:
         f"- Median within-station spectral-shape correlation and positive fraction: {full_shape['median_within_station_shape_correlation']:.3f} and {100 * full_shape['positive_within_station_shape_fraction']:.1f}%.",
         f"- Mean spectral-shape correlation with transfer ratios and station terms estimated from disjoint events: {held_shape['shape_pearson']:.3f}.",
         "",
-        "The paired-sensor result provides an independent physical correlate of the event-adjusted surface station field. It is a validation of station-level response, not a calibrated nonlinear transfer-function model.",
+        "The paired-sensor result provides an independent physical correlate of the event-adjusted surface station terms. It validates their station-level period dependence. A nonlinear site-response model would require input-motion-dependent calibration beyond this comparison.",
     ]
     OUT_AUDIT.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"wrote {OUT_STATIONS}", flush=True)

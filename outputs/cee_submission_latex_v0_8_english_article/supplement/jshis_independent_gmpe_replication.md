@@ -29,7 +29,7 @@ OpenQuake engine version: 3.25.1.
 
 ## Boundary
 
-This analysis changes the regional ground-motion model while retaining the same observations. It tests model dependence of the station field; it is not an independent-network validation or an official Zhao input-preparation reproduction.
+This analysis changes the regional ground-motion model while retaining the same observations. It measures model dependence of the station terms. Independent-network evidence is evaluated separately, and the Zhao calculation uses the available flatfile inputs.
 
 ## Convergence
 

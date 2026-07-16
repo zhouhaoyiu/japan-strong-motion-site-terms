@@ -170,6 +170,121 @@ def validate_claim_tables() -> None:
         late = [row["origin_time"] for row in rows if row["partition"] == "late_test"]
         require(early and late and max(early) < min(late), "chronological event split leaks across time")
 
+    esm_selection = read_csv("esm_external_selection_audit.csv")
+    esm_primary_selection = next(
+        row
+        for row in esm_selection
+        if row["analysis"] == "bindi2014_rhyp_mw4.5-7.6_2015-01-01"
+        and row["stage"] == "iterative_event_station_support"
+    )
+    require(int(esm_primary_selection["n_records"]) == 13_430, "ESM primary record count changed")
+    require(int(esm_primary_selection["n_events"]) == 634, "ESM primary event count changed")
+    esm_means = [
+        row
+        for row in read_csv("esm_external_repeatability_metrics.csv")
+        if row["scope"] == "fold_mean"
+        and row["backbone"] == "bindi2014_rhyp"
+        and float(row["minimum_mw"]) == 4.5
+    ]
+    require(len(esm_means) == 3, "ESM primary period coverage changed")
+    esm3 = next(row for row in esm_means if float(row["period_s"]) == 3.0)
+    require(0.9277 < float(esm3["pearson"]) < 0.9280, "ESM SA3 recurrence changed")
+    require(66.3 < float(esm3["rmse_gain_pct"]) < 66.5, "ESM SA3 gain changed")
+    require(float(esm3["pearson_ci_low"]) > 0.89, "ESM SA3 recurrence interval degraded")
+    esm_transfer3 = next(
+        row
+        for row in read_csv("esm_cross_region_transfer_metrics.csv")
+        if float(row["period_s"]) == 3.0
+    )
+    require(
+        esm_transfer3["prediction_centering"] == "target_prediction_weighted_zero_without_labels",
+        "Japan-to-ESM centring rule changed",
+    )
+    require(0.046 < float(esm_transfer3["pearson"]) < 0.049, "Japan-to-ESM SA3 transfer changed")
+    require(float(esm_transfer3["rmse_gain_pct"]) < 0, "adverse Japan-to-ESM transfer disappeared")
+
+    esm_spatial = read_csv("esm_local_spatial_prediction_metrics.csv")
+    require(
+        {int(float(row["n_spatial_blocks"])) for row in esm_spatial} == {3},
+        "ESM spatial-block count changed",
+    )
+    esm_spatial3 = next(
+        row
+        for row in esm_spatial
+        if row["scope"] == "overall"
+        and row["model"] == "common_site_hgb"
+        and float(row["period_s"]) == 3.0
+    )
+    esm_event_space3 = next(
+        row
+        for row in esm_spatial
+        if row["scope"] == "event_fold_mean"
+        and row["model"] == "common_site_hgb"
+        and float(row["period_s"]) == 3.0
+    )
+    require(0.073 < float(esm_spatial3["pearson"]) < 0.075, "ESM local SA3 correlation changed")
+    require(-3.8 < float(esm_spatial3["rmse_gain_pct"]) < -3.5, "ESM local SA3 gain changed")
+    require(0.020 < float(esm_event_space3["pearson"]) < 0.022, "ESM event-space SA3 correlation changed")
+    require(-3.9 < float(esm_event_space3["rmse_gain_pct"]) < -3.5, "ESM event-space SA3 gain changed")
+    require(
+        all(
+            float(row["rmse_gain_pct"]) < 0
+            for row in esm_spatial
+            if row["scope"] in {"overall", "event_fold_mean"}
+        ),
+        "an adverse ESM spatial result disappeared",
+    )
+
+    source_summary = read_csv("jshis_source_category_surface_spectrum_summary.csv")
+    require(len(source_summary) == 96, "source-category summary coverage changed")
+    source3 = {
+        row["source_category"]: row
+        for row in source_summary
+        if float(row["period_s"]) == 3.0 and row["probability_level"] == "50y_10pct"
+    }
+    require(set(source3) == {"all_earthquakes", "active_shallow", "subduction"}, "source-category SA3 rows missing")
+    require(0.030 < float(source3["active_shallow"]["official_vs400_sa_g_q50"]) < 0.032, "active-shallow median changed")
+    require(0.070 < float(source3["subduction"]["official_vs400_sa_g_q50"]) < 0.072, "subduction median changed")
+    source_stations = read_csv("jshis_source_category_sa3_station_comparison.csv")
+    source_counts: dict[str, int] = defaultdict(int)
+    for row in source_stations:
+        source_counts[row["dominant_source_category"]] += 1
+    require(
+        dict(source_counts) == {"subduction": 1_428, "active_shallow": 200},
+        f"source-category station counts changed: {dict(source_counts)}",
+    )
+
+    conditioned = [
+        row
+        for row in read_csv("jshis_source_conditioned_station_metrics.csv")
+        if row["model"] == "physical_spatial_hgb" and row["scope"] == "overall"
+    ]
+    require(len(conditioned) == 24, "source-conditioned metric coverage changed")
+    conditioned_by_key = {
+        (row["source_type"], float(row["period_s"])): row for row in conditioned
+    }
+    require(
+        14.2
+        < float(conditioned_by_key[("Intraplate", 3.0)]["rmse_reduction_vs_zero_pct"])
+        < 14.4
+        and 14.7
+        < float(conditioned_by_key[("Intraplate", 5.0)]["rmse_reduction_vs_zero_pct"])
+        < 14.9,
+        "source-conditioned intraplate result changed",
+    )
+    require(
+        float(conditioned_by_key[("Crustal", 0.1)]["rmse_reduction_vs_zero_pct"]) < 0
+        and float(conditioned_by_key[("Interplate", 2.0)]["rmse_reduction_vs_zero_pct"]) < 0,
+        "an adverse source-conditioned result disappeared",
+    )
+
+    sung = read_csv("sung2025_kanto_sa5_external_metrics.csv")
+    require(len(sung) == 6, "Sung comparison coverage changed")
+    sung_primary = next(row for row in sung if row["comparison_field"] == "crustal_observed")
+    require(int(sung_primary["n_stations"]) == 364, "Sung matched count changed")
+    require(0.303 < float(sung_primary["pearson"]) < 0.305, "Sung Pearson result changed")
+    require(0.16 < float(sung_primary["pearson_ci_low"]) < 0.17, "Sung lower interval changed")
+
     interval = read_csv("jshis_hazard_impact_interval_robustness.csv")
     interval3 = next(
         row
@@ -226,6 +341,10 @@ def validate_manuscript_sources() -> None:
         "19.4\\%",
         "1,277",
         "0.635",
+        "0.304",
+        "0.163--0.434",
+        "14.3\\%",
+        "14.8\\%",
         "79.7\\%",
         "2.0\\%",
         "12.6\\%",
@@ -236,11 +355,17 @@ def validate_manuscript_sources() -> None:
         "35,857",
         "$-2.3\\%$",
         "0.660--1.503",
+        "13,430",
+        "0.928",
+        "0.047",
+        "$-3.6\\%$",
+        "$-7.6\\%$",
+        "1,428 of 1,628",
     ]:
         require(claim in main, f"main manuscript lacks: {claim}")
     require(main.count("accompanying peer-review archive") >= 2, "review archive is not declared")
-    require(supplement.count(r"\begin{table}") == 20, "Supplementary Information table count changed")
-    require(supplement.count(r"\begin{figure}") == 11, "Supplementary Information figure count changed")
+    require(supplement.count(r"\begin{table}") == 26, "Supplementary Information table count changed")
+    require(supplement.count(r"\begin{figure}") == 14, "Supplementary Information figure count changed")
 
 
 def main() -> None:

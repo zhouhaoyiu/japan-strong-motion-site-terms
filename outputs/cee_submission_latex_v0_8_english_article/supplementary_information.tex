@@ -24,7 +24,7 @@
 \begin{center}
 {\Large\bfseries Supplementary Information\par}
 \vspace{0.5em}
-{\large Repeatable station terms redistribute long-period response spectra across Japanese strong-motion sites\par}
+{\large Repeatable station terms modify fixed-probability long-period response spectra at stations across Japan\par}
 \vspace{0.5em}
 {Haoyu Zhou and Qiang Ma\par}
 \end{center}
@@ -49,15 +49,15 @@ For residual $r_{ij}$ at station $i$ during event $j$, the additive model is
 \begin{equation}
 r_{ij}=\mu+\delta E_j+\delta S_i+\epsilon_{ij}.
 \end{equation}
-Alternating grouped least squares estimates $\delta E_j$ and $\delta S_i$. Record-count-weighted event and station means are constrained to zero, so $\mu$ contains the global offset. Iteration stops when the largest parameter change falls below $10^{-10}$ log$_{10}$ units. All 24 period-model combinations converge; the largest final change is $9.99\times10^{-11}$ and the largest iteration count is 1,161.
+Here, $\mu$ is the global intercept, $\delta E_j$ is the between-event residual, $\delta S_i$ is the site-to-site residual, and $\epsilon_{ij}$ is the remaining within-site residual. We refer to $\delta S_i$ as the station term. It can contain repeatable local site response, unresolved average path effects and persistent instrument effects. Alternating grouped least squares estimates $\delta E_j$ and $\delta S_i$. Record-count-weighted event and station means are constrained to zero, so $\mu$ contains the global offset. Iteration stops when the largest parameter change falls below $10^{-10}$ log$_{10}$ units. All 24 period-model combinations converge; the largest final change is $9.99\times10^{-11}$ and the largest iteration count is 1,161.
 
 \subsection*{Event group repeatability}
 
-The 1,737 usable earthquakes are assigned to five groups with a fixed random seed. The same partition is used at every period and for both ground-motion backbones. Each fold fits the two-way event-station decomposition separately to four training groups and the held-out group. Paired train and test station vectors are centred with their respective record counts. A station requires at least 15 training records and five test records. The comparison uses the train-test station correlation and the test-record-weighted root mean squared error relative to a zero station term. Each fold contains 347 or 348 test events, and every training and test decomposition converges below $10^{-10}$ log$_{10}$ units.
+The 1,737 usable earthquakes are assigned to five groups with a fixed random seed. The same partition is used at every period and for both ground-motion models. Each fold estimates station terms separately from four earthquake groups and the fifth group. The two station-term vectors are centred with their respective record counts. A station requires at least 15 records in the four-group estimate and five records in the independent fifth-group estimate. We report their correlation and the record-weighted root mean squared error of the fifth-group terms relative to a zero station term. Each fifth group contains 347 or 348 earthquakes, and every decomposition converges below $10^{-10}$ log$_{10}$ units.
 
-\subsection*{Spatial prediction}
+\subsection*{Spatial estimation of station terms}
 
-Five spatial blocks are produced by $k$-means clustering of standardised longitude and latitude. The site-only model uses shallow-velocity averages, sedimentary-depth variables, elevation, sensor depth and network. The site-and-location model adds station coordinates and two volcanic-front distances. Both histogram gradient-boosting models use fixed hyperparameters: learning rate 0.04, 400 iterations, 15 maximum leaf nodes, 35 minimum samples per leaf and L2 regularisation 0.1. Numeric variables are median-imputed within training folds; network is mode-imputed and one-hot encoded. Predictions are generated only for the held-out block and are centred to a record-weighted zero mean before spectrum propagation. A separate complexity sensitivity changes maximum leaf nodes to 7 or 31, minimum samples per leaf to 70, L2 regularisation to 1.0, or the iteration budget to 200. Each setting retains the same folds, preprocessing, weights and random seed, and no alternative is selected as a replacement for the primary model.
+Five spatial blocks are produced by $k$-means clustering of standardised longitude and latitude. VS10, VS20 and VS30 are borehole-profile averages of shear-wave velocity in the upper 10, 20 and 30 m. AVS30 is the corresponding upper-30-m average from the J-SHIS shallow-subsurface model. D1100, D1400, D1700 and D2100 are depths to the tops of layers with shear-wave velocities of 1.1, 1.4, 1.7 and 2.1 km s$^{-1}$, and Dbase is the depth to seismological bedrock. Velocities are in m s$^{-1}$ and depths are in m. The site-parameter model uses these variables, elevation, sensor depth and network. The site-and-regional-parameter model adds longitude, latitude and distance from each station to the northeastern and southwestern Japanese volcanic fronts. Both histogram gradient-boosting models use fixed hyperparameters: learning rate 0.04, 400 iterations, 15 maximum leaf nodes, 35 minimum samples per leaf and L2 regularisation 0.1. Numeric variables are median-imputed within each estimation fold; network is mode-imputed and one-hot encoded. Estimates are generated only for the test block and are centred to a record-weighted zero mean before spectrum propagation. A separate complexity sensitivity changes maximum leaf nodes to 7 or 31, minimum samples per leaf to 70, L2 regularisation to 1.0, or the iteration budget to 200. Each setting retains the same blocks, preprocessing, weights and random seed.
 
 \subsection*{MF2013 applicability sensitivity}
 
@@ -70,121 +70,160 @@ with PGA in cm s$^{-2}$ and source distance $X$ in km. The coefficients are
 (a,b,c,d)&=(0.556,-0.003070,0.2560,0.00547), && H\leq30~\mathrm{km},\\
 (a,b,c,d)&=(0.409,-0.00389,1.5600,0), && H>30~\mathrm{km}.
 \end{align*}
-The Kanno station-amplification term is excluded because MF2013 applies this screen as a magnitude--distance boundary. The relation is evaluated at each record distance after the $M_w$ and 200 km screens. Events with fewer than five remaining stations are then removed. The resulting sample contains 35,857 records from 411 earthquakes, including 578 stations with at least 20 records. Residual decomposition, event holdout, spatial prediction and spectrum propagation are repeated without changing the remaining settings.
+The Kanno station-amplification term is excluded because MF2013 applies this screen as a magnitude--distance boundary. The relation is evaluated at each record distance after the $M_w$ and 200 km screens. Events with fewer than five remaining stations are then removed. The resulting sample contains 35,857 records from 411 earthquakes, including 578 stations with at least 20 records. Residual decomposition, independent-earthquake-group comparison, spatial estimation and spectrum propagation are repeated without changing the remaining settings.
 
 \subsection*{KiK-net paired-sensor validation}
 
-Ground-surface and borehole rows at a KiK-net site are paired by earthquake and site code. The pairing is one-to-one and yields 102,428 positive RotD100 pairs at every analysed period, spanning 699 sites and 1,410 earthquakes. A site's transfer proxy is the median log$_{10}$ surface-to-borehole ratio. Pearson, Spearman and record-count-weighted correlations compare this proxy with the primary station term. A depth-adjusted Pearson correlation first removes separate linear trends with log borehole depth from both variables.
+Ground-surface and borehole rows at a KiK-net site are paired by earthquake and site code. The pairing is one-to-one and yields 102,428 positive RotD100 pairs at every analysed period, spanning 699 sites and 1,410 earthquakes. For each station and period, we calculate the median log$_{10}$ ratio of surface to borehole RotD100 spectral acceleration. Pearson, Spearman and record-count-weighted correlations compare this response-spectrum ratio with the primary surface station term. A depth-adjusted Pearson correlation first removes separate linear trends with log borehole depth from both quantities.
 
-The primary five-group event partition supplies a held-event test. For each fold, station terms are fitted separately to training and held-out surface records. Training-event transfer ratios are calibrated to training-event station terms by weighted linear regression, then used to predict held-out station terms. The prediction never uses a paired ratio from a held-out earthquake. Stations require at least 15 training pairs and five held-out surface records. Transfer repeatability compares median ratios formed independently from the training and held-out earthquakes.
+The primary five-group earthquake partition supplies an independent-group test. For each fold, station terms are estimated separately from four earthquake groups and the fifth group. A weighted linear relation between response-spectrum ratios and surface station terms is fitted with the four groups, then applied to station terms estimated from the fifth group. The fifth-group estimate uses no response-spectrum ratio from those earthquakes. Stations require at least 15 pairs in the four groups and five surface records in the fifth group. Ratio repeatability compares medians formed independently from the two earthquake sets.
 
-The spectral-shape calculation retains stations represented at all eight periods. Separate station and period means are removed from the station-term and transfer-ratio matrices. This isolates station-specific frequency dependence from average amplification and the network-wide response curve. Cluster-bootstrap intervals resample complete station spectra. In each held-event fold, the transfer spectrum is estimated from four event groups and the station-term spectrum from the fifth, followed by separate two-way centring within that fold.
+The spectral-shape calculation retains stations represented at all eight periods. Separate station and period means are removed from the station-term and surface-to-borehole response-spectrum-ratio matrices. This isolates station-specific period dependence from average amplification and the network-wide response curve. Cluster-bootstrap intervals resample complete station spectra. In each fold, ratio spectra use four earthquake groups and station-term spectra use the fifth; two-way centring is repeated within the fold.
 
 \subsection*{Alternative ground-motion-model calculation}
 
-We evaluate the Zhao et al. 2006 active-crustal, interface and intraslab equations with OpenQuake Engine 3.25.1\cite{zhao2006,pagani2014}. The flatfile source class selects the equation branch. Moment magnitude, hypocentral depth and crustal rake are read from the source table; documented shortest fault distance is supplied as rupture distance, and AVS30 is supplied as VS30. RotD50 is used as the closest orientation-independent coordinate to the model's geometric-mean target. The same surface observations, periods, station threshold, event folds and spatial folds are used for the MF2013 and Zhao calculations. This changes the ground-motion backbone while retaining the data and validation design.
+We evaluate the Zhao et al. 2006 active-crustal, interface and intraslab equations with OpenQuake Engine 3.25.1\cite{zhao2006,pagani2014}. The flatfile source class selects the equation branch. Moment magnitude, hypocentral depth and crustal rake are read from the source table; documented shortest fault distance is supplied as rupture distance, and AVS30 is supplied as $V_{S30}$. RotD50 is used as the closest orientation-independent coordinate to the model's geometric-mean target. The same surface observations, periods, station threshold, earthquake groups and spatial blocks are used for the MF2013 and Zhao calculations. This changes the regional ground-motion model while retaining the data and evaluation design.
 
-\subsection*{Transfer and event-influence tests}
+\subsection*{European external replication}
 
-The first cross-network stress test trains on K-NET and evaluates KiK-net, then reverses the direction. A common-feature model removes VS20, VS30 and network identity because these fields have different completeness in the two networks. It retains VS10, AVS30, sedimentary depths, elevation, sensor depth, coordinates and volcanic-front distances.
+Version 3 of the Engineering Strong-Motion database was queried through its flatfile web service\cite{esm2026}. The local snapshot contains 41,841 rows and events through 7 July 2026; its SHA-256 digest is \texttt{084ef4c7519fdeb2}\allowbreak\texttt{6a05db9ad980535c}\allowbreak\texttt{d4c2207b2358d6b6}\allowbreak\texttt{68cd5dafb4f0c724}. The query requests BEST and GOOD HN, HG and HL records with magnitude at least 4.5, epicentral distance no greater than 300 km, no late trigger and spectra at 1.0, 2.0 and 3.0 s. The primary sample retains $4.5\leq M_w\leq7.6$ shallow events and stations within 25--72$^\circ$ N and 25$^\circ$ W--45$^\circ$ E, surface instruments away from structures, positive VS30 and positive as-recorded horizontal spectra. Events begin on 1 January 2015, after publication of the fixed Bindi et al. model\cite{bindi2014}. Multiple channels for one event--station pair are ranked by record quality, manual processing and channel type before deduplication. Iterative support filtering requires five records per event and three per station, leaving 13,430 records from 634 events and 539 stations.
 
-A stricter test separates both network and earthquake sample. We retain 1,286 earthquakes with at least five records in each network and assign them to five fixed groups. K-NET station terms from four groups train models with fixed primary hyperparameters; KiK-net station terms are estimated only from the fifth group. Physical models contain no network indicator. Source stations require 15 training records and targets require five held-event records. Predictions are centred by the source-network training predictions without target recentering. The reverse direction uses the same groups and settings. Target-station bootstrap intervals use 2,000 replicates.
+The primary residual subtracts the OpenQuake Bindi et al. hypocentral-distance model with Eurocode 8 site classes and unspecified faulting from the geometric mean of the as-recorded horizontal spectra. Disconnected station--event graph components are solved separately. Five fixed earthquake groups are decomposed independently, with at least 15 records in the four-group estimate and five records in the fifth-group estimate at each station. The two vectors are centred within their intersecting graph-component pair, using fifth-group record counts. Only component pairs with ten stations enter the pooled statistic. Station-cluster bootstrap intervals use 2,000 replicates. A magnitude sensitivity raises the lower bound to $M_w=5.0$. A second sensitivity uses the Kotha et al. model, its $M_w\leq7.4$ regression range, Joyner--Boore distance and RotD50\cite{kotha2020}; its smaller connected sample uses thresholds of ten records in the four groups, three records in the fifth group and three stations per component pair.
 
-The chronological test retains 1,277 of these earthquakes with finite origin times and orders them before any station-term estimation. Fixed early/late splits of 70/30, 80/20 and 90/10 are evaluated. Early-event station terms from one network train the frozen model, and later-event station terms from the other network supply the target. The features, thresholds, hyperparameters and source-only centring match the random-event test. Origin time is used only to assign events. Every cutoff and both transfer directions are retained in the output. An event-level split table records each earthquake, timestamp and partition.
+For cross-region estimation, the fixed Japanese K-NET relation retains log$_{10}$($V_{S30}$) and elevation, the only continuous site variables available in both archives. It is applied without refitting to the 265 ESM stations with at least 15 primary records. The record-weighted mean of the estimates is removed without using ESM station terms. Sedimentary-depth and volcanic-front variables are omitted because ESM does not supply harmonised counterparts.
 
-Fixed macroregions are defined by reproducible latitude and longitude boundaries. Event influence is measured after deleting each of the ten events with the largest 3.0 s record count and after deleting all ten at every period. A record-weighted mean shift aligns each perturbed station field with the full field before comparison.
+Local ESM spatial estimation is evaluated in the largest connected station--event component, which contains 236 stations with at least 15 records. We request five $k$-means blocks and reduce the count until every block contains at least 30 stations; the rule selects three blocks without access to response values. The common-site model uses log$_{10}$($V_{S30}$) and elevation. The metadata model adds slope and the ESM housing, installation and reference-site categories. The metadata-and-location model also adds longitude and latitude. Median imputation, fold-specific categorical encoding, model hyperparameters, station weights and 2,000-replicate station bootstrap follow the Japanese spatial test. Categorical fields with no observed estimation value are omitted in that fold. A second design separates both one earthquake group and one spatial block: station terms from four earthquake groups fit the model outside the block, and independently estimated fifth-group terms inside the block provide the score. No result is used for hyperparameter or block selection.
+
+\subsection*{Cross-network and event-influence tests}
+
+The first cross-network test estimates a relation with K-NET and applies it to KiK-net, then reverses the direction. A common-variable model removes VS20, VS30 and network identity because these fields have different completeness in the two networks. It retains VS10, AVS30, sedimentary depths, elevation, sensor depth, coordinates and volcanic-front distances.
+
+A stricter test separates both network and earthquake sample. We retain 1,286 earthquakes with at least five records in each network and assign them to five fixed groups. K-NET station terms from four groups fit models with the fixed primary settings; KiK-net station terms are estimated only from the fifth group. The site-parameter model contains no network indicator. Source stations require 15 records in the four groups and target stations require five records in the fifth group. Estimates are centred by the mean source-network estimate without target recentering. The reverse direction uses the same groups and settings. Target-station bootstrap intervals use 2,000 replicates.
+
+The chronological test retains 1,277 of these earthquakes with finite origin times and orders them before any station-term estimation. Fixed early/late splits of 70/30, 80/20 and 90/10 are evaluated. Early-earthquake station terms from one network fit a fixed relation, and later-earthquake station terms from the other network supply the comparison. The variables, thresholds, model settings and source-only centring match the random-group test. Origin time is used only to assign earthquakes. Every cutoff and both network directions are retained in the output. An earthquake-level split table records each event, timestamp and partition.
+
+Fixed macroregions are defined by reproducible latitude and longitude boundaries. Event influence is measured after deleting each of the ten events with the largest 3.0 s record count and after deleting all ten at every period. A record-weighted mean shift aligns each perturbed set of station terms with the full-sample terms before comparison.
 
 \subsection*{Path and source stratification}
 
-Records are grouped into four hypocentral-bearing sectors, four shortest-fault-distance bins and three source classes. Bearing is the initial great-circle direction from the source horizontal coordinates to the station. Stratification can disconnect the bipartite station-event graph, especially within 50 km. Each graph component is solved separately by sparse least squares. Stations require ten records within a stratum, retained components require ten supported stations, and every component is aligned to the full station field by its record-weighted mean difference. Across all 88 period-stratum fits, the maximum relative normal-equation residual is $1.90\times10^{-9}$ and every solver returns an accepted convergence code.
+Records are grouped into four hypocentral-bearing sectors, four shortest-fault-distance bins and three source classes. Bearing is the initial great-circle direction from the source horizontal coordinates to the station. Stratification can disconnect the bipartite station-event graph, especially within 50 km. Each graph component is solved separately by sparse least squares. Stations require ten records within a stratum, retained components require ten supported stations, and every component is aligned to the full-sample station terms by its record-weighted mean difference. Across all 88 period-stratum fits, the maximum relative normal-equation residual is $1.90\times10^{-9}$ and every solver returns an accepted convergence code.
 
 Five random, disjoint event-half comparisons at 1.0, 2.0 and 3.0 s measure sampling reliability within each stratum. A station requires five records in each half. Both half-fields are component-aligned for storage and for constructing equal-stratum targets. The reported split-half correlation removes the weighted mean from every intersecting component pair before pooling stations, making the statistic invariant to unidentifiable component offsets. Equal-stratum sensitivity targets are formed by averaging the aligned station terms across at least two available strata, with equal weight per stratum. The primary spatial-validation procedure is then repeated for azimuth-, distance- and source-class-balanced targets; prediction errors retain station record-count weights.
 
-\subsection*{Empirical prediction intervals}
+\subsection*{Source-conditioned station terms}
 
-For each held spatial block, signed prediction errors from the other four blocks provide record-weighted central intervals at nominal coverage from 50\% to 95\%. These quantiles are added to the held-block point prediction. Coverage is computed without using the held-block station terms for calibration. We count intervals that exclude a unit multiplier and intervals that remain above or below a factor of 1.1. Lower and upper station terms are propagated to the matched response spectra.
+Crustal, interplate and intraplate station terms use the public source labels and connected-component alignment from the path-stratified analysis. A station requires at least 20 records within a source class. Supported terms are recentered to a record-weighted zero mean for every class and period. The fixed site-parameter and site-and-regional-parameter models retain the primary variables, settings, five spatial blocks and random seed. Every source class, period, model and block is reported. Confidence intervals use 2,000 station-cluster bootstrap replicates.
 
-Independent-model stability is calculated separately. Primary spatial-block predictions are compared at KiK-net sites with terms predicted by the frozen K-NET model from disjoint earthquakes. Fold predictions are record-weighted to one value per target station and period. Field correlation, direction agreement, same-direction changes exceeding a factor of 1.1 and the distribution of model differences are reported. Prediction intervals describe station-model error; independent-model agreement describes reproducibility under a new network and earthquake set. Source, ground-motion-model and J-SHIS logic-tree uncertainties are outside both calculations.
+Cross-validated crustal station terms are applied to the J-SHIS active-shallow response-spectrum product. Interplate and intraplate terms are applied separately to the subduction product. The two subduction calculations remain separate because the fixed-probability product does not supply the source weights needed to combine them within the hazard integral.
+
+\subsection*{Kanto 3D-simulation comparison}
+
+The publisher supplement to Sung et al. contains 250,000 Kanto grid rows for the 5.0 s adjusted site term, of which 133,151 have finite values\cite{sung2025}. This spatial pattern combines the simulation-derived basin adjustment and spatial nonergodic site term. The valid grid has a median nearest-neighbour spacing of 0.801 km. A station is matched to its nearest valid cell when the distance is no greater than 1.201 km, equal to 1.5 times the grid spacing. The supplement reports natural-log units; Japanese log$_{10}$ terms and estimates are multiplied by $\ln(10)$. Each pair of spatial patterns is centred by its station mean before comparison.
+
+The primary comparison uses record-derived crustal station terms because the simulations represent crustal scenarios. Cross-validated crustal estimates, all-source record-derived terms and all-source cross-validated estimates are retained as diagnostics. Each station receives equal weight. Confidence intervals resample 31.7 km spatial blocks 2,000 times, using the Kanto correlation length reported by Sung et al. Matching, centring, source choice and interval construction were fixed before the correlations were calculated.
+
+\subsection*{Empirical station-term intervals}
+
+For each test spatial block, signed cross-validated errors from the other four blocks provide record-weighted central intervals at nominal coverage from 50\% to 95\%. These quantiles are added to the test-block estimate. Coverage is computed without using station terms in that block for calibration. We count intervals that exclude a unit multiplier and intervals that remain above or below a factor of 1.1. Lower and upper station terms are propagated to the matched response spectra. These intervals describe spatial-estimation error only.
+
+Independent-model stability is calculated separately. Primary cross-validated estimates are compared at KiK-net sites with estimates from the fixed K-NET relation and disjoint earthquakes. Fold estimates are record-weighted to one value per target station and period. Pattern correlation, direction agreement, same-direction changes exceeding a factor of 1.1 and the distribution of model differences are reported. Source, ground-motion-model and J-SHIS logic-tree uncertainties lie outside both calculations.
 
 \subsection*{Reference condition conversion}
 
-J-SHIS response-spectrum maps provide ordinates on engineering bedrock with $V_S=400$ m s$^{-1}$\cite{jshisapi,responsemap}. The station-surface factor replaces the MF2013 shallow-soil term for 400 m s$^{-1}$ with the term evaluated at the station AVS30:
+J-SHIS response-spectrum maps provide spectral accelerations on engineering bedrock with $V_S=400$ m s$^{-1}$\cite{jshisapi,responsemap}. The all-earthquake map is used for the primary result. Active-shallow and subduction maps are evaluated separately at the same cells, periods and exceedance probabilities. The station-surface factor replaces the MF2013 shallow-soil term for 400 m s$^{-1}$ with the term evaluated at the station AVS30:
 \begin{equation}
 F_{\mathrm{surf},i}(T)=10^{G_s(AVS30_i,T)-G_s(400,T)}.
 \end{equation}
-The cross-validated station factor $10^{\widehat{\delta S}_i(T)}$ is applied after this conversion. All eight period coordinates and four 50-year exceedance probabilities are read from the official map files. The calculation is restricted to matched station cells; national-grid interpolation lies outside this analysis.
+The cross-validated station factor $10^{\widehat{\delta S}_i(T)}$ is applied after this conversion. All eight period coordinates and four 50-year exceedance probabilities are read from the J-SHIS map files. Category products retain the J-SHIS probability aggregation within each category. Their fixed-probability spectral accelerations are compared and are not summed. The calculation is restricted to matched station cells; national-grid interpolation lies outside this analysis.
 
 \subsection*{Two-event KiK-net waveform check}
 
 The waveform check uses 460 paired surface and downhole records from two KiK-net earthquakes\cite{aoi2004}. The first set contains 288 converted miniSEED pairs and the second contains 172 original NIED ASCII pairs converted with the scale factors in their headers. Each trace is demeaned and detrended. Horizontal peak amplitude is calculated from the two horizontal components. Surface-to-downhole Fourier amplitude ratios are evaluated from 0.2 to 20 Hz. This check is independent of the station residual model.
 
-\clearpage
 \section*{Supplementary Figures}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.68\linewidth]{figures/supplementary_figure_event_repeatability.pdf}
-\caption{\textbf{Station term repeatability across held-out events.} \textbf{a}, train-test station correlations for five event folds; grey lines show individual folds and the blue line shows their mean. \textbf{b}, test root mean squared error reduction relative to a zero station term. \textbf{c}, mean number of stations meeting train and test record thresholds. \textbf{d}, event, station and record-remainder amplitudes from the primary MF2013 site residual decomposition.}
+\caption{\textbf{Station-term repeatability across independent earthquake groups.} \textbf{a}, correlations between station terms estimated from four earthquake groups and the fifth group; grey lines show individual comparisons and the blue line shows their mean. \textbf{b}, root mean squared error reduction for fifth-group station terms relative to a zero station term. \textbf{c}, mean number of stations meeting the two record thresholds. \textbf{d}, between-event, site-to-site and within-site residual amplitudes from the primary MF2013 decomposition.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.82\linewidth]{figures/figure_kiknet_surface_borehole_validation.pdf}
-\caption{\textbf{National KiK-net paired-sensor validation.} \textbf{a}, median surface--borehole RotD100 ratio at 3.0 s for 699 sites. \textbf{b}, primary station terms against paired ratios at supported sites. \textbf{c}, single-period station-term correspondence and transfer stability across period. \textbf{d}, held-event station-term prediction from transfer ratios estimated on disjoint earthquakes.}
+\caption{\textbf{National KiK-net paired-sensor validation.} \textbf{a}, median surface-to-borehole RotD100 response-spectrum ratio at 3.0 s for 699 sites. \textbf{b}, surface station terms against paired response-spectrum ratios at supported sites; red points and bars show equal-count-bin medians and interquartile ranges, without a fitted line. \textbf{c}, single-period correspondence and ratio repeatability across periods. \textbf{d}, fifth-group station-term estimates from response-spectrum ratios calculated with four independent earthquake groups.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.90\linewidth]{figures/figure_kiknet_spectral_shape_validation.pdf}
-\caption{\textbf{Paired-sensor spectral-shape validation.} \textbf{a}, two-way-centred station-term and surface--borehole transfer shapes across eight periods. \textbf{b}, distribution of within-station shape correlations. \textbf{c}, correlations when transfer spectra and station-term spectra are estimated from disjoint earthquake groups; bars are station-cluster bootstrap 95\% intervals.}
+\caption{\textbf{Paired-sensor spectral-shape validation.} \textbf{a}, two-way-centred station-term and surface-to-borehole response-spectrum-ratio shapes across eight periods. \textbf{b}, distribution of within-station shape correlations. \textbf{c}, correlations when ratio spectra and station-term spectra are estimated from disjoint earthquake groups; bars are station-cluster bootstrap 95\% intervals.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.68\linewidth]{figures/supplementary_figure_spatial_validation.pdf}
-\caption{\textbf{Spatial validation of SA(3.0 s) station prediction.} \textbf{a}, five station blocks used for cross-validation. \textbf{b}, root mean squared error reduction in each held-out block for the site-only and site-plus-location models. \textbf{c}, observed event-adjusted station terms and out-of-fold site-plus-location predictions. \textbf{d}, prediction-error distributions by spatial fold; boxes show interquartile ranges and whiskers extend to 1.5 times the interquartile range.}
+\caption{\textbf{Spatial estimation of SA(3.0 s) station terms.} \textbf{a}, five station blocks used for cross-validation. \textbf{b}, root mean squared error reduction in each test block for the site-parameter and site-and-regional-parameter models. \textbf{c}, record-derived station terms and cross-validated site-and-regional-parameter estimates; the dashed diagonal marks equality and is not a fitted relation. \textbf{d}, estimation-error distributions by spatial block; boxes show interquartile ranges and whiskers extend to 1.5 times the interquartile range.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.68\linewidth]{figures/supplementary_figure_robustness_stress_tests.pdf}
-\caption{\textbf{Network, geographic and event-influence stress tests.} \textbf{a}, common-feature transfer between K-NET and KiK-net. \textbf{b}, common-feature root mean squared error gain when each fixed macroregion is held out. \textbf{c}, SA(3.0 s) station-term correlation after deleting each of the ten highest-count events; the dashed line shows their joint deletion. \textbf{d}, station-term correlation and weighted 95th-percentile absolute change after jointly deleting the ten events at every period.}
+\caption{\textbf{Network, geographic and event-influence tests.} \textbf{a}, cross-network comparison using the common variable set. \textbf{b}, root mean squared error gain when each fixed macroregion provides the test stations. \textbf{c}, SA(3.0 s) station-term correlation after deleting each of the ten highest-count earthquakes; the dashed line shows their joint deletion. \textbf{d}, station-term correlation and weighted 95th-percentile absolute change after jointly deleting the ten earthquakes at every period.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.82\linewidth]{figures/supplementary_figure_balanced_station_model.pdf}
-\caption{\textbf{Prediction of equal-stratum station fields.} \textbf{a}, overall spatial-block root mean squared error gain relative to zero. \textbf{b}, observed-predicted correlation. Vertical bars span the five held-block results; circles show pooled results. The full-sample target is included for reference.}
+\caption{\textbf{Spatial estimation of equal-stratum station terms.} \textbf{a}, overall spatial-block root mean squared error gain relative to zero. \textbf{b}, record-derived versus estimated correlation. Vertical bars span the five test-block results; circles show pooled results. The full-sample terms are included for reference.}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.68\linewidth]{figures/supplementary_figure_source_conditioned_fields.pdf}
+\caption{\textbf{Source-conditioned station-term estimation and spectrum sensitivity.} \textbf{a}, spatial-block root mean squared error gain for crustal, interplate and intraplate station terms. \textbf{b}, record-derived versus estimated correlations. \textbf{c}, SA(3.0 s) cross-validated station multipliers; boxes show interquartile ranges and whiskers extend to 1.5 times the interquartile range. \textbf{d}, matched-station median adjusted spectra after applying each source-conditioned estimate to the corresponding J-SHIS product. Interplate and intraplate sensitivities are evaluated separately.}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.68\linewidth]{figures/supplementary_figure_sung2025_kanto_external.pdf}
+\caption{\textbf{Independent Kanto 3D-simulation comparison at 5.0 s.} \textbf{a}, centred publisher-supplied adjusted site-term pattern from Sung et al. \textbf{b}, source-matched crustal station terms at cells passing the fixed nearest-grid rule. \textbf{c}, centred simulation and record-derived terms at 364 stations; red points and bars show equal-count-bin medians and interquartile ranges, without a fitted line. \textbf{d}, Pearson and Spearman correlations for record-derived and cross-validated station terms; bars are 95\% intervals from 2,000 resamples of 31.7 km spatial blocks.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.68\linewidth]{figures/supplementary_figure_response_spectra.pdf}
-\caption{\textbf{Matched-station response-spectrum sensitivity.} \textbf{a}, cross-validated station multiplier distributions at the eight direct periods. \textbf{b}, median and 5th--95th percentile multiplier range. \textbf{c}, median SA(3.0 s) ordinates at four 50-year exceedance probabilities for the official $V_S=400$ m s$^{-1}$ map, the MF2013 surface projection and the station-adjusted surface projection. \textbf{d}, paired MF2013 surface and station-adjusted SA(3.0 s) values at the 50-year 10\% level; colour denotes the station multiplier.}
+\caption{\textbf{Matched-station response-spectrum sensitivity.} \textbf{a}, cross-validated station multiplier distributions at the eight direct periods. \textbf{b}, median and 5th--95th percentile multiplier range. \textbf{c}, median SA(3.0 s) at four 50-year exceedance probabilities for the J-SHIS $V_S=400$ m s$^{-1}$ reference, the MF2013 surface condition and the station-adjusted surface condition. \textbf{d}, paired MF2013 surface and station-adjusted SA(3.0 s) values at the 50-year 10\% level; colour denotes the station multiplier and the dashed diagonal marks equality.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.68\linewidth]{figures/supplementary_figure_station_uncertainty.pdf}
-\caption{\textbf{Spatial-block station-model uncertainty.} \textbf{a}, empirical coverage of the nominal 90\% interval by period. \textbf{b}, median interval factor span and its range across the five held blocks. \textbf{c}, point multipliers and empirical intervals for 35 ordered SA(3.0 s) stations. \textbf{d}, surface-reference and station-adjusted spectra with the station-model interval at the Tokyo-nearest matched station. The interval excludes source, backbone and J-SHIS logic-tree uncertainty.}
+\caption{\textbf{Spatial-estimation uncertainty.} \textbf{a}, empirical coverage of the nominal 90\% interval by period. \textbf{b}, median interval factor span and its range across the five test blocks. \textbf{c}, point multipliers and empirical intervals for 35 ordered SA(3.0 s) stations. \textbf{d}, surface-condition and station-adjusted spectra with the estimation interval at the Tokyo-nearest matched station. The interval excludes source, ground-motion-model and J-SHIS logic-tree uncertainty.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.82\linewidth]{figures/supplementary_figure_hazard_impact_robustness.pdf}
-\caption{\textbf{Uncertainty and independent-model stability of station corrections.} \textbf{a}, empirical spatial-block coverage against nominal coverage. \textbf{b}, fraction of station intervals excluding a unit multiplier. \textbf{c}, 3.0 s KiK-net sites classified by agreement between the primary and frozen K-NET correction fields. \textbf{d}, the two independent correction fields at 3.0 s. Prediction intervals and model agreement quantify different uncertainty components.}
+\caption{\textbf{Uncertainty and independent-model stability of station adjustments.} \textbf{a}, empirical spatial-block coverage against nominal coverage. \textbf{b}, fraction of station intervals excluding a unit multiplier. \textbf{c}, 3.0 s KiK-net sites classified by agreement between the primary and fixed K-NET station-term estimates. \textbf{d}, the two independent sets of estimates at 3.0 s; the dashed diagonal marks equality. Estimation intervals and model agreement quantify different uncertainty components.}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.88\linewidth]{figures/supplementary_figure_source_category_response.pdf}
+\caption{\textbf{J-SHIS source-category response-spectrum sensitivity.} \textbf{a}, spatial contrast between subduction and active-shallow SA(3.0 s) at the 50-year 10\% level. \textbf{b}, paired source-category spectral accelerations; the dashed diagonal marks equality. \textbf{c}, fixed station multipliers grouped by the category with the larger J-SHIS value. \textbf{d}, matched-station median surface spectra for the two categories; dashed lines show the MF2013 surface condition and solid lines include the station adjustment. Category values are evaluated separately and are not summed.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.68\linewidth]{figures/figure16_kiknet_multievent_transfer_function.png}
-\caption{\textbf{KiK-net surface and downhole waveform comparison.} \textbf{a}, horizontal surface-to-downhole peak acceleration ratios by earthquake. \textbf{b}, frequency-band Fourier amplitude ratios. \textbf{c}, median transfer functions for the two event sets. \textbf{d}, horizontal peak acceleration ratio against the downhole input-motion proxy. Ratios are shown in log$_{10}$ units in panels \textbf{a} and \textbf{b}.}
+\caption{\textbf{KiK-net surface and downhole waveform comparison.} \textbf{a}, horizontal surface-to-downhole peak acceleration ratios by earthquake. \textbf{b}, frequency-band Fourier amplitude ratios. \textbf{c}, median transfer functions for the two event sets. \textbf{d}, horizontal peak acceleration ratio against the downhole input-motion proxy. Ratios are shown in log$_{10}$ units in panels \textbf{a} and \textbf{b}. Dashed horizontal lines denote equal surface and downhole amplitudes.}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.82\linewidth]{figures/supplementary_figure_temporal_network_transfer.pdf}
-\caption{\textbf{Chronological cross-network station-field validation.} \textbf{a}, K-NET-to-KiK-net correlations for fixed early/late event splits. \textbf{b}, root mean squared error reduction relative to a zero station term. \textbf{c}, frozen predictions from the earliest 80\% of K-NET events against KiK-net terms estimated from the latest 20\% at 3.0 s. \textbf{d}, station-bootstrap 95\% intervals at 1--3 s. The reverse direction is reported in Supplementary Table 20.}
+\caption{\textbf{Chronological cross-network station-term test.} \textbf{a}, K-NET-to-KiK-net correlations for fixed early/late earthquake splits. \textbf{b}, root mean squared error reduction relative to a zero station term. \textbf{c}, fixed estimates from the earliest 80\% of K-NET earthquakes against KiK-net terms estimated from the latest 20\% at 3.0 s; the dashed diagonal marks equality. \textbf{d}, station-bootstrap 95\% intervals at 1--3 s. The reverse direction is reported in Supplementary Table 20.}
 \end{figure}
 
 \FloatBarrier
@@ -196,7 +235,7 @@ The waveform check uses 460 paired surface and downhole records from two KiK-net
 \small
 \begin{tabular}{rrrrrr}
 \toprule
-Period & Records & Global offset & Event SD & Station SD & Remainder RMSE \\
+Period & Records & Global offset & Between-event SD & Site-to-site SD & Within-site SD \\
 (s) & & \multicolumn{4}{c}{log$_{10}$ units} \\
 \midrule
 0.1 & 222,664 & 0.284 & 0.268 & 0.284 & 0.246 \\
@@ -213,12 +252,12 @@ Period & Records & Global offset & Event SD & Station SD & Remainder RMSE \\
 
 \begin{table}[H]
 \centering
-\caption{Event group station repeatability}
+\caption{Station-term repeatability across independent earthquake groups}
 \small
 \begin{tabular}{rrrrr}
 \toprule
-Period & Train-test & Test RMSE & Mean paired & Mean test \\
-(s) & correlation & reduction (\%) & stations & events \\
+Period & Four-to-fifth-group & Fifth-group RMSE & Mean paired & Mean fifth-group \\
+(s) & correlation & reduction (\%) & stations & earthquakes \\
 \midrule
 0.1 & 0.916 & 71.9 & 1,481 & 347.4 \\
 0.2 & 0.917 & 73.5 & 1,481 & 347.4 \\
@@ -260,8 +299,8 @@ Period & MF2013--Zhao & Median absolute & Zhao event & Zhao spatial \\
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{rrrrrrr}
 \toprule
-Period & \multicolumn{3}{c}{Station term versus paired ratio} & Ratio train--test & Held-event term & Held-event RMSE \\
-(s) & Pearson & Spearman & Depth-adjusted Pearson & correlation & correlation & gain (\%) \\
+Period & \multicolumn{3}{c}{Station term versus paired ratio} & Ratio group & Fifth-group term & Fifth-group RMSE \\
+(s) & Pearson & Spearman & Depth-adjusted Pearson & repeatability & correlation & gain (\%) \\
 \midrule
 0.1 & 0.737 & 0.710 & 0.739 & 0.974 & 0.684 & 27.3 \\
 0.2 & 0.736 & 0.696 & 0.737 & 0.986 & 0.692 & 29.5 \\
@@ -277,11 +316,11 @@ Period & \multicolumn{3}{c}{Station term versus paired ratio} & Ratio train--tes
 
 \begin{table}[H]
 \centering
-\caption{Spatially held-out station prediction}
+\caption{Cross-validated spatial estimation of station terms}
 \small
 \begin{tabular}{rrrr}
 \toprule
-Period & Site-only model & Site and location & Observed-predicted \\
+Period & Site parameters & Site and regional parameters & Record-derived versus estimated \\
 (s) & RMSE gain (\%) & RMSE gain (\%) & correlation \\
 \midrule
 0.1 & -5.2 & 11.7 & 0.513 \\
@@ -298,11 +337,11 @@ Period & Site-only model & Site and location & Observed-predicted \\
 
 \begin{table}[H]
 \centering
-\caption{SA(3.0 s) network and fixed-macroregion transfer}
+\caption{SA(3.0 s) network and fixed-macroregion comparison}
 \small
 \begin{tabular}{lrrr}
 \toprule
-Held group & Full-model & Common-feature & Common-feature \\
+Test group & Full variable set & Common variable set & Common variable set \\
 & RMSE gain (\%) & RMSE gain (\%) & correlation \\
 \midrule
 K-NET & 4.1 & 8.7 & 0.469 \\
@@ -344,7 +383,7 @@ Period & Station-term & Weighted 95th-percentile \\
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{llrrrr}
 \toprule
-Stratification & Stratum & Paired stations & Full-field & Within-component & 95th percentile \\
+Stratification & Stratum & Paired stations & All-record & Within-component & 95th percentile \\
 & & & correlation & split-half correlation & difference \\
 \midrule
 Hypocentral azimuth & 000--090$^\circ$ & 938 & 0.280 & 0.884 & 0.474 \\
@@ -364,11 +403,11 @@ Source type & Intraplate & 1,379 & 0.924 & 0.902 & 0.131 \\
 
 \begin{table}[H]
 \centering
-\caption{Equal-stratum spatial prediction sensitivity}
+\caption{Equal-stratum spatial-estimation sensitivity}
 \small
 \begin{tabular}{lrrrrr}
 \toprule
-Target field & Period & Stations & Overall RMSE & Overall & Minimum fold \\
+Target terms & Period & Stations & Overall RMSE & Overall & Minimum block \\
 & (s) & & reduction (\%) & correlation & reduction (\%) \\
 \midrule
 Azimuth balanced & 1.0 & 1,220 & 6.4 & 0.406 & -20.8 \\
@@ -547,12 +586,12 @@ Fold mean & 584 & 0.635 & --- & 0.717 & 89.7 \\
 
 \begin{table}[H]
 \centering
-\caption{Network- and event-external station prediction}
+\caption{Cross-network and independent-earthquake station-term estimation}
 \scriptsize
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{rrrrrrr}
 \toprule
-Period & \multicolumn{2}{c}{K-NET to KiK-net, physical} & \multicolumn{2}{c}{K-NET to KiK-net, physical + location} & \multicolumn{2}{c}{KiK-net to K-NET, physical + location} \\
+Period & \multicolumn{2}{c}{K-NET to KiK-net, site parameters} & \multicolumn{2}{c}{K-NET to KiK-net, site + regional} & \multicolumn{2}{c}{KiK-net to K-NET, site + regional} \\
 (s) & Correlation & RMSE gain (\%) & Correlation & RMSE gain (\%) & Correlation & RMSE gain (\%) \\
 \midrule
 0.1 & 0.368 & 6.2 & 0.641 & 22.3 & 0.549 & 13.1 \\
@@ -569,11 +608,11 @@ Period & \multicolumn{2}{c}{K-NET to KiK-net, physical} & \multicolumn{2}{c}{K-N
 
 \begin{table}[H]
 \centering
-\caption{Agreement between primary and frozen K-NET correction fields at KiK-net sites}
+\caption{Agreement between primary and fixed K-NET station-term estimates at KiK-net sites}
 \small
 \begin{tabular}{rrrrr}
 \toprule
-Period & Field & Direction & Same-direction change & Median absolute \\
+Period & Pattern & Direction & Same-direction change & Median absolute \\
 (s) & correlation & agreement (\%) & above 10\% (\%) & difference (log$_{10}$) \\
 \midrule
 0.1 & 0.709 & 81.1 & 68.5 & 0.100 \\
@@ -590,7 +629,7 @@ Period & Field & Direction & Same-direction change & Median absolute \\
 
 \begin{table}[H]
 \centering
-\caption{Chronological K-NET-to-KiK-net station-field transfer}
+\caption{Chronological K-NET-to-KiK-net station-term test}
 \scriptsize
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{rrrrrrr}
@@ -616,7 +655,170 @@ Early/late events & Period & Target stations & Correlation & Correlation 95\% in
 \end{tabular}}
 
 \vspace{0.3em}
-\raggedright\footnotesize The physical-plus-location model is shown. In the reverse 80/20 test at 3.0 s, KiK-net-to-K-NET transfer gives a correlation of 0.302 and an RMSE gain of $-3.3\%$ (95\% interval $-7.8\%$ to 1.5\%).
+\raggedright\footnotesize The site-and-regional-parameter model is shown. In the reverse 80/20 test at 3.0 s, KiK-net-to-K-NET estimation gives a correlation of 0.302 and an RMSE gain of $-3.3\%$ (95\% interval $-7.8\%$ to 1.5\%).
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{European-Mediterranean repeatability and cross-region estimation}
+\scriptsize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+Analysis & Period & Records & Earthquakes & Mean paired & Group correlation & RMSE gain \\
+ & (s) & & & stations/comparison & (95\% interval) & \% (95\% interval) \\
+\midrule
+Bindi post-2015 & 1.0 & 13,430 & 634 & 173.8 & 0.929 (0.899--0.950) & 66.8 (60.5--71.6) \\
+Bindi post-2015 & 2.0 & 13,430 & 634 & 173.8 & 0.939 (0.915--0.957) & 69.5 (64.7--73.6) \\
+Bindi post-2015 & 3.0 & 13,430 & 634 & 173.8 & 0.928 (0.896--0.951) & 66.4 (60.9--70.9) \\
+Bindi post-2015, $M_w\geq5$ & 1.0 & 5,411 & 213 & 63.4 & 0.878 (0.822--0.912) & 53.4 (43.8--60.0) \\
+Bindi post-2015, $M_w\geq5$ & 2.0 & 5,411 & 213 & 63.4 & 0.875 (0.828--0.910) & 52.8 (44.7--59.4) \\
+Bindi post-2015, $M_w\geq5$ & 3.0 & 5,411 & 213 & 63.4 & 0.871 (0.818--0.908) & 52.2 (43.2--59.4) \\
+Kotha RotD50 & 1.0 & 1,616 & 72 & 23.2 & 0.860 (0.498--0.934) & 48.8 (19.5--62.9) \\
+Kotha RotD50 & 2.0 & 1,616 & 72 & 23.2 & 0.916 (0.507--0.945) & 58.1 (42.2--64.6) \\
+Kotha RotD50 & 3.0 & 1,616 & 72 & 23.2 & 0.919 (0.531--0.953) & 58.5 ($-4.2$--66.1) \\
+\bottomrule
+\end{tabular}}
+
+\vspace{0.5em}
+\resizebox{0.88\linewidth}{!}{%
+\begin{tabular}{rrrrrr}
+\toprule
+Period & Japanese estimation & ESM target & Correlation & Correlation 95\% interval & RMSE gain \% (95\% interval) \\
+(s) & stations & stations & & & \\
+\midrule
+1.0 & 1,039 & 265 & 0.079 & $-0.027$--0.192 & $-5.9$ ($-12.3$--$-0.8$) \\
+2.0 & 1,039 & 265 & 0.043 & $-0.072$--0.163 & $-3.7$ ($-8.0$--0.1) \\
+3.0 & 1,039 & 265 & 0.047 & $-0.063$--0.157 & $-2.8$ ($-6.6$--0.6) \\
+\bottomrule
+\end{tabular}}
+
+\vspace{0.3em}
+\raggedright\footnotesize The first block reports means across five earthquake-group comparisons and station-cluster bootstrap intervals. The Kotha 3.0 s RMSE interval crosses zero and is treated as a sample-limited sensitivity. The second block applies the fixed Japanese K-NET relation with log$_{10}$($V_{S30}$) and elevation to ESM without refitting; its target-estimate mean is removed without using ESM station terms.
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Local ESM spatial and earthquake--space estimation}
+\scriptsize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llrrrr}
+\toprule
+Validation design & Model & Period & Stations & Correlation (95\% interval) & RMSE gain \% (95\% interval) \\
+ & & (s) & & & \\
+\midrule
+Spatial block & VS30 + elevation & 1.0 & 236 & 0.106 ($-0.008$--0.217) & $-2.6$ ($-8.5$--2.2) \\
+Spatial block & Metadata & 1.0 & 236 & 0.078 ($-0.034$--0.188) & $-4.7$ ($-11.0$--0.6) \\
+Spatial block & Metadata + location & 1.0 & 236 & $-0.106$ ($-0.225$--0.022) & $-10.4$ ($-15.6$--$-5.5$) \\
+Spatial block & VS30 + elevation & 2.0 & 236 & 0.118 (0.000--0.237) & $-2.6$ ($-8.1$--2.1) \\
+Spatial block & Metadata & 2.0 & 236 & 0.115 (0.000--0.226) & $-3.6$ ($-9.8$--1.5) \\
+Spatial block & Metadata + location & 2.0 & 236 & 0.015 ($-0.102$--0.137) & $-7.7$ ($-13.3$--$-2.6$) \\
+Spatial block & VS30 + elevation & 3.0 & 236 & 0.074 ($-0.043$--0.189) & $-3.6$ ($-9.8$--1.3) \\
+Spatial block & Metadata & 3.0 & 236 & 0.052 ($-0.061$--0.163) & $-5.5$ ($-12.8$--$-0.03$) \\
+Spatial block & Metadata + location & 3.0 & 236 & 0.017 ($-0.090$--0.131) & $-7.6$ ($-13.1$--$-2.2$) \\
+Fifth group + spatial block & VS30 + elevation & 1.0 & 207 & $-0.004$ ($-0.123$--0.113) & $-3.3$ ($-8.0$--0.5) \\
+Fifth group + spatial block & Metadata & 1.0 & 207 & $-0.024$ ($-0.139$--0.087) & $-5.7$ ($-10.9$--$-1.9$) \\
+Fifth group + spatial block & Metadata + location & 1.0 & 207 & $-0.107$ ($-0.213$--0.000) & $-13.9$ ($-21.3$--$-8.4$) \\
+Fifth group + spatial block & VS30 + elevation & 2.0 & 207 & 0.043 ($-0.065$--0.153) & $-3.5$ ($-8.5$--0.7) \\
+Fifth group + spatial block & Metadata & 2.0 & 207 & 0.025 ($-0.082$--0.133) & $-5.8$ ($-11.3$--$-1.4$) \\
+Fifth group + spatial block & Metadata + location & 2.0 & 207 & $-0.029$ ($-0.133$--0.068) & $-8.3$ ($-14.3$--$-3.9$) \\
+Fifth group + spatial block & VS30 + elevation & 3.0 & 207 & 0.021 ($-0.083$--0.132) & $-3.7$ ($-8.6$--0.5) \\
+Fifth group + spatial block & Metadata & 3.0 & 207 & 0.001 ($-0.095$--0.097) & $-6.4$ ($-11.9$--$-2.3$) \\
+Fifth group + spatial block & Metadata + location & 3.0 & 207 & 0.006 ($-0.094$--0.102) & $-5.4$ ($-10.2$--$-1.6$) \\
+\bottomrule
+\end{tabular}}
+
+\vspace{0.3em}
+\raggedright\footnotesize RMSE gain is relative to a zero station term; negative values indicate higher estimation error. Metadata adds slope and ESM housing, installation and reference-site fields. Location adds longitude and latitude. Intervals are from 2,000 station-cluster bootstrap replicates. The fifth-group design reports the aggregate across five earthquake-group comparisons.
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{J-SHIS source-category SA(3.0 s) sensitivity at the 50-year 10\% level}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Product & Stations & J-SHIS reference & Surface & Adjusted & Larger-category count \\
+ & & \multicolumn{3}{c}{median SA (g)} & \\
+\midrule
+All earthquakes & 1,628 & 0.078 & 0.081 & 0.075 & -- \\
+Active shallow & 1,628 & 0.031 & 0.032 & 0.029 & 200 \\
+Subduction & 1,628 & 0.071 & 0.072 & 0.067 & 1,428 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.3em}
+\raggedright\footnotesize J-SHIS spectral accelerations use the $V_S=400$ m s$^{-1}$ engineering-bedrock reference. Surface values apply the MF2013 AVS30 projection; adjusted values also apply the cross-validated station terms. Category counts compare active-shallow and subduction values station by station. Fixed-probability category values are not additive.
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Source-conditioned spatial estimation at long periods}
+\scriptsize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrr}
+\toprule
+Source class & Period & Stations & Correlation (95\% interval) & RMSE gain \% (95\% interval) \\
+ & (s) & & & \\
+\midrule
+Crustal & 1.0 & 1,084 & 0.484 (0.438--0.530) & 12.7 (8.2--17.2) \\
+Crustal & 2.0 & 1,084 & 0.468 (0.414--0.517) & 10.5 (5.8--14.8) \\
+Crustal & 3.0 & 1,084 & 0.455 (0.403--0.507) & 8.9 (3.9--13.8) \\
+Crustal & 5.0 & 1,084 & 0.383 (0.329--0.437) & 4.2 ($-0.7$--8.9) \\
+Interplate & 1.0 & 779 & 0.384 (0.323--0.444) & 4.5 ($-1.1$--9.9) \\
+Interplate & 2.0 & 779 & 0.228 (0.153--0.301) & $-0.8$ ($-6.2$--4.5) \\
+Interplate & 3.0 & 779 & 0.251 (0.175--0.322) & 2.8 ($-1.7$--7.4) \\
+Interplate & 5.0 & 779 & 0.298 (0.228--0.360) & 1.7 ($-2.8$--5.9) \\
+Intraplate & 1.0 & 856 & 0.404 (0.345--0.461) & 4.6 ($-0.1$--9.1) \\
+Intraplate & 2.0 & 856 & 0.396 (0.332--0.453) & 7.4 (3.0--11.6) \\
+Intraplate & 3.0 & 856 & 0.516 (0.460--0.567) & 14.3 (10.1--18.3) \\
+Intraplate & 5.0 & 856 & 0.548 (0.502--0.594) & 14.8 (10.7--18.6) \\
+\bottomrule
+\end{tabular}}
+
+\vspace{0.3em}
+\raggedright\footnotesize The fixed site-and-regional-parameter model is shown. Correlations compare record-derived and cross-validated station terms. RMSE gain is measured against a zero source-conditioned station term. Intervals use 2,000 station-cluster bootstrap replicates. Results at every direct period are retained in the accompanying CSV.
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Kanto SA(5.0 s) comparison with the Sung et al. simulation field}
+\scriptsize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrr}
+\toprule
+Japanese station terms & Stations & Pearson (95\% interval) & Spearman (95\% interval) & Sign agreement \% (95\% interval) \\
+\midrule
+Crustal, record-derived & 364 & 0.304 (0.163--0.434) & 0.372 (0.227--0.494) & 62.9 (56.5--69.5) \\
+Crustal, site + regional & 364 & 0.135 (0.038--0.231) & 0.141 (0.005--0.276) & 54.9 (49.1--60.3) \\
+Crustal, site parameters & 364 & 0.214 (0.123--0.305) & 0.233 (0.119--0.348) & 57.4 (50.9--63.1) \\
+All-source, record-derived & 389 & 0.122 ($-0.009$--0.258) & 0.173 (0.021--0.332) & 55.8 (48.2--62.2) \\
+All-source, site + regional & 389 & 0.349 (0.243--0.446) & 0.407 (0.280--0.513) & 63.5 (57.8--69.1) \\
+All-source, site parameters & 389 & 0.298 (0.196--0.395) & 0.326 (0.194--0.442) & 57.8 (52.2--64.9) \\
+\bottomrule
+\end{tabular}}
+
+\vspace{0.3em}
+\raggedright\footnotesize Cross-validated estimates are calculated outside each station's spatial block. Both patterns are expressed in natural-log units and centred over the matched stations. Intervals use 2,000 resamples of 31.7 km spatial blocks. Record-derived crustal station terms provide the prespecified source-matched comparison.
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Source-conditioned J-SHIS SA(3.0 s) sensitivity at the 50-year 10\% level}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Product / station terms & Stations & J-SHIS reference & Surface & Adjusted & Multiplier 5th--95th \\
+ & & \multicolumn{3}{c}{median SA (g)} & percentile \\
+\midrule
+Active shallow / crustal & 1,084 & 0.033 & 0.034 & 0.033 & 0.642--1.517 \\
+Subduction / interplate & 779 & 0.077 & 0.082 & 0.084 & 0.711--1.430 \\
+Subduction / intraplate & 856 & 0.082 & 0.089 & 0.083 & 0.661--1.416 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.3em}
+\raggedright\footnotesize Each row uses the stations supported by its source-conditioned terms. Interplate and intraplate rows are separate sensitivities on the J-SHIS subduction product. A source-level PSHA recomputation requires source recurrence, source weights and probability aggregation that are absent from the fixed-probability maps.
 \end{table}
 
 \renewcommand{\refname}{Supplementary References}
@@ -631,6 +833,10 @@ Early/late events & Period & Target stations & Correlation & Correlation 95\% in
 \bibitem{kanno2006} Kanno, T., Narita, A., Morikawa, N., Fujiwara, H. \& Fukushima, Y. A new attenuation relation for strong ground motion in Japan based on recorded data. \textit{Bull. Seismol. Soc. Am.} \textbf{96}, 879--897 (2006). \url{https://doi.org/10.1785/0120050138}.
 \bibitem{zhao2006} Zhao, J. X. et al. Attenuation relations of strong ground motion in Japan using site classification based on predominant period. \textit{Bull. Seismol. Soc. Am.} \textbf{96}, 898--913 (2006). \url{https://doi.org/10.1785/0120050122}.
 \bibitem{pagani2014} Pagani, M. et al. OpenQuake Engine: an open hazard and risk software for the Global Earthquake Model. \textit{Seismol. Res. Lett.} \textbf{85}, 692--702 (2014). \url{https://doi.org/10.1785/0220130087}.
+\bibitem{esm2026} Mascandola, C. et al. Engineering Strong Motion Database (ESM), version 3.0. INGV, \url{https://doi.org/10.13127/esm.3} (2026).
+\bibitem{bindi2014} Bindi, D. et al. Pan-European ground-motion prediction equations for the average horizontal component of PGA, PGV, and 5\%-damped PSA at spectral periods up to 3.0 s using the RESORCE dataset. \textit{Bull. Earthq. Eng.} \textbf{12}, 391--430 (2014). \url{https://doi.org/10.1007/s10518-013-9525-5}.
+\bibitem{kotha2020} Kotha, S. R., Weatherill, G., Bindi, D. \& Cotton, F. A regionally-adaptable ground-motion model for shallow crustal earthquakes in Europe. \textit{Bull. Earthq. Eng.} \textbf{18}, 4091--4125 (2020). \url{https://doi.org/10.1007/s10518-020-00869-1}.
+\bibitem{sung2025} Sung, C.-H., Morikawa, N., Iwaki, A., Abrahamson, N. \& Miyake, H. Ground-motion models incorporating nonergodic effects from 3D numerical simulations in Japan. \textit{Bull. Seismol. Soc. Am.} \textbf{115}, 1852--1875 (2025). \url{https://doi.org/10.1785/0120240239}.
 \bibitem{jshisapi} Azuma, H., Kawai, S. \& Fujiwara, H. Development of J-SHIS and applications using API. \textit{J. Disaster Res.} \textbf{8}, 869--877 (2013). \url{https://doi.org/10.20965/jdr.2013.p0869}.
 \bibitem{responsemap} Earthquake Research Committee. Probabilistic seismic hazard analysis of response spectra provisional edition. \url{https://www.jishin.go.jp/evaluation/seismic_hazard_map/sh_response_spectrum/} (2022).
 \bibitem{aoi2004} Aoi, S., Kunugi, T. \& Fujiwara, H. Strong-motion seismograph network operated by NIED K-NET and KiK-net. \textit{J. Jpn. Assoc. Earthq. Eng.} \textbf{4}, 65--74 (2004). \url{https://doi.org/10.5610/jaee.4.3_65}.

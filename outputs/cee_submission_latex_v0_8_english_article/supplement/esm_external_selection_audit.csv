@@ -1,0 +1,13 @@
+analysis,stage,n_records,n_events,n_stations
+bindi2014_rhyp_mw4.5-7.6_2015-01-01,raw_query,41841,4194,3197
+bindi2014_rhyp_mw4.5-7.6_2015-01-01,physical_and_response_filters,14463,853,959
+bindi2014_rhyp_mw4.5-7.6_2015-01-01,event_station_deduplication,14463,853,959
+bindi2014_rhyp_mw4.5-7.6_2015-01-01,iterative_event_station_support,13430,634,539
+bindi2014_rhyp_mw5-7.6_2015-01-01,raw_query,41841,4194,3197
+bindi2014_rhyp_mw5-7.6_2015-01-01,physical_and_response_filters,6041,283,776
+bindi2014_rhyp_mw5-7.6_2015-01-01,event_station_deduplication,6041,283,776
+bindi2014_rhyp_mw5-7.6_2015-01-01,iterative_event_station_support,5411,213,371
+kotha2020_rjb_mw4.5-7.4_all,raw_query,41841,4194,3197
+kotha2020_rjb_mw4.5-7.4_all,physical_and_response_filters,2075,139,490
+kotha2020_rjb_mw4.5-7.4_all,event_station_deduplication,2075,139,490
+kotha2020_rjb_mw4.5-7.4_all,iterative_event_station_support,1616,72,193

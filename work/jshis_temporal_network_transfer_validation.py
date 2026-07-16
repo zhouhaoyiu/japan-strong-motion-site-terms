@@ -253,6 +253,7 @@ def plot_results(predictions: pd.DataFrame, metrics: pd.DataFrame) -> None:
         [0.005, 0.995],
     )
     ax.plot(limits, limits, color="#444444", lw=1.2, ls="--")
+    ax.text(0.96, 0.04, "Dashed: equality", transform=ax.transAxes, ha="right", color="#444444")
     ax.text(
         0.04,
         0.96,

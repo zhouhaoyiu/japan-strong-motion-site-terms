@@ -36,6 +36,10 @@ outputs/cee_submission_latex_v0_8_english_article/predictable-long-period-site-r
 !/work/jshis_kiknet_surface_borehole_validation.py
 !/work/jshis_cross_network_transfer_validation.py
 !/work/jshis_temporal_network_transfer_validation.py
+!/work/esm_external_station_validation.py
+!/work/jshis_source_category_response_sensitivity.py
+!/work/jshis_source_conditioned_station_fields.py
+!/work/sung2025_kanto_external_comparison.py
 !/work/jshis_hazard_impact_robustness.py
 !/work/jshis_robustness_stress_tests.py
 !/work/jshis_path_stratification_audit.py

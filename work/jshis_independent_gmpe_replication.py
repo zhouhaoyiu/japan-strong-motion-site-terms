@@ -277,7 +277,8 @@ def save_figure(
     ax = axes[0, 0]
     ax.scatter(paired["mf2013"], paired["zhao"], s=8, alpha=0.25, color="#277DA1", edgecolors="none")
     limits = np.quantile(np.abs(np.r_[paired["mf2013"], paired["zhao"]]), 0.995)
-    ax.plot([-limits, limits], [-limits, limits], color="#E63946", lw=1.2)
+    ax.plot([-limits, limits], [-limits, limits], color="#444444", lw=1.0, ls="--")
+    ax.text(0.96, 0.04, "Dashed: equality", transform=ax.transAxes, ha="right", color="#444444")
     ax.set(xlim=(-limits, limits), ylim=(-limits, limits), xlabel="MF2013 station term (log10)", ylabel="Zhao 2006 station term (log10)")
     r3 = replication.loc[replication["period_s"].eq(3.0), "pearson_correlation"].iloc[0]
     ax.set_title(f"a  SA(3.0 s) station terms (r = {r3:.3f})", loc="left")
@@ -289,16 +290,16 @@ def save_figure(
     ax.set_xticks([spec.period_s for spec in core.PERIODS], [f"{spec.period_s:g}" for spec in core.PERIODS])
     ax.set(xlabel="Period (s)", ylabel="MF2013-Zhao station-term correlation", ylim=(0, 1.02))
     ax.legend(frameon=False)
-    ax.set_title("b  Independent-GMPE agreement", loc="left")
+    ax.set_title("b  Agreement between ground-motion models", loc="left")
 
     ax = axes[1, 0]
     ax.plot(mf_event["period_s"], mf_event["train_test_station_correlation"], "o-", color="#277DA1", label="MF2013")
     ax.plot(z_event["period_s"], z_event["train_test_station_correlation"], "s-", color="#E76F51", label="Zhao 2006")
     ax.set_xscale("log")
     ax.set_xticks([spec.period_s for spec in core.PERIODS], [f"{spec.period_s:g}" for spec in core.PERIODS])
-    ax.set(xlabel="Period (s)", ylabel="Event-holdout station correlation", ylim=(0.85, 1.0))
+    ax.set(xlabel="Period (s)", ylabel="Earthquake-group station correlation", ylim=(0.85, 1.0))
     ax.legend(frameon=False)
-    ax.set_title("c  Repeatability across held-out events", loc="left")
+    ax.set_title("c  Repeatability across earthquake groups", loc="left")
 
     ax = axes[1, 1]
     ax.plot(mf_model["period_s"], mf_model["rmse_reduction_vs_zero_pct"], "o-", color="#277DA1", label="MF2013")
@@ -308,7 +309,7 @@ def save_figure(
     ax.set_xticks([spec.period_s for spec in core.PERIODS], [f"{spec.period_s:g}" for spec in core.PERIODS])
     ax.set(xlabel="Period (s)", ylabel="Spatial-block RMSE reduction (%)")
     ax.legend(frameon=False)
-    ax.set_title("d  Public-variable spatial prediction", loc="left")
+    ax.set_title("d  Spatial estimation from public parameters", loc="left")
 
     fig.savefig(OUT_FIGURE_PDF, bbox_inches="tight")
     fig.savefig(OUT_FIGURE_PNG, dpi=300, bbox_inches="tight")
@@ -356,7 +357,7 @@ def write_audit(
         "",
         "## Boundary",
         "",
-        "This analysis changes the regional ground-motion model while retaining the same observations. It tests model dependence of the station field; it is not an independent-network validation or an official Zhao input-preparation reproduction.",
+        "This analysis changes the regional ground-motion model while retaining the same observations. It measures model dependence of the station terms. Independent-network evidence is evaluated separately, and the Zhao calculation uses the available flatfile inputs.",
         "",
         "## Convergence",
         "",

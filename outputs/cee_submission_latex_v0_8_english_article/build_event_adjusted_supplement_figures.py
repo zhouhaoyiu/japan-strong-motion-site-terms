@@ -66,12 +66,12 @@ def spatial_validation_figure() -> None:
     ax.set_xlabel("Longitude (degrees E)")
     ax.set_ylabel("Latitude (degrees N)")
     ax.set_title("a  Five spatial validation blocks")
-    fig.colorbar(scatter, ax=ax, ticks=range(5), label="Fold", fraction=0.046, pad=0.03)
+    fig.colorbar(scatter, ax=ax, ticks=range(5), label="Block", fraction=0.046, pad=0.03)
 
     ax = axes[0, 1]
     fold = metrics[metrics["period_s"].eq(3.0) & metrics["scope"].eq("fold")].copy()
     models = ["physical_hgb", "physical_spatial_hgb"]
-    labels = ["Site", "Site + location"]
+    labels = ["Site parameters", "Site + regional"]
     colors = ["#2A6F97", "#AA3377"]
     x = np.arange(5)
     for index, (model, label, color) in enumerate(zip(models, labels, colors, strict=True)):
@@ -79,9 +79,9 @@ def spatial_validation_figure() -> None:
         ax.bar(x + (index - 0.5) * 0.36, sub["rmse_reduction_vs_zero_pct"], 0.36, color=color, label=label)
     ax.axhline(0.0, color="0.3", lw=0.8)
     ax.set_xticks(x, [str(i) for i in x])
-    ax.set_xlabel("Held-out spatial fold")
+    ax.set_xlabel("Test spatial block")
     ax.set_ylabel("RMSE reduction (%)")
-    ax.set_title("b  SA(3.0 s) fold performance")
+    ax.set_title("b  SA(3.0 s) block performance")
     ax.legend(frameon=False)
 
     ax = axes[1, 0]
@@ -89,12 +89,13 @@ def spatial_validation_figure() -> None:
     y_pred = frame["centered_oof_prediction_log10"].to_numpy(float)
     limit = float(np.quantile(np.abs(np.concatenate([x_obs, y_pred])), 0.995))
     ax.hexbin(x_obs, y_pred, gridsize=45, mincnt=1, cmap="Blues", linewidths=0)
-    ax.plot([-limit, limit], [-limit, limit], color="#AA3377", lw=1.0)
+    ax.plot([-limit, limit], [-limit, limit], color="0.25", lw=1.0, ls="--")
+    ax.text(0.96, 0.04, "Dashed: equality", transform=ax.transAxes, ha="right", color="0.25")
     ax.set_xlim(-limit, limit)
     ax.set_ylim(-limit, limit)
-    ax.set_xlabel("Observed station term (log10)")
-    ax.set_ylabel("Out-of-fold prediction (log10)")
-    ax.set_title(f"c  Held-out predictions (r = {np.corrcoef(x_obs, y_pred)[0, 1]:.3f})")
+    ax.set_xlabel("Record-derived station term (log10)")
+    ax.set_ylabel("Cross-validated estimate (log10)")
+    ax.set_title(f"c  Spatial estimates (r = {np.corrcoef(x_obs, y_pred)[0, 1]:.3f})")
 
     ax = axes[1, 1]
     errors = [
@@ -103,8 +104,8 @@ def spatial_validation_figure() -> None:
     ]
     ax.boxplot(errors, tick_labels=[str(i) for i in range(5)], showfliers=False)
     ax.axhline(0.0, color="0.3", lw=0.8)
-    ax.set_xlabel("Held-out spatial fold")
-    ax.set_ylabel("Prediction error (log10)")
+    ax.set_xlabel("Test spatial block")
+    ax.set_ylabel("Estimation error (log10)")
     ax.set_title("d  Error distributions")
     save(fig, "supplementary_figure_spatial_validation")
 
@@ -123,7 +124,7 @@ def event_repeatability_figure() -> None:
     ax.plot(mean["period_s"], mean["train_test_station_correlation"], color="#2A6F97", marker="o", lw=1.5)
     period_axis(ax)
     ax.set_ylim(0.85, 1.0)
-    ax.set_ylabel("Train-test station correlation")
+    ax.set_ylabel("Four-to-fifth-group correlation")
     ax.set_title("a  Station-term repeatability")
 
     ax = axes[0, 1]
@@ -131,26 +132,26 @@ def event_repeatability_figure() -> None:
         ax.plot(sub["period_s"], sub["rmse_reduction_vs_zero_pct"], color="0.75", lw=0.8)
     ax.plot(mean["period_s"], mean["rmse_reduction_vs_zero_pct"], color="#AA3377", marker="o", lw=1.5)
     period_axis(ax)
-    ax.set_ylabel("Test RMSE reduction (%)")
-    ax.set_title("b  Prediction across held-out events")
+    ax.set_ylabel("Fifth-group RMSE reduction (%)")
+    ax.set_title("b  Repeatability across earthquake groups")
 
     ax = axes[1, 0]
     ax.plot(mean["period_s"], mean["n_paired_stations"], color="#2A6F97", marker="o", lw=1.4)
     period_axis(ax)
-    ax.set_ylabel("Mean paired stations per fold")
-    ax.set_title("c  Event-fold station support")
+    ax.set_ylabel("Mean paired stations per comparison")
+    ax.set_title("c  Earthquake-group station support")
 
     ax = axes[1, 1]
     primary = decomposition[decomposition["model"].eq("mf2013_site")].drop_duplicates("period_s").sort_values("period_s")
     for column, label, color in [
-        ("event_effect_weighted_std_log10", "Event", "#AA3377"),
-        ("station_effect_weighted_std_log10", "Station", "#2A6F97"),
-        ("remainder_rmse_log10", "Record remainder", "0.35"),
+        ("event_effect_weighted_std_log10", "Between-event", "#AA3377"),
+        ("station_effect_weighted_std_log10", "Site-to-site", "#2A6F97"),
+        ("remainder_rmse_log10", "Within-site", "0.35"),
     ]:
         ax.plot(primary["period_s"], primary[column], marker="o", lw=1.3, color=color, label=label)
     period_axis(ax)
-    ax.set_ylabel("Residual component (log10)")
-    ax.set_title("d  Decomposition amplitudes")
+    ax.set_ylabel("Residual standard deviation (log10)")
+    ax.set_title("d  Residual decomposition")
     ax.legend(frameon=False)
     save(fig, "supplementary_figure_event_repeatability")
 
@@ -190,8 +191,8 @@ def response_spectrum_figure() -> None:
     sa3 = sa3.sort_values("probability_level")
     x = np.arange(len(sa3))
     for index, (column, label, color) in enumerate([
-        ("official_vs400_sa_g_q50", "Official Vs400", "0.35"),
-        ("ergodic_surface_sa_g_q50", "MF2013 surface", "#2A6F97"),
+        ("official_vs400_sa_g_q50", "J-SHIS Vs400", "0.35"),
+        ("ergodic_surface_sa_g_q50", "MF2013 surface condition", "#2A6F97"),
         ("adjusted_surface_sa_g_q50", "Station adjusted", "#AA3377"),
     ]):
         ax.plot(x, sa3[column], marker="o", lw=1.3, color=color, label=label)
@@ -215,7 +216,8 @@ def response_spectrum_figure() -> None:
     )
     low = float(min(matched["ergodic_surface_sa_g"].min(), matched["adjusted_surface_sa_g"].min()))
     high = float(max(matched["ergodic_surface_sa_g"].max(), matched["adjusted_surface_sa_g"].max()))
-    ax.plot([low, high], [low, high], color="0.3", lw=0.9)
+    ax.plot([low, high], [low, high], color="0.3", lw=0.9, ls="--")
+    ax.text(0.96, 0.04, "Dashed: equality", transform=ax.transAxes, ha="right", color="0.3")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("MF2013 surface SA(3.0 s) (g)")

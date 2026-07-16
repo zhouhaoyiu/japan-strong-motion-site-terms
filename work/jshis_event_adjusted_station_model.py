@@ -1007,14 +1007,14 @@ def save_overview_figure(
     ax = axes[1, 0]
     site_metrics = site_model.loc[common]
     for column, label, color in [
-        ("event_effect_weighted_std_log10", "Event term", "#D1495B"),
-        ("station_effect_weighted_std_log10", "Station term", "#2A6F97"),
-        ("remainder_rmse_log10", "Record remainder", "0.35"),
+        ("event_effect_weighted_std_log10", "Between-event", "#D1495B"),
+        ("station_effect_weighted_std_log10", "Site-to-site", "#2A6F97"),
+        ("remainder_rmse_log10", "Within-site", "0.35"),
     ]:
         ax.plot(common, site_metrics[column], marker="o", lw=1.3, color=color, label=label)
     format_period_axis(ax)
-    ax.set_ylabel("Residual component (log10)")
-    ax.set_title("c  Event-station residual decomposition")
+    ax.set_ylabel("Residual standard deviation (log10)")
+    ax.set_title("c  Residual decomposition")
     ax.legend(frameon=False)
 
     ax = axes[1, 1]
@@ -1034,13 +1034,13 @@ def save_overview_figure(
         marker="s",
         color="#D1495B",
         lw=1.2,
-        label="Test RMSE reduction",
+        label="Fifth-group RMSE reduction",
     )
     format_period_axis(ax)
     ax.set_ylim(0, 1)
-    ax.set_ylabel("Train-test station correlation")
-    ax2.set_ylabel("Test RMSE reduction (%)")
-    ax.set_title("d  Repeatability across held-out events")
+    ax.set_ylabel("Four-to-fifth-group correlation")
+    ax2.set_ylabel("Fifth-group RMSE reduction (%)")
+    ax.set_title("d  Repeatability across earthquake groups")
     handles1, labels1 = ax.get_legend_handles_labels()
     handles2, labels2 = ax2.get_legend_handles_labels()
     ax.legend(handles1 + handles2, labels1 + labels2, frameon=False, loc="lower left")
@@ -1068,7 +1068,7 @@ def save_site_structure_figure(station_terms: pd.DataFrame, decomposition: pd.Da
     model_style = {
         "mf2013_basic": ("MF2013 basic", "0.35"),
         "mf2013_site": ("MF2013 + D1400/AVS30", "#2A6F97"),
-        "mf2013_site_ai_sensitivity": ("+ approximate AI", "#D1495B"),
+        "mf2013_site_ai_sensitivity": ("+ anomalous intensity", "#D1495B"),
     }
     for ax, feature, panel_title in [
         (axes[0, 0], "d1400", "a  Association with D1400"),
@@ -1107,12 +1107,13 @@ def save_site_structure_figure(station_terms: pd.DataFrame, decomposition: pd.Da
     y = compare["mf2013_site_ai_sensitivity"].to_numpy(float)
     limit = float(np.quantile(np.abs(np.concatenate([x, y])), 0.995))
     ax.hexbin(x, y, gridsize=42, mincnt=1, cmap="Blues", linewidths=0)
-    ax.plot([-limit, limit], [-limit, limit], color="#D1495B", lw=1.0)
+    ax.plot([-limit, limit], [-limit, limit], color="0.25", lw=1.0, ls="--")
+    ax.text(0.96, 0.04, "Dashed: equality", transform=ax.transAxes, ha="right", color="0.25")
     ax.set_xlim(-limit, limit)
     ax.set_ylim(-limit, limit)
     ax.set_xlabel("Primary station term (log10)")
-    ax.set_ylabel("AI-sensitivity station term (log10)")
-    ax.set_title(f"d  AI sensitivity (r = {np.corrcoef(x, y)[0, 1]:.3f})")
+    ax.set_ylabel("Anomalous-intensity station term (log10)")
+    ax.set_title(f"d  Anomalous-intensity sensitivity (r = {np.corrcoef(x, y)[0, 1]:.3f})")
 
     fig.savefig(OUT_STRUCTURE_PDF, bbox_inches="tight")
     fig.savefig(OUT_STRUCTURE_PNG, dpi=400, bbox_inches="tight")
@@ -1219,7 +1220,7 @@ def save_figure(
 
     ax = axes[0, 1]
     colors = {"physical_hgb": "#2A6F97", "physical_spatial_hgb": "#D1495B"}
-    labels = {"physical_hgb": "Site variables", "physical_spatial_hgb": "Site + location"}
+    labels = {"physical_hgb": "Site parameters", "physical_spatial_hgb": "Site + regional"}
     for model_name in ["physical_hgb", "physical_spatial_hgb"]:
         sub = model_metrics[
             model_metrics["model"].eq(model_name) & model_metrics["scope"].eq("overall")
@@ -1235,7 +1236,7 @@ def save_figure(
     ax.axhline(0.0, color="0.3", lw=0.8)
     format_period_axis(ax)
     ax.set_ylabel("Spatial-block RMSE reduction (%)")
-    ax.set_title("b  Prediction of held-out station terms")
+    ax.set_title("b  Spatial estimation of station terms")
     ax.legend(frameon=False)
 
     ax = axes[1, 0]
@@ -1326,7 +1327,7 @@ def write_audit(
         "## Model boundary",
         "",
         "- The primary attenuation backbone contains the MF2013 basic, D1400, and AVS30 terms. It is labelled as such and is not described as the complete official implementation.",
-        f"- The rule-based AI sensitivity gives an SA(3.0 s) station-term correlation of {ai_corr:.3f} with the primary decomposition.",
+        f"- The rule-based anomalous-intensity sensitivity gives an SA(3.0 s) station-term correlation of {ai_corr:.3f} with the primary decomposition.",
         "- PH is an event-constant period term for qualifying Philippine Sea Plate intraplate earthquakes. The event fixed effect absorbs it for station-term estimation; the global intercept is not interpreted as an official MF2013 bias.",
         "- The response-map calculation is a matched-station surface-spectrum sensitivity analysis, not an official source-level J-SHIS PSHA rerun.",
         "",
