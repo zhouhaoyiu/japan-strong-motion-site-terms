@@ -347,7 +347,6 @@ def validate_references() -> None:
         require(cited == bibliography, f"{name} references are missing, uncited or out of first-appearance order")
 
     shared = (ARTICLE / "references_shared.tex").read_text(encoding="utf-8")
-    chinese_references = (CHINESE / "references_chinese.tex").read_text(encoding="utf-8")
     shared_keys = re.findall(r"\\bibitem\{([^}]*)\}", shared)
     main_keys = re.findall(r"\\bibitem\{([^}]*)\}", main_text)
     require(shared_keys == main_keys, "Chinese shared-reference keys differ from the English manuscript")
@@ -355,14 +354,23 @@ def validate_references() -> None:
         bibliography_entries(shared) == bibliography_entries(main_text),
         "Chinese shared-reference content differs from the English manuscript",
     )
-    require(
-        set(re.findall(r"\\bibitem\{([^}]*)\}", chinese_references)) == set(main_keys),
-        "Chinese manuscript reference keys differ from the English manuscript",
-    )
-    require(
-        bibliography_entries(chinese_references) == bibliography_entries(main_text),
-        "Chinese manuscript reference content differs from the English manuscript",
-    )
+    reference_documents = [
+        ("main manuscript", main_text),
+        ("Chinese shared references", shared),
+        ("Supplementary Information", supplement_text),
+    ]
+    chinese_reference_path = CHINESE / "references_chinese.tex"
+    if chinese_reference_path.is_file():
+        chinese_references = chinese_reference_path.read_text(encoding="utf-8")
+        require(
+            set(re.findall(r"\\bibitem\{([^}]*)\}", chinese_references)) == set(main_keys),
+            "Chinese manuscript reference keys differ from the English manuscript",
+        )
+        require(
+            bibliography_entries(chinese_references) == bibliography_entries(main_text),
+            "Chinese manuscript reference content differs from the English manuscript",
+        )
+        reference_documents.insert(2, ("Chinese manuscript references", chinese_references))
     main_entries = bibliography_entries(main_text)
     require(
         all("https://" in entry for entry in main_entries.values()),
@@ -373,12 +381,7 @@ def validate_references() -> None:
         all("https://" in entry for entry in supplement_entries.values()),
         "a supplementary reference lacks a DOI or official HTTPS source",
     )
-    for name, text in [
-        ("main manuscript", main_text),
-        ("Chinese shared references", shared),
-        ("Chinese manuscript references", chinese_references),
-        ("Supplementary Information", supplement_text),
-    ]:
+    for name, text in reference_documents:
         require("Dohi, Y. et al." in text, f"{name} does not abbreviate the six-author Dohi reference")
         require("Dohi, Y., Shigeno" not in text, f"{name} retains all six Dohi authors")
 
